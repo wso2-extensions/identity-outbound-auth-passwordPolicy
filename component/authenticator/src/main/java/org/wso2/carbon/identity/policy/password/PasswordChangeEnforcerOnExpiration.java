@@ -41,7 +41,6 @@ import org.wso2.carbon.user.core.util.UserCoreUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Calendar;
 
 /**
@@ -79,12 +78,10 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
     public AuthenticatorFlowStatus process(HttpServletRequest request, HttpServletResponse response,
                                            AuthenticationContext context)
             throws AuthenticationFailedException, LogoutFailedException {
-
         // if the logout request comes, then no need to go through and doing complete the flow.
         if (context.isLogoutRequest()) {
             return AuthenticatorFlowStatus.SUCCESS_COMPLETED;
         }
-
         if (StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD))
                 && StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.NEW_PWD))
                 && StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION))) {
@@ -99,7 +96,6 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         } else {
             return initiateAuthRequest(request, response, context, null);
         }
-
     }
 
     /**
@@ -113,40 +109,39 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
     protected AuthenticatorFlowStatus initiateAuthRequest(HttpServletRequest request, HttpServletResponse response,
                                                           AuthenticationContext context, String errorMessage)
             throws AuthenticationFailedException {
-
-        // find the authenticated user.
-        AuthenticatedUser authenticatedUser = getUsername(context);
-
-        if (authenticatedUser == null) {
-            throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without identifying the user");
-        }
-
         String username;
         String tenantDomain;
         String userStoreDomain;
+        int tenantId;
+        String tenantAwareUsername;
+        String fullyQualifiedUsername;
+        long passwordChangedTime = 0;
+        int daysDifference = 0;
+        String passwordLastChangedTime;
+        long currentTimeMillis;
+
+        // find the authenticated user.
+        AuthenticatedUser authenticatedUser = getUsername(context);
+        if (authenticatedUser == null) {
+            throw new AuthenticationFailedException
+                    ("Authentication failed!. Cannot proceed further without identifying the user");
+        }
         username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         tenantDomain = authenticatedUser.getTenantDomain();
         userStoreDomain = authenticatedUser.getUserStoreDomain();
-        String tenantAwareUsername = UserCoreUtil.addDomainToName(username, userStoreDomain);
-        String fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername, tenantDomain);
-        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-        long passwordChangedTime = 0;
-        int daysDifference = 0;
-
+        tenantAwareUsername = UserCoreUtil.addDomainToName(username, userStoreDomain);
+        fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername, tenantDomain);
+        tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
         RealmService realmService = IdentityTenantUtil.getRealmService();
         UserRealm userRealm;
         UserStoreManager userStoreManager;
-
         try {
             userRealm = realmService.getTenantUserRealm(tenantId);
             userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
         } catch (UserStoreException e) {
             throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
         }
-
-        long currentTimeMillis = System.currentTimeMillis();
-        String passwordLastChangedTime;
-
+        currentTimeMillis = System.currentTimeMillis();
         try {
             passwordLastChangedTime = userStoreManager.getUserClaimValue(tenantAwareUsername,
                     PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, null);
@@ -154,17 +149,14 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             throw new AuthenticationFailedException("Error occurred while loading user claim - "
                     + PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, e);
         }
-
         if (passwordLastChangedTime != null) {
             passwordChangedTime = Long.parseLong(passwordLastChangedTime);
         }
-
         if (passwordChangedTime > 0) {
             Calendar currentTime = Calendar.getInstance();
             currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
             daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
         }
-
         if (daysDifference > PasswordChangeUtils.getPasswordExpirationInDays() || passwordLastChangedTime == null) {
             // the password has changed or the password changed time is not set.
             String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL().replace("login.do",
@@ -173,14 +165,13 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                     context.getCallerSessionKey(), context.getContextIdentifier());
             try {
                 String retryParam = "";
-
                 if (context.isRetrying()) {
                     retryParam = "&authFailure=true&authFailureMsg=" + errorMessage;
                 }
-
                 response.sendRedirect(response
                         .encodeRedirectURL(loginPage + ("?" + queryParams + "&username=" + fullyQualifiedUsername))
-                        + "&authenticators=" + getName() + ":" + PasswordChangeEnforceConstants.AUTHENTICATOR_TYPE + retryParam);
+                        + "&authenticators=" + getName() + ":" + PasswordChangeEnforceConstants.AUTHENTICATOR_TYPE
+                        + retryParam);
             } catch (IOException e) {
                 throw new AuthenticationFailedException(e.getMessage(), e);
             }
@@ -202,37 +193,36 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
     @Override
     protected void processAuthenticationResponse(HttpServletRequest request, HttpServletResponse response,
                                                  AuthenticationContext context) throws AuthenticationFailedException {
-
-        char[] currentPassword;
-        char[] newPassword;
-        char[] repeatPassword;
-
+        String currentPassword;
+        String newPassword;
+        String repeatPassword;
         AuthenticatedUser authenticatedUser = getUsername(context);
         String username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         String tenantDomain = authenticatedUser.getTenantDomain();
         String userStoreDomain = authenticatedUser.getUserStoreDomain();
-
         String tenantAwareUsername = UserCoreUtil.addDomainToName(username, userStoreDomain);
-
         int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
         RealmService realmService = IdentityTenantUtil.getRealmService();
         UserRealm userRealm;
         UserStoreManager userStoreManager;
-
         try {
             userRealm = realmService.getTenantUserRealm(tenantId);
             userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
         } catch (UserStoreException e) {
             throw new AuthenticationFailedException("Error occurred while loading user realm or user store manager", e);
         }
-
-        currentPassword = request.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD).toCharArray();
-        newPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD).toCharArray();
-        repeatPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION).toCharArray();
-
-        if (Arrays.equals(newPassword, repeatPassword)) {
+        currentPassword = request.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD);
+        newPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD);
+        repeatPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION);
+        if (currentPassword == null || newPassword == null || repeatPassword == null) {
+            throw new AuthenticationFailedException("All fields are required");
+        }
+        if (currentPassword.equals(newPassword)) {
+            throw new AuthenticationFailedException("This is your old password,please provide a new password");
+        }
+        if (newPassword.equals(repeatPassword)) {
             try {
-                userStoreManager.updateCredential(tenantAwareUsername, Arrays.toString(newPassword), Arrays.toString(currentPassword));
+                userStoreManager.updateCredential(tenantAwareUsername, newPassword, currentPassword);
                 if (log.isDebugEnabled()) {
                     log.debug("Updated user credentials of " + tenantAwareUsername);
                 }
@@ -241,11 +231,9 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             }
             // authentication is now completed in this step. update the authenticated user information.
             updateAuthenticatedUserInStepConfig(context, authenticatedUser);
-
         } else {
             throw new AuthenticationFailedException("New password does not match with the new password confirmation");
         }
-
     }
 
     /**
@@ -263,7 +251,6 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                 break;
             }
         }
-
         return authenticatedUser;
     }
 

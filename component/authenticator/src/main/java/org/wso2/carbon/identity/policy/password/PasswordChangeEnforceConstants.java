@@ -19,6 +19,9 @@
 
 package org.wso2.carbon.identity.policy.password;
 
+/**
+ * Password Change authenticator's constants
+ */
 public class PasswordChangeEnforceConstants {
     public static final String AUTHENTICATOR_NAME = "password-reset-enforcer";
     public static final String AUTHENTICATOR_TYPE = "LOCAL";

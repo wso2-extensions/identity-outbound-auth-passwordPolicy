@@ -16,7 +16,6 @@
  * under the License.
  */
 
-
 package org.wso2.carbon.identity.policy.password;
 
 import org.apache.commons.logging.Log;
@@ -30,12 +29,10 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class PasswordChangeUtils {
-
     public static final String IDM_PROPERTIES_FILE = "identity-mgt.properties";
     public static final String PASSWORD_EXP_IN_DAYS = "Authentication.Policy.Password.Reset.Time.In.Days";
     public static final String LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM = "http://wso2.org/claims/lastPasswordChangedTimestamp";
     public static final int DEFAULT_PASSWORD_EXP_IN_DAYS = 30;
-
     private static Properties properties = new Properties();
 
     private static final Log log = LogFactory.getLog(PasswordChangeUtils.class);
@@ -51,10 +48,8 @@ public class PasswordChangeUtils {
      * loading the identity-mgt.properties file.
      */
     public static void loadProperties() {
-
         FileInputStream fileInputStream = null;
         String configPath = CarbonUtils.getCarbonConfigDirPath() + File.separator + "identity" + File.separator;
-
         try {
             configPath = configPath + IDM_PROPERTIES_FILE;
             fileInputStream = new FileInputStream(new File(configPath));
@@ -84,5 +79,4 @@ public class PasswordChangeUtils {
             return DEFAULT_PASSWORD_EXP_IN_DAYS;
         }
     }
-
 }

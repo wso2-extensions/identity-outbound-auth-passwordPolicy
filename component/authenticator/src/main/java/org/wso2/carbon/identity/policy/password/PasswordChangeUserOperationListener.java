@@ -54,12 +54,10 @@ public class PasswordChangeUserOperationListener extends AbstractUserOperationEv
         long timestamp = System.currentTimeMillis();
         claimMap.put(PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, Long.toString(timestamp));
         userStoreManager.setUserClaimValues(userName, claimMap, null);
-
         if (log.isDebugEnabled()) {
             log.debug("The claim uri" + PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM + "of " + userName
                     + " updated with the current timestamp");
         }
-
         return true;
     }
 
@@ -77,7 +75,6 @@ public class PasswordChangeUserOperationListener extends AbstractUserOperationEv
         long timestamp = System.currentTimeMillis();
         claimMap.put(PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, Long.toString(timestamp));
         userStoreManager.setUserClaimValues(userName, claimMap, null);
-
         if (log.isDebugEnabled()) {
             log.debug("The claim uri " + PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM + "of " + userName
                     + " updated with the current timestamp");

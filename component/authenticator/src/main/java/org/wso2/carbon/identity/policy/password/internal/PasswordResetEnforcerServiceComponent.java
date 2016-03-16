@@ -63,7 +63,6 @@ public class PasswordResetEnforcerServiceComponent {
      */
     protected void activate(ComponentContext ctxt) {
         try {
-
             // register the connector to enforce password change upon expiration.
             PasswordChangeEnforcerOnExpiration authenticator = new PasswordChangeEnforcerOnExpiration();
             Hashtable<String, String> props = new Hashtable<String, String>();
@@ -72,7 +71,6 @@ public class PasswordResetEnforcerServiceComponent {
             // register the n to capture password change events.
             ctxt.getBundleContext().registerService(UserOperationEventListener.class.getName(),
                     new PasswordChangeUserOperationListener(), props);
-
             if (log.isDebugEnabled()) {
                 log.debug("PasswordChangeEnforcerOnExpiration handler is activated");
             }
