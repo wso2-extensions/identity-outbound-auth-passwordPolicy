@@ -40,16 +40,14 @@ public class PasswordResetEnforcerServiceComponent {
     private static RealmService realmService;
 
     /**
-     *
-     * @return
+     * @return get the realm service
      */
     public static RealmService getRealmService() {
         return realmService;
     }
 
     /**
-     *
-     * @param realmService
+     * @param realmService realm service
      */
     protected void setRealmService(RealmService realmService) {
         if (log.isDebugEnabled()) {
@@ -59,20 +57,19 @@ public class PasswordResetEnforcerServiceComponent {
     }
 
     /**
+     * Activate the application authenticator and user operation event listener event components
      *
-     * @param ctxt
+     * @param ctxt the component context.
      */
     protected void activate(ComponentContext ctxt) {
         try {
 
-            // register the connector to enforce password change upon
-            // expiration.
+            // register the connector to enforce password change upon expiration.
             PasswordChangeEnforcerOnExpiration authenticator = new PasswordChangeEnforcerOnExpiration();
             Hashtable<String, String> props = new Hashtable<String, String>();
             ctxt.getBundleContext().registerService(ApplicationAuthenticator.class.getName(), authenticator, props);
 
-            // register the user-operation listener to capture password change
-            // events.
+            // register the n to capture password change events.
             ctxt.getBundleContext().registerService(UserOperationEventListener.class.getName(),
                     new PasswordChangeUserOperationListener(), props);
 
@@ -85,8 +82,9 @@ public class PasswordResetEnforcerServiceComponent {
     }
 
     /**
+     * Deactivate the component
      *
-     * @param ctxt
+     * @param ctxt the component context.
      */
     protected void deactivate(ComponentContext ctxt) {
         if (log.isDebugEnabled()) {
@@ -95,8 +93,9 @@ public class PasswordResetEnforcerServiceComponent {
     }
 
     /**
+     * Un setting the realm service
      *
-     * @param realmService
+     * @param realmService the realm service.
      */
     protected void unsetRealmService(RealmService realmService) {
         if (log.isDebugEnabled()) {

@@ -1,0 +1,21 @@
+Product: WSO2 IS authenticator for PasswordPolicy
+Pre-requisites:
+
+- Maven 3.x
+- Java 1.6 or above
+
+Tested Platform: 
+
+- Ubund 14 
+- WSO2 IS 5.1.0
+- Java 1.7
+
+Do the following:
+
+Deploying and Configuring Password Policy artifacts:
+1.  Copy the pwd-reset.jsp to <IS-HOME>/repository/deployment/server/webapps/authenticationendpoint
+
+2.  Build the <PASSWORD_POLICY_AUTHENTICATOR_HOME>/component/authenticator & copy the org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-1.0.0.jar
+    to <IS-HOME>/repository/components/dropins
+
+3.  Follow the steps in https://docs.wso2.com/display/ISCONNECTORS/Configuring+PasswordPolicy+Authenticator

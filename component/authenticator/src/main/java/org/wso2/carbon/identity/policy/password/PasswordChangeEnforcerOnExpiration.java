@@ -77,7 +77,8 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
 
     @Override
     public AuthenticatorFlowStatus process(HttpServletRequest request, HttpServletResponse response,
-                                           AuthenticationContext context) throws AuthenticationFailedException, LogoutFailedException {
+                                           AuthenticationContext context)
+            throws AuthenticationFailedException, LogoutFailedException {
 
         // if the logout request comes, then no need to go through and doing complete the flow.
         if (context.isLogoutRequest()) {
@@ -85,7 +86,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         }
 
         if (StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD))
-                && StringUtils.isNotEmpty(requkatheesest.getParameter(PasswordChangeEnforceConstants.NEW_PWD))
+                && StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.NEW_PWD))
                 && StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION))) {
             try {
                 processAuthenticationResponse(request, response, context);
@@ -110,19 +111,19 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
      * @param context  the authentication context
      */
     protected AuthenticatorFlowStatus initiateAuthRequest(HttpServletRequest request, HttpServletResponse response,
-                                                          AuthenticationContext context, String errorMessage) throws AuthenticationFailedException {
+                                                          AuthenticationContext context, String errorMessage)
+            throws AuthenticationFailedException {
 
         // find the authenticated user.
         AuthenticatedUser authenticatedUser = getUsername(context);
 
         if (authenticatedUser == null) {
-            log.error("Authentication failed!");
             throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without identifying the user");
         }
 
-        String username = null;
-        String tenantDomain = null;
-        String userStoreDomain = null;
+        String username;
+        String tenantDomain;
+        String userStoreDomain;
         username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         tenantDomain = authenticatedUser.getTenantDomain();
         userStoreDomain = authenticatedUser.getUserStoreDomain();
@@ -130,7 +131,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         String fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername, tenantDomain);
         int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
         long passwordChangedTime = 0;
-        int daysDifference = 0;kathees
+        int daysDifference = 0;
 
         RealmService realmService = IdentityTenantUtil.getRealmService();
         UserRealm userRealm;
@@ -140,7 +141,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             userRealm = realmService.getTenantUserRealm(tenantId);
             userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
         } catch (UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading userrealm/userstoremanager", e);
+            throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
         }
 
         long currentTimeMillis = System.currentTimeMillis();
@@ -150,8 +151,8 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             passwordLastChangedTime = userStoreManager.getUserClaimValue(tenantAwareUsername,
                     PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, null);
         } catch (org.wso2.carbon.user.core.UserStoreException e) {
-            throw new AuthenticationFailedException(
-                    "Error occurred while loading user claim - http://wso2.org/claims/lastPasswordChangedTimestamp", e);
+            throw new AuthenticationFailedException("Error occurred while loading user claim - "
+                    + PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, e);
         }
 
         if (passwordLastChangedTime != null) {
@@ -202,6 +203,10 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
     protected void processAuthenticationResponse(HttpServletRequest request, HttpServletResponse response,
                                                  AuthenticationContext context) throws AuthenticationFailedException {
 
+        char[] currentPassword;
+        char[] newPassword;
+        char[] repeatPassword;
+
         AuthenticatedUser authenticatedUser = getUsername(context);
         String username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         String tenantDomain = authenticatedUser.getTenantDomain();
@@ -221,20 +226,19 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             throw new AuthenticationFailedException("Error occurred while loading user realm or user store manager", e);
         }
 
-        char[] currentPassword = request.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD).toCharArray();
-        char[] newPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD).toCharArray();
-        char[] repeatPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION).toCharArray();
+        currentPassword = request.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD).toCharArray();
+        newPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD).toCharArray();
+        repeatPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION).toCharArray();
 
         if (Arrays.equals(newPassword, repeatPassword)) {
             try {
-                userStoreManager.updateCredential(tenantAwareUsername, newPassword, currentPassword);
+                userStoreManager.updateCredential(tenantAwareUsername, Arrays.toString(newPassword), Arrays.toString(currentPassword));
                 if (log.isDebugEnabled()) {
                     log.debug("Updated user credentials of " + tenantAwareUsername);
                 }
             } catch (org.wso2.carbon.user.core.UserStoreException e) {
                 throw new AuthenticationFailedException("Incorrect current password", e);
             }
-
             // authentication is now completed in this step. update the authenticated user information.
             updateAuthenticatedUserInStepConfig(context, authenticatedUser);
 
