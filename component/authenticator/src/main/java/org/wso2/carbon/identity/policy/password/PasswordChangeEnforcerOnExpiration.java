@@ -37,6 +37,7 @@ import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -129,7 +130,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         tenantDomain = authenticatedUser.getTenantDomain();
         userStoreDomain = authenticatedUser.getUserStoreDomain();
-        tenantAwareUsername = UserCoreUtil.addDomainToName(username, userStoreDomain);
+        tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
         fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername, tenantDomain);
         tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
         RealmService realmService = IdentityTenantUtil.getRealmService();
@@ -200,7 +201,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         String username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         String tenantDomain = authenticatedUser.getTenantDomain();
         String userStoreDomain = authenticatedUser.getUserStoreDomain();
-        String tenantAwareUsername = UserCoreUtil.addDomainToName(username, userStoreDomain);
+        String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
         int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
         RealmService realmService = IdentityTenantUtil.getRealmService();
         UserRealm userRealm;
