@@ -18,4 +18,4 @@ Deploying and Configuring Password Policy artifacts:
 2.  Build the <PASSWORD_POLICY_AUTHENTICATOR_HOME>/component/authenticator & copy the org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-1.0.0.jar
     to <IS-HOME>/repository/components/dropins
 
-3.  Follow the steps in https://docs.wso2.com/display/ISCONNECTORS/Configuring+PasswordPolicy+Authenticator
+3.  Follow the steps in https://docs.wso2.com/display/ISCONNECTORS/Configuring+Password+Policy+Authenticator
