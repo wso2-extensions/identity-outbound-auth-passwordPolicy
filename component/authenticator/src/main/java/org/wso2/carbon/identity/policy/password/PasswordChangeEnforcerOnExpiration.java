@@ -169,10 +169,10 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                 if (context.isRetrying()) {
                     retryParam = "&authFailure=true&authFailureMsg=" + errorMessage;
                 }
-                response.sendRedirect(response
-                        .encodeRedirectURL(loginPage + ("?" + queryParams + "&username=" + fullyQualifiedUsername))
+                String encodedUrl = (loginPage + ("?" + queryParams + "&username=" + fullyQualifiedUsername))
                         + "&authenticators=" + getName() + ":" + PasswordChangeEnforceConstants.AUTHENTICATOR_TYPE
-                        + retryParam);
+                        + retryParam;
+                response.sendRedirect(encodedUrl);
             } catch (IOException e) {
                 throw new AuthenticationFailedException(e.getMessage(), e);
             }
