@@ -123,61 +123,66 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
 
         // find the authenticated user.
         AuthenticatedUser authenticatedUser = getUsername(context);
+        StepConfig stepConfig = context.getSequenceConfig().getStepMap().get(context.getCurrentStep() - 1);
         if (authenticatedUser == null) {
             throw new AuthenticationFailedException
                     ("Authentication failed!. Cannot proceed further without identifying the user");
         }
-        username = authenticatedUser.getAuthenticatedSubjectIdentifier();
-        tenantDomain = authenticatedUser.getTenantDomain();
-        userStoreDomain = authenticatedUser.getUserStoreDomain();
-        tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
-        fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername, tenantDomain);
-        tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-        RealmService realmService = IdentityTenantUtil.getRealmService();
-        UserRealm userRealm;
-        UserStoreManager userStoreManager;
-        try {
-            userRealm = realmService.getTenantUserRealm(tenantId);
-            userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
-        } catch (UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
-        }
-        currentTimeMillis = System.currentTimeMillis();
-        try {
-            passwordLastChangedTime = userStoreManager.getUserClaimValue(tenantAwareUsername,
-                    PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, null);
-        } catch (org.wso2.carbon.user.core.UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading user claim - "
-                    + PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, e);
-        }
-        if (passwordLastChangedTime != null) {
-            passwordChangedTime = Long.parseLong(passwordLastChangedTime);
-        }
-        if (passwordChangedTime > 0) {
-            Calendar currentTime = Calendar.getInstance();
-            currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
-            daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
-        }
-        if (daysDifference > PasswordChangeUtils.getPasswordExpirationInDays() || passwordLastChangedTime == null) {
-            // the password has changed or the password changed time is not set.
-            String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL().replace("login.do",
-                    "pwd-reset.jsp");
-            String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
-                    context.getCallerSessionKey(), context.getContextIdentifier());
+        // The password reset flow for local authenticator
+        if (stepConfig.getAuthenticatedAutenticator().getApplicationAuthenticator() instanceof
+                LocalApplicationAuthenticator) {
+            username = authenticatedUser.getAuthenticatedSubjectIdentifier();
+            tenantDomain = authenticatedUser.getTenantDomain();
+            userStoreDomain = authenticatedUser.getUserStoreDomain();
+            tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
+            fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername, tenantDomain);
+            tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+            RealmService realmService = IdentityTenantUtil.getRealmService();
+            UserRealm userRealm;
+            UserStoreManager userStoreManager;
             try {
-                String retryParam = "";
-                if (context.isRetrying()) {
-                    retryParam = "&authFailure=true&authFailureMsg=" + errorMessage;
-                }
-                String encodedUrl = (loginPage + ("?" + queryParams + "&username=" + fullyQualifiedUsername))
-                        + "&authenticators=" + getName() + ":" + PasswordChangeEnforceConstants.AUTHENTICATOR_TYPE
-                        + retryParam;
-                response.sendRedirect(encodedUrl);
-            } catch (IOException e) {
-                throw new AuthenticationFailedException(e.getMessage(), e);
+                userRealm = realmService.getTenantUserRealm(tenantId);
+                userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
+            } catch (UserStoreException e) {
+                throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
             }
-            context.setCurrentAuthenticator(getName());
-            return AuthenticatorFlowStatus.INCOMPLETE;
+            currentTimeMillis = System.currentTimeMillis();
+            try {
+                passwordLastChangedTime = userStoreManager.getUserClaimValue(tenantAwareUsername,
+                        PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, null);
+            } catch (org.wso2.carbon.user.core.UserStoreException e) {
+                throw new AuthenticationFailedException("Error occurred while loading user claim - "
+                        + PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, e);
+            }
+            if (passwordLastChangedTime != null) {
+                passwordChangedTime = Long.parseLong(passwordLastChangedTime);
+            }
+            if (passwordChangedTime > 0) {
+                Calendar currentTime = Calendar.getInstance();
+                currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
+                daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
+            }
+            if ((daysDifference > PasswordChangeUtils.getPasswordExpirationInDays() || passwordLastChangedTime == null)) {
+                // the password has changed or the password changed time is not set.
+                String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL().replace("login.do",
+                        "pwd-reset.jsp");
+                String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
+                        context.getCallerSessionKey(), context.getContextIdentifier());
+                try {
+                    String retryParam = "";
+                    if (context.isRetrying()) {
+                        retryParam = "&authFailure=true&authFailureMsg=" + errorMessage;
+                    }
+                    String encodedUrl = (loginPage + ("?" + queryParams + "&username=" + fullyQualifiedUsername))
+                            + "&authenticators=" + getName() + ":" + PasswordChangeEnforceConstants.AUTHENTICATOR_TYPE
+                            + retryParam;
+                    response.sendRedirect(encodedUrl);
+                } catch (IOException e) {
+                    throw new AuthenticationFailedException(e.getMessage(), e);
+                }
+                context.setCurrentAuthenticator(getName());
+                return AuthenticatorFlowStatus.INCOMPLETE;
+            }
         }
         // authentication is now completed in this step. update the authenticated user information.
         updateAuthenticatedUserInStepConfig(context, authenticatedUser);
@@ -244,14 +249,11 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
      */
     private AuthenticatedUser getUsername(AuthenticationContext context) {
         AuthenticatedUser authenticatedUser = null;
-        for (int i = 1; i <= context.getSequenceConfig().getStepMap().size(); i++) {
-            StepConfig stepConfig = context.getSequenceConfig().getStepMap().get(i);
-            if (stepConfig.getAuthenticatedUser() != null && stepConfig.getAuthenticatedAutenticator()
-                    .getApplicationAuthenticator() instanceof LocalApplicationAuthenticator) {
-                authenticatedUser = stepConfig.getAuthenticatedUser();
-                break;
-            }
+        StepConfig stepConfig = context.getSequenceConfig().getStepMap().get(context.getCurrentStep() - 1);
+        if (stepConfig.getAuthenticatedUser() != null) {
+            authenticatedUser = stepConfig.getAuthenticatedUser();
         }
+
         return authenticatedUser;
     }
 
