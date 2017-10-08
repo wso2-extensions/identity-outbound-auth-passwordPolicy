@@ -74,9 +74,16 @@ public class PasswordChangeUtils {
      */
     public static int getPasswordExpirationInDays() {
         if (properties.get(PASSWORD_EXP_IN_DAYS) != null) {
-            return Integer.parseInt((String) properties.get(PASSWORD_EXP_IN_DAYS));
-        } else {
-            return DEFAULT_PASSWORD_EXP_IN_DAYS;
+            String passwordExpPropertyValue = (String) properties.get(PASSWORD_EXP_IN_DAYS);
+            try {
+                return Integer.parseInt(passwordExpPropertyValue);
+            } catch (NumberFormatException e) {
+                log.warn(String.format("Invalid value: %s for property %s. The password expiration time should be an " +
+                                       "integer. Returning default password expiration time: %d days.",
+                                       passwordExpPropertyValue, PASSWORD_EXP_IN_DAYS, DEFAULT_PASSWORD_EXP_IN_DAYS));
+            }
         }
+
+        return DEFAULT_PASSWORD_EXP_IN_DAYS;
     }
 }
