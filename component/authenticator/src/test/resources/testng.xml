@@ -1,0 +1,10 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Identity-connector-password-policy-test-suite">
+    <test name="password-policy-authenticator-all" preserve-order="true" parallel="false">
+        <classes>
+            <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordChangeEnforcerOnExpirationTest"/>
+            <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordChangeUserOperationListenerTest"/>
+        </classes>
+    </test>
+</suite>
