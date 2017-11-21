@@ -42,6 +42,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.PrivilegedActionException;
 import java.util.Calendar;
 
 /**
@@ -233,7 +234,12 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                     log.debug("Updated user credentials of " + tenantAwareUsername);
                 }
             } catch (org.wso2.carbon.user.core.UserStoreException e) {
-                throw new AuthenticationFailedException("Incorrect current password", e);
+                if(e.getCause() instanceof PrivilegedActionException) {
+                    throw new AuthenticationFailedException(
+                            PasswordChangeEnforceConstants.PASSWORD_POLICY_VIOLATION_ERROR);
+                } else {
+                    throw new AuthenticationFailedException("Error occurred while updating the password", e);
+                }
             }
             // authentication is now completed in this step. update the authenticated user information.
             updateAuthenticatedUserInStepConfig(context, authenticatedUser);
