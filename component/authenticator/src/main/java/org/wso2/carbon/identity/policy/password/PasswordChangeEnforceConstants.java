@@ -29,5 +29,4 @@ public class PasswordChangeEnforceConstants {
     public static final String CURRENT_PWD = "CURRENT_PWD";
     public static final String NEW_PWD = "NEW_PWD";
     public static final String NEW_PWD_CONFIRMATION = "NEW_PWD_CONFIRMATION";
-    public static final String PASSWORD_POLICY_VIOLATION_ERROR = "Password Policy Violate";
 }
