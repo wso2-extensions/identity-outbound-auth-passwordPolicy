@@ -235,11 +235,20 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                 }
             } catch (org.wso2.carbon.user.core.UserStoreException e) {
                 if(e.getCause() instanceof PrivilegedActionException) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Credential not valid. Credential must be a non null string with following format, "
+                                + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
+                    }
+                    String errorMsg = userStoreManager.getRealmConfiguration()
+                            .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
+                    if (errorMsg != null) {
+                        throw new AuthenticationFailedException(errorMsg);
+                    }
                     throw new AuthenticationFailedException(
-                            PasswordChangeEnforceConstants.PASSWORD_POLICY_VIOLATION_ERROR);
-                } else {
-                    throw new AuthenticationFailedException("Error occurred while updating the password", e);
+                            "Credential not valid. Credential must be a non null string with following format, "
+                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
                 }
+                throw new AuthenticationFailedException("Error occurred while updating the password", e);
             }
             // authentication is now completed in this step. update the authenticated user information.
             updateAuthenticatedUserInStepConfig(context, authenticatedUser);
