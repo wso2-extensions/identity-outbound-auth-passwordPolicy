@@ -52,11 +52,13 @@ import org.wso2.carbon.identity.policy.password.PasswordChangeUtils;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.mockito.Matchers.anyObject;
@@ -65,7 +67,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@PrepareForTest({IdentityTenantUtil.class, ConfigurationFacade.class, FrameworkUtils.class})
+@PrepareForTest({IdentityTenantUtil.class, ConfigurationFacade.class, FrameworkUtils.class, CarbonUtils.class})
 public class PasswordChangeEnforcerOnExpirationTest {
     private PasswordChangeEnforcerOnExpiration passwordChangeEnforcerOnExpiration;
 
@@ -242,10 +244,13 @@ public class PasswordChangeEnforcerOnExpirationTest {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(ConfigurationFacade.class);
         mockStatic(FrameworkUtils.class);
+        mockStatic(CarbonUtils.class);
 
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
+        String path = Paths.get(System.getProperty("user.dir"), "src", "test", "resources").toString();
+        when(CarbonUtils.getCarbonConfigDirPath()).thenReturn(path);
         AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(localApplicationAuthenticator);
