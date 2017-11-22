@@ -225,7 +225,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             throw new AuthenticationFailedException("All fields are required");
         }
         if (currentPassword.equals(newPassword)) {
-            throw new AuthenticationFailedException("This is your old password,please provide a new password");
+            throw new AuthenticationFailedException("The new password cannot be the same as old one");
         }
         if (newPassword.equals(repeatPassword)) {
             try {
@@ -253,7 +253,8 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             // authentication is now completed in this step. update the authenticated user information.
             updateAuthenticatedUserInStepConfig(context, authenticatedUser);
         } else {
-            throw new AuthenticationFailedException("New password does not match with the new password confirmation");
+            throw new AuthenticationFailedException(
+                    "The values for the New Password and Confirm Password fields do not match");
         }
     }
 
