@@ -253,8 +253,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             // authentication is now completed in this step. update the authenticated user information.
             updateAuthenticatedUserInStepConfig(context, authenticatedUser);
         } else {
-            throw new AuthenticationFailedException(
-                    "The values for the New Password and Confirm Password fields do not match");
+            throw new AuthenticationFailedException("The new password and confirmation password do not match");
         }
     }
 
