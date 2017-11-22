@@ -225,7 +225,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             throw new AuthenticationFailedException("All fields are required");
         }
         if (currentPassword.equals(newPassword)) {
-            throw new AuthenticationFailedException("The new password cannot be the same as old one");
+            throw new AuthenticationFailedException("You cannot use your previous password as your new password");
         }
         if (newPassword.equals(repeatPassword)) {
             try {
