@@ -236,17 +236,17 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             } catch (org.wso2.carbon.user.core.UserStoreException e) {
                 if(e.getMessage().contains("InvalidOperation")){
                     if (log.isDebugEnabled()) {
-                        log.debug("InvalidOperation Invalid operation. User store is read only.", e);
+                        log.debug("Invalid operation. User store is read only.", e);
                     }
                     throw new AuthenticationFailedException(
-                            "InvalidOperation Invalid operation. User store is read only");
+                            "Invalid operation. User store is read only", e);
                 }
                 if(e.getMessage().contains("PasswordInvalid")){
                     if (log.isDebugEnabled()) {
                         log.debug("Invalid credentials. Cannot proceed with the password change.", e);
                     }
                     throw new AuthenticationFailedException(
-                            "Invalid credentials. Cannot proceed with the password change.");
+                            "Invalid credentials. Cannot proceed with the password change.", e);
                 }
                 String errorMsg = userStoreManager.getRealmConfiguration()
                         .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
@@ -263,7 +263,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                     }
                     throw new AuthenticationFailedException(
                             "New password doesn't meet the policy requirements. It must be in the following format, "
-                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
+                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"), e);
                 }
 
                 throw new AuthenticationFailedException("Error occurred while updating the password", e);
