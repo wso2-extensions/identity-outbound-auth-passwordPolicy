@@ -258,11 +258,11 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                 } else if(e.getMessage().contains("Credential not valid")) {
                     if (log.isDebugEnabled()) {
                         log.debug(
-                            "New password doesn't meet the policy requirements. It must be in the following format, "
+                            "New password doesn't meet the policy requirement. It must be in the following format, "
                             + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"), e);
                     }
                     throw new AuthenticationFailedException(
-                            "New password doesn't meet the policy requirements. It must be in the following format, "
+                            "New password doesn't meet the policy requirement. It must be in the following format, "
                             + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"), e);
                 }
 
