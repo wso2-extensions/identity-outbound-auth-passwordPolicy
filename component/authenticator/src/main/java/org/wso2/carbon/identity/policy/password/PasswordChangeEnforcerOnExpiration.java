@@ -236,32 +236,33 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             } catch (org.wso2.carbon.user.core.UserStoreException e) {
                 if(e.getMessage().contains("InvalidOperation")){
                     if (log.isDebugEnabled()) {
-                        log.debug("InvalidOperation Invalid operation. User store is read only.");
+                        log.debug("InvalidOperation Invalid operation. User store is read only.", e);
                     }
                     throw new AuthenticationFailedException(
                             "InvalidOperation Invalid operation. User store is read only");
                 }
                 if(e.getMessage().contains("PasswordInvalid")){
                     if (log.isDebugEnabled()) {
-                        log.debug("PasswordInvalid Old credential does not match with the existing credentials.");
+                        log.debug("Invalid credentials. Cannot proceed with the password change.", e);
                     }
                     throw new AuthenticationFailedException(
-                            "PasswordInvalid Old credential does not match with the existing credentials.");
+                            "Invalid credentials. Cannot proceed with the password change.");
                 }
                 String errorMsg = userStoreManager.getRealmConfiguration()
                         .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
                 if(StringUtils.isNotEmpty(errorMsg) && e.getMessage().contains(errorMsg)){
                     if (log.isDebugEnabled()) {
-                        log.debug(errorMsg);
+                        log.debug(errorMsg, e);
                     }
                     throw new AuthenticationFailedException(errorMsg);
                 } else if(e.getMessage().contains("Credential not valid")) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Credential not valid. Credential must be a non null string with following format, "
-                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
+                        log.debug(
+                            "New password doesn't meet the policy requirements. It must be in the following format, "
+                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"), e);
                     }
                     throw new AuthenticationFailedException(
-                            "Credential not valid. Credential must be a non null string with following format, "
+                            "New password doesn't meet the policy requirements. It must be in the following format, "
                             + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
                 }
 
