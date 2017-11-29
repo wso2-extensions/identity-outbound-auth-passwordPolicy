@@ -234,20 +234,37 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                     log.debug("Updated user credentials of " + tenantAwareUsername);
                 }
             } catch (org.wso2.carbon.user.core.UserStoreException e) {
-                if(e.getCause() instanceof PrivilegedActionException) {
+                if(e.getMessage().contains("InvalidOperation")){
+                    if (log.isDebugEnabled()) {
+                        log.debug("InvalidOperation Invalid operation. User store is read only.");
+                    }
+                    throw new AuthenticationFailedException(
+                            "InvalidOperation Invalid operation. User store is read only");
+                }
+                if(e.getMessage().contains("PasswordInvalid")){
+                    if (log.isDebugEnabled()) {
+                        log.debug("PasswordInvalid Old credential does not match with the existing credentials.");
+                    }
+                    throw new AuthenticationFailedException(
+                            "PasswordInvalid Old credential does not match with the existing credentials.");
+                }
+                String errorMsg = userStoreManager.getRealmConfiguration()
+                        .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
+                if(StringUtils.isNotEmpty(errorMsg) && e.getMessage().contains(errorMsg)){
+                    if (log.isDebugEnabled()) {
+                        log.debug(errorMsg);
+                    }
+                    throw new AuthenticationFailedException(errorMsg);
+                } else if(e.getMessage().contains("Credential not valid")) {
                     if (log.isDebugEnabled()) {
                         log.debug("Credential not valid. Credential must be a non null string with following format, "
-                                + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
-                    }
-                    String errorMsg = userStoreManager.getRealmConfiguration()
-                            .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
-                    if (errorMsg != null) {
-                        throw new AuthenticationFailedException(errorMsg);
+                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
                     }
                     throw new AuthenticationFailedException(
                             "Credential not valid. Credential must be a non null string with following format, "
                             + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
                 }
+
                 throw new AuthenticationFailedException("Error occurred while updating the password", e);
             }
             // authentication is now completed in this step. update the authenticated user information.
