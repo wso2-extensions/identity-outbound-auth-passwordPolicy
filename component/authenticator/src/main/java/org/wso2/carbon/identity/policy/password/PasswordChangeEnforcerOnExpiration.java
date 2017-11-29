@@ -44,6 +44,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * this connector must only be present in an authentication step, where the user
@@ -229,6 +231,27 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         }
         if (newPassword.equals(repeatPassword)) {
             try {
+                String regularExpression = userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx");
+                if(StringUtils.isNotEmpty(regularExpression)) {
+                    if(!isFormatCorrect(regularExpression, newPassword)){
+                        String errorMsg = userStoreManager.getRealmConfiguration()
+                                .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
+                        if(StringUtils.isNotEmpty(errorMsg)){
+                            if (log.isDebugEnabled()) {
+                                log.debug(errorMsg);
+                            }
+                            throw new AuthenticationFailedException(errorMsg);
+                        }
+                        if (log.isDebugEnabled()) {
+                            log.debug(
+                                "New password doesn't meet the policy requirement. It must be in the following format, "
+                                + regularExpression);
+                        }
+                        throw new AuthenticationFailedException(
+                                "New password doesn't meet the policy requirement. It must be in the following format, "
+                                + regularExpression);
+                    }
+                }
                 userStoreManager.updateCredential(tenantAwareUsername, newPassword, currentPassword);
                 if (log.isDebugEnabled()) {
                     log.debug("Updated user credentials of " + tenantAwareUsername);
@@ -248,24 +271,6 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                     throw new AuthenticationFailedException(
                             "Invalid credentials. Cannot proceed with the password change.", e);
                 }
-                String errorMsg = userStoreManager.getRealmConfiguration()
-                        .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
-                if(StringUtils.isNotEmpty(errorMsg) && e.getMessage().contains(errorMsg)){
-                    if (log.isDebugEnabled()) {
-                        log.debug(errorMsg, e);
-                    }
-                    throw new AuthenticationFailedException(errorMsg);
-                } else if(e.getMessage().contains("Credential not valid")) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(
-                            "New password doesn't meet the policy requirement. It must be in the following format, "
-                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"), e);
-                    }
-                    throw new AuthenticationFailedException(
-                            "New password doesn't meet the policy requirement. It must be in the following format, "
-                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"), e);
-                }
-
                 throw new AuthenticationFailedException("Error occurred while updating the password", e);
             }
             // authentication is now completed in this step. update the authenticated user information.
@@ -273,6 +278,12 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         } else {
             throw new AuthenticationFailedException("The new password and confirmation password do not match");
         }
+    }
+
+    private boolean isFormatCorrect(String regularExpression, String password) {
+        Pattern p2 = Pattern.compile(regularExpression);
+        Matcher m2 = p2.matcher(password);
+        return m2.matches();
     }
 
     /**
