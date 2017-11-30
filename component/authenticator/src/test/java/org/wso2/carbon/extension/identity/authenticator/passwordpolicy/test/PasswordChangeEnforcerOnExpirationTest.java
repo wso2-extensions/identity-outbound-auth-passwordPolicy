@@ -49,6 +49,7 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforceConstants;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforcerOnExpiration;
 import org.wso2.carbon.identity.policy.password.PasswordChangeUtils;
+import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -106,6 +107,9 @@ public class PasswordChangeEnforcerOnExpirationTest {
 
     @Mock
     private UserStoreManager userStoreManager;
+
+    @Mock
+    private RealmConfiguration realmConfiguration;
 
     @Mock
     private UserRealm userRealm;
@@ -286,6 +290,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
+        when(realmConfiguration.getUserStoreProperty("PasswordJavaRegEx")).thenReturn("^[\\S]{5,30}$");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("123456");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("456789");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn("456789");
