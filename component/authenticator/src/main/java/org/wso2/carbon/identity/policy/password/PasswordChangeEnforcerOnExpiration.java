@@ -44,6 +44,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * this connector must only be present in an authentication step, where the user
@@ -229,24 +231,45 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         }
         if (newPassword.equals(repeatPassword)) {
             try {
+                String regularExpression = userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx");
+                if(StringUtils.isNotEmpty(regularExpression)) {
+                    if(!isFormatCorrect(regularExpression, newPassword)){
+                        String errorMsg = userStoreManager.getRealmConfiguration()
+                                .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
+                        if(StringUtils.isNotEmpty(errorMsg)){
+                            if (log.isDebugEnabled()) {
+                                log.debug(errorMsg);
+                            }
+                            throw new AuthenticationFailedException(errorMsg);
+                        }
+                        if (log.isDebugEnabled()) {
+                            log.debug(
+                                "New password doesn't meet the policy requirement. It must be in the following format, "
+                                + regularExpression);
+                        }
+                        throw new AuthenticationFailedException(
+                                "New password doesn't meet the policy requirement. It must be in the following format, "
+                                + regularExpression);
+                    }
+                }
                 userStoreManager.updateCredential(tenantAwareUsername, newPassword, currentPassword);
                 if (log.isDebugEnabled()) {
                     log.debug("Updated user credentials of " + tenantAwareUsername);
                 }
             } catch (org.wso2.carbon.user.core.UserStoreException e) {
-                if(e.getCause() instanceof PrivilegedActionException) {
+                if(e.getMessage().contains("InvalidOperation")){
                     if (log.isDebugEnabled()) {
-                        log.debug("Credential not valid. Credential must be a non null string with following format, "
-                                + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
-                    }
-                    String errorMsg = userStoreManager.getRealmConfiguration()
-                            .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
-                    if (errorMsg != null) {
-                        throw new AuthenticationFailedException(errorMsg);
+                        log.debug("Invalid operation. User store is read only.", e);
                     }
                     throw new AuthenticationFailedException(
-                            "Credential not valid. Credential must be a non null string with following format, "
-                            + userStoreManager.getRealmConfiguration().getUserStoreProperty("PasswordJavaRegEx"));
+                            "Invalid operation. User store is read only", e);
+                }
+                if(e.getMessage().contains("PasswordInvalid")){
+                    if (log.isDebugEnabled()) {
+                        log.debug("Invalid credentials. Cannot proceed with the password change.", e);
+                    }
+                    throw new AuthenticationFailedException(
+                            "Invalid credentials. Cannot proceed with the password change.", e);
                 }
                 throw new AuthenticationFailedException("Error occurred while updating the password", e);
             }
@@ -255,6 +278,12 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         } else {
             throw new AuthenticationFailedException("The new password and confirmation password do not match");
         }
+    }
+
+    private boolean isFormatCorrect(String regularExpression, String password) {
+        Pattern p2 = Pattern.compile(regularExpression);
+        Matcher m2 = p2.matcher(password);
+        return m2.matches();
     }
 
     /**
