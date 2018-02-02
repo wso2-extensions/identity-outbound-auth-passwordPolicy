@@ -1,0 +1,11 @@
+instructions.configure = \
+org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/../../deployment/);\
+org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/../../deployment/server/);\
+org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/../../deployment/server/eventpublishers/);\
+org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/../../deployment/server/eventstreams/);\
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector_${feature.version}/PasswordPolicy-Publisher-wso2event-PasswordChanges.xml,target:${installFolder}/../../deployment/server/eventpublishers/PasswordPolicy-Publisher-wso2event-PasswordChanges.xml,overwrite:true);\
+org.eclipse.equinox.p2.touchpoint.natives.copy(source:${installFolder}/../features/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector_${feature.version}/org.wso2.carbon.identity.policy.password.PasswordChanges_1.0.0.json,target:${installFolder}/../../deployment/server/eventstreams/org.wso2.carbon.identity.policy.password.PasswordChanges_1.0.0.json,overwrite:true);\
+
+instructions.uninstall = \
+org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/../../deployment/server/eventpublishers/PasswordPolicy-Publisher-wso2event-PasswordChanges.xml,overwrite:true);\
+org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/../../deployment/server/eventstreams/org.wso2.carbon.identity.policy.password.PasswordChanges_1.0.0.json,overwrite:true);\
