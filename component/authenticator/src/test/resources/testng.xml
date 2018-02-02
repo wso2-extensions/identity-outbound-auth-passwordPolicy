@@ -4,7 +4,7 @@
     <test name="password-policy-authenticator-all" preserve-order="true" parallel="false">
         <classes>
             <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordChangeEnforcerOnExpirationTest"/>
-            <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordChangeUserOperationListenerTest"/>
+            <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordChangeHandlerTest"/>
         </classes>
     </test>
 </suite>

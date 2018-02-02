@@ -21,7 +21,6 @@ package org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
-
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.testng.PowerMockObjectFactory;
 import org.powermock.reflect.Whitebox;
@@ -33,7 +32,6 @@ import org.testng.annotations.ObjectFactory;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.ApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus;
-
 import org.wso2.carbon.identity.application.authentication.framework.LocalApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.config.ConfigurationFacade;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.AuthenticatorConfig;
@@ -41,7 +39,6 @@ import org.wso2.carbon.identity.application.authentication.framework.config.mode
 import org.wso2.carbon.identity.application.authentication.framework.config.model.StepConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
-
 import org.wso2.carbon.identity.application.authentication.framework.exception.LogoutFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
@@ -56,11 +53,10 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.nio.file.Paths;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
@@ -153,11 +149,11 @@ public class PasswordChangeEnforcerOnExpirationTest {
 
 
     @Test
-    public void testGetUsername() throws Exception {
+    public void testGetUser() throws Exception {
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "getUsername", context);
+        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "getUser", context);
     }
 
     @Test
@@ -190,7 +186,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
-        when(Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "getUsername", context)).
+        when(Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "getUser", context)).
                 thenReturn(user);
         AuthenticatorFlowStatus status = passwordChangeEnforcerOnExpiration.process(httpServletRequest,
                 httpServletResponse, context);
@@ -221,7 +217,6 @@ public class PasswordChangeEnforcerOnExpirationTest {
         AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         when(Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest", httpServletRequest,
                 httpServletResponse, context, ""))
                 .thenReturn(user);
@@ -265,7 +260,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
         when(userRealm.getUserStoreManager()
                 .getUserClaimValue(MultitenantUtils.getTenantAwareUsername("admin"),
-                        PasswordChangeUtils.LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM, null)).thenReturn("1461315067665");
+                        PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, null))
+                .thenReturn("1461315067665");
         when(ConfigurationFacade.getInstance()).thenReturn(configurationFacade);
         when(configurationFacade.getAuthenticationEndpointURL()).thenReturn("login.do");
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),

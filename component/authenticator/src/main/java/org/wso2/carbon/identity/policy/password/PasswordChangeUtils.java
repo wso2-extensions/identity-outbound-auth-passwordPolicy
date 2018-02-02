@@ -29,13 +29,9 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class PasswordChangeUtils {
-    public static final String IDM_PROPERTIES_FILE = "identity-mgt.properties";
-    public static final String PASSWORD_EXP_IN_DAYS = "Authentication.Policy.Password.Reset.Time.In.Days";
-    public static final String LAST_PASSWORD_CHANGED_TIMESTAMP_CLAIM = "http://wso2.org/claims/lastPasswordChangedTimestamp";
-    public static final int DEFAULT_PASSWORD_EXP_IN_DAYS = 30;
-    private static Properties properties = new Properties();
-
     private static final Log log = LogFactory.getLog(PasswordChangeUtils.class);
+
+    private static Properties properties = new Properties();
 
     static {
         loadProperties();
@@ -51,7 +47,7 @@ public class PasswordChangeUtils {
         FileInputStream fileInputStream = null;
         String configPath = CarbonUtils.getCarbonConfigDirPath() + File.separator + "identity" + File.separator;
         try {
-            configPath = configPath + IDM_PROPERTIES_FILE;
+            configPath = configPath + PasswordChangeEnforceConstants.IDM_PROPERTIES_FILE;
             fileInputStream = new FileInputStream(new File(configPath));
             properties.load(fileInputStream);
         } catch (FileNotFoundException e) {
@@ -73,17 +69,20 @@ public class PasswordChangeUtils {
      * Get the password expiration days.
      */
     public static int getPasswordExpirationInDays() {
-        if (properties.get(PASSWORD_EXP_IN_DAYS) != null) {
-            String passwordExpPropertyValue = (String) properties.get(PASSWORD_EXP_IN_DAYS);
+        if (properties.get(PasswordChangeEnforceConstants.CREDENTIAL_EXP_IN_DAYS) != null) {
+            String passwordExpPropertyValue =
+                    (String) properties.get(PasswordChangeEnforceConstants.CREDENTIAL_EXP_IN_DAYS);
             try {
                 return Integer.parseInt(passwordExpPropertyValue);
             } catch (NumberFormatException e) {
-                log.warn(String.format("Invalid value: %s for property %s. The password expiration time should be an " +
-                                       "integer. Returning default password expiration time: %d days.",
-                                       passwordExpPropertyValue, PASSWORD_EXP_IN_DAYS, DEFAULT_PASSWORD_EXP_IN_DAYS));
+                log.warn(String.format("Invalid value: %s for property %s. " +
+                                "The password expiration time should be an integer. " +
+                                "Returning default password expiration time: %d days.",
+                        passwordExpPropertyValue, PasswordChangeEnforceConstants.CREDENTIAL_EXP_IN_DAYS,
+                        PasswordChangeEnforceConstants.DEFAULT_CREDENTIAL_EXP_IN_DAYS));
             }
         }
 
-        return DEFAULT_PASSWORD_EXP_IN_DAYS;
+        return PasswordChangeEnforceConstants.DEFAULT_CREDENTIAL_EXP_IN_DAYS;
     }
 }

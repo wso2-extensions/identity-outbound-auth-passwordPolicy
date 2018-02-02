@@ -23,12 +23,14 @@
         <artifactId>wso2</artifactId>
         <version>1</version>
     </parent>
+
     <groupId>org.wso2.carbon.extension.identity.authenticator</groupId>
     <artifactId>org.wso2.carbon.extension.identity.authenticator.passwordpolicy</artifactId>
     <version>1.0.5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Extension - PasswordPolicy Pom</name>
     <url>http://wso2.org</url>
+
     <profiles>
         <profile>
             <id>default</id>
@@ -41,6 +43,7 @@
             </modules>
         </profile>
     </profiles>
+
     <dependencies>
         <dependency>
             <groupId>org.wso2.carbon.identity</groupId>
@@ -105,12 +108,12 @@
         <dependency>
             <groupId>org.apache.oltu.oauth2</groupId>
             <artifactId>org.apache.oltu.oauth2.client</artifactId>
-            <version>0.31</version>
+            <version>${apache.oltu.oauth2.client.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.oltu.oauth2</groupId>
             <artifactId>org.apache.oltu.oauth2.common</artifactId>
-            <version>1.0.1</version>
+            <version>${apache.oltu.oauth2.common.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity</groupId>
@@ -128,20 +131,36 @@
             <version>${carbon.kernel.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.analytics-common</groupId>
+            <artifactId>org.wso2.carbon.event.stream.core</artifactId>
+            <version>${carbon.analytics-common.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.json.wso2</groupId>
             <artifactId>json</artifactId>
             <version>${wso2.json}</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.core</artifactId>
+            <version>${carbon.identity.framework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.event</artifactId>
+            <version>${carbon.identity.framework.version}</version>
+        </dependency>
     </dependencies>
+
     <scm>
-        <connection>scm:git:https://github.com/wso2-extensions/identity-outbound-auth-passwordpolicy.git
-        </connection>
+        <connection>scm:git:https://github.com/wso2-extensions/identity-outbound-auth-passwordpolicy.git</connection>
         <url>https://github.com/wso2-extensions/identity-outbound-auth-passwordpolicy.git</url>
         <developerConnection>
             scm:git:https://github.com/wso2-extensions/identity-outbound-auth-passwordpolicy
         </developerConnection>
         <tag>HEAD</tag>
     </scm>
+
     <build>
         <extensions>
             <extension>
@@ -186,6 +205,7 @@
                 </configuration>
             </plugin>
         </plugins>
+
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -236,6 +256,7 @@
             </plugins>
         </pluginManagement>
     </build>
+
     <pluginRepositories>
         <pluginRepository>
             <id>wso2.releases</id>
@@ -270,6 +291,7 @@
             </releases>
         </pluginRepository>
     </pluginRepositories>
+
     <repositories>
         <repository>
             <id>wso2-nexus</id>
@@ -304,6 +326,7 @@
             </releases>
         </repository>
     </repositories>
+
     <distributionManagement>
         <repository>
             <id>nexus-releases</id>
@@ -316,8 +339,10 @@
             <url>http://maven.wso2.org/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
+
     <properties>
         <carbon.identity.version>5.0.7</carbon.identity.version>
+        <carbon.identity.framework.version>5.5.0</carbon.identity.framework.version>
         <commons-logging.version>4.4.3</commons-logging.version>
         <carbon.kernel.version>4.4.3</carbon.kernel.version>
         <oltu.version>1.0.0.wso2v2</oltu.version>
@@ -330,6 +355,9 @@
         <mockito.version>1.10.19</mockito.version>
         <powermock.version>1.6.5</powermock.version>
         <slf4j.version>1.5.6</slf4j.version>
+        <carbon.analytics-common.version>5.0.11</carbon.analytics-common.version>
         <carbon.identity.package.import.version.range>[5.0.0, 6.0.0)</carbon.identity.package.import.version.range>
+        <apache.oltu.oauth2.client.version>0.31</apache.oltu.oauth2.client.version>
+        <apache.oltu.oauth2.common.version>1.0.1</apache.oltu.oauth2.common.version>
     </properties>
 </project>

@@ -22,39 +22,20 @@ package org.wso2.carbon.identity.policy.password.internal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
+import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.ApplicationAuthenticator;
+import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforcerOnExpiration;
-import org.wso2.carbon.identity.policy.password.PasswordChangeUserOperationListener;
-import org.wso2.carbon.user.core.listener.UserOperationEventListener;
-import org.wso2.carbon.user.core.service.RealmService;
-
-import java.util.Hashtable;
+import org.wso2.carbon.identity.policy.password.PasswordChangeHandler;
 
 /**
  * @scr.component name="org.wso2.carbon.identity.policy.password.component" immediate="true"
+ * @scr.reference name="eventStreamManager.service"
+ * interface="org.wso2.carbon.event.stream.core.EventStreamService" cardinality="1..1"
+ * policy="dynamic" bind="setEventStreamService" unbind="unsetEventStreamService"
  */
 public class PasswordResetEnforcerServiceComponent {
-
     private static Log log = LogFactory.getLog(PasswordResetEnforcerServiceComponent.class);
-
-    private static RealmService realmService;
-
-    /**
-     * @return get the realm service
-     */
-    public static RealmService getRealmService() {
-        return realmService;
-    }
-
-    /**
-     * @param realmService realm service
-     */
-    protected void setRealmService(RealmService realmService) {
-        if (log.isDebugEnabled()) {
-            log.debug("Setting the Realm Service");
-        }
-        PasswordResetEnforcerServiceComponent.realmService = realmService;
-    }
 
     /**
      * Activate the application authenticator and user operation event listener event components
@@ -64,13 +45,15 @@ public class PasswordResetEnforcerServiceComponent {
     protected void activate(ComponentContext ctxt) {
         try {
             // register the connector to enforce password change upon expiration.
-            PasswordChangeEnforcerOnExpiration authenticator = new PasswordChangeEnforcerOnExpiration();
-            Hashtable<String, String> props = new Hashtable<String, String>();
-            ctxt.getBundleContext().registerService(ApplicationAuthenticator.class.getName(), authenticator, props);
+            ctxt.getBundleContext()
+                    .registerService(ApplicationAuthenticator.class.getName(),
+                            new PasswordChangeEnforcerOnExpiration(), null);
 
-            // register the n to capture password change events.
-            ctxt.getBundleContext().registerService(UserOperationEventListener.class.getName(),
-                    new PasswordChangeUserOperationListener(), props);
+            // register the listener to capture password change events.
+            ctxt.getBundleContext()
+                    .registerService(AbstractEventHandler.class.getName(),
+                            new PasswordChangeHandler(), null);
+
             if (log.isDebugEnabled()) {
                 log.debug("PasswordChangeEnforcerOnExpiration handler is activated");
             }
@@ -90,15 +73,11 @@ public class PasswordResetEnforcerServiceComponent {
         }
     }
 
-    /**
-     * Un setting the realm service
-     *
-     * @param realmService the realm service.
-     */
-    protected void unsetRealmService(RealmService realmService) {
-        if (log.isDebugEnabled()) {
-            log.debug("Un setting the Realm Service");
-        }
-        PasswordResetEnforcerServiceComponent.realmService = null;
+    protected void setEventStreamService(EventStreamService eventStreamService) {
+        PasswordResetEnforcerDataHolder.getInstance().setEventStreamService(eventStreamService);
+    }
+
+    protected void unsetEventStreamService(EventStreamService eventStreamService) {
+        PasswordResetEnforcerDataHolder.getInstance().setEventStreamService(eventStreamService);
     }
 }
