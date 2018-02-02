@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="PasswordChangesEventReceiver" version="1.0.0" type="event/receiver"
+          serverRole="ComplexEventProcessor">
+    <file>PasswordRotationPolicy-Receiver-wso2event-PasswordChanges-1.0.0.xml</file>
+</artifact>

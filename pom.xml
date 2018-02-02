@@ -41,6 +41,7 @@
             <modules>
                 <module>component/authenticator</module>
                 <module>feature/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.feature</module>
+                <module>feature/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.analytics.feature</module>
             </modules>
         </profile>
     </profiles>

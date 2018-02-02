@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifact name="PasswordChangesEventStream" version="1.0.0" type="event/stream"
+          serverRole="ComplexEventProcessor">
+    <file>org.wso2.carbon.identity.policy.password.PasswordChanges-1.0.0.json</file>
+</artifact>

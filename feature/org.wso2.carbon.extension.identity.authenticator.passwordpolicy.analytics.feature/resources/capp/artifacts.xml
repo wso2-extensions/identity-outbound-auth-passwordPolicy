@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+    <artifact name="analytics-capp" version="1.0.5-SNAPSHOT" type="carbon/application">
+        <dependency artifact="EmailNotificationEventPublisher" version="1.0.0" include="true"
+                    serverRole="ComplexEventProcessor"/>
+        <dependency artifact="PasswordChangesEventReceiver" version="1.0.0" include="true"
+                    serverRole="ComplexEventProcessor"/>
+        <dependency artifact="ExpiredPasswordsEventStream" version="1.0.0" include="true"
+                    serverRole="ComplexEventProcessor"/>
+        <dependency artifact="PasswordChangesEventStream" version="1.0.0" include="true"
+                    serverRole="ComplexEventProcessor"/>
+    </artifact>
+</artifacts>
