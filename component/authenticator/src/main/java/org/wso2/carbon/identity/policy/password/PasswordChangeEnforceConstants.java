@@ -26,9 +26,11 @@ public class PasswordChangeEnforceConstants {
     public static final String AUTHENTICATOR_NAME = "password-reset-enforcer";
     public static final String AUTHENTICATOR_TYPE = "LOCAL";
     public static final String STATE = "state";
+
     public static final String CURRENT_PWD = "CURRENT_PWD";
     public static final String NEW_PWD = "NEW_PWD";
     public static final String NEW_PWD_CONFIRMATION = "NEW_PWD_CONFIRMATION";
+
     public static final String IDM_PROPERTIES_FILE = "identity-mgt.properties";
     public static final String CREDENTIAL_EXP_IN_DAYS = "Authentication.Policy.Password.Reset.Time.In.Days";
     public static final int DEFAULT_CREDENTIAL_EXP_IN_DAYS = 30;
@@ -37,7 +39,7 @@ public class PasswordChangeEnforceConstants {
             "http://wso2.org/claims/lastPasswordChangedTimestamp";
     public static final String EMAIL_ADDRESS_CLAIM = "http://wso2.org/claims/emailaddress";
 
-    public static final String PWD_CHANGE_STREAM_NAME =
+    public static final String PASSWORD_CHANGE_STREAM_NAME =
             "org.wso2.carbon.identity.policy.password.PasswordChanges:1.0.0";
     public static final String PASSWORD_CHANGE_EVENT_HANDLER_NAME = "passwordChangeEventHandler";
 

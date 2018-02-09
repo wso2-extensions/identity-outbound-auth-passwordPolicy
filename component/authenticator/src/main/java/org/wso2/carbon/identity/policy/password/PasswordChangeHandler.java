@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
-import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.policy.password.internal.PasswordResetEnforcerDataHolder;
@@ -35,14 +34,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * the responsibility of this class is to update the user claim
- * http://wso2.org/claims/lastPasswordChangedTimestamp upon the password change.
+ * This updates the http://wso2.org/claims/lastPasswordChangedTimestamp claim upon the password change.
+ * This also publishes the password change event to IS Analytics.
  */
 public class PasswordChangeHandler extends AbstractEventHandler {
     private static Log log = LogFactory.getLog(PasswordChangeHandler.class);
 
     @Override
-    public void handleEvent(Event event) throws IdentityEventException {
+    public void handleEvent(Event event) {
         // Fetching event properties
         String username = (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_NAME);
         int tenantId = (int) event.getEventProperties().get(IdentityEventConstants.EventProperty.TENANT_ID);
@@ -53,17 +52,15 @@ public class PasswordChangeHandler extends AbstractEventHandler {
         long timestamp = System.currentTimeMillis();
 
         // Updating the last password changed claim
-        Map<String, String> claimMap = new HashMap<>(); claimMap.put(PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, Long.toString(timestamp));
+        Map<String, String> claimMap = new HashMap<>();
+        claimMap.put(PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, Long.toString(timestamp));
         try {
             userStoreManager.setUserClaimValues(username, claimMap, null);
+            log.debug("The claim uri " + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM
+                    + " of " + username + " updated with the current timestamp");
         } catch (UserStoreException e) {
             log.error("Failed to update claim value for "
                     + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM + " claim", e);
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("The claim uri " + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM
-                    + " of " + username + " updated with the current timestamp");
         }
 
         publishToISAnalytics(username, userStoreDomain, tenantId, userStoreManager, timestamp);
@@ -80,9 +77,9 @@ public class PasswordChangeHandler extends AbstractEventHandler {
      */
     private void publishToISAnalytics(String username, String userStoreDomain, int tenantId,
                                       UserStoreManager userStoreManager, long timestamp) {
+        // Fetching the email
         String email = null;
         try {
-
             String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
             email = userStoreManager.getUserClaimValue(tenantAwareUsername,
                     PasswordChangeEnforceConstants.EMAIL_ADDRESS_CLAIM, null);
@@ -95,7 +92,7 @@ public class PasswordChangeHandler extends AbstractEventHandler {
         // Creating the event to be sent
         org.wso2.carbon.databridge.commons.Event dataBridgeEvent = new org.wso2.carbon.databridge.commons.Event();
         dataBridgeEvent.setTimeStamp(System.currentTimeMillis());
-        dataBridgeEvent.setStreamId(PasswordChangeEnforceConstants.PWD_CHANGE_STREAM_NAME);
+        dataBridgeEvent.setStreamId(PasswordChangeEnforceConstants.PASSWORD_CHANGE_STREAM_NAME);
 
         // Creating the payload data
         Object[] payloadData = new Object[5];
@@ -107,6 +104,7 @@ public class PasswordChangeHandler extends AbstractEventHandler {
         dataBridgeEvent.setPayloadData(payloadData);
 
         service.publish(dataBridgeEvent);
+        log.debug("Published " + dataBridgeEvent.toString() + " to IS Analytics");
     }
 
     @Override

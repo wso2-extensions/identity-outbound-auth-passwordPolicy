@@ -26,7 +26,6 @@ import org.powermock.modules.testng.PowerMockObjectFactory;
 import org.powermock.reflect.Whitebox;
 import org.testng.Assert;
 import org.testng.IObjectFactory;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.ObjectFactory;
 import org.testng.annotations.Test;
@@ -45,9 +44,9 @@ import org.wso2.carbon.identity.application.authentication.framework.util.Framew
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforceConstants;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforcerOnExpiration;
-import org.wso2.carbon.identity.policy.password.PasswordChangeUtils;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserRealm;
+import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.CarbonUtils;
@@ -59,6 +58,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -89,9 +89,6 @@ public class PasswordChangeEnforcerOnExpirationTest {
     @Mock
     private StepConfig stepConfig;
 
-    @Spy
-    private PasswordChangeEnforcerOnExpiration spy;
-
     @Mock
     private AuthenticatorConfig authenticatorConfig;
 
@@ -114,13 +111,9 @@ public class PasswordChangeEnforcerOnExpirationTest {
     private RealmService realmService;
 
     @BeforeMethod
-    public void setUp() throws Exception {
+    public void setUp() {
         passwordChangeEnforcerOnExpiration = new PasswordChangeEnforcerOnExpiration();
         initMocks(this);
-    }
-
-    @AfterMethod
-    public void tearDown() throws Exception {
     }
 
     @Test
@@ -217,7 +210,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
-        when(Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest", httpServletRequest,
+        when(Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
                 httpServletResponse, context, ""))
                 .thenReturn(user);
 
@@ -232,7 +225,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
         when(stepConfig.getAuthenticatedUser()).thenReturn(user);
-        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest", httpServletRequest,
+        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
                 httpServletResponse, context, "");
         AuthenticatorFlowStatus status = AuthenticatorFlowStatus.SUCCESS_COMPLETED;
         Assert.assertEquals(status, AuthenticatorFlowStatus.SUCCESS_COMPLETED);
@@ -267,7 +260,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn(null);
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest", httpServletRequest,
+        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
                 httpServletResponse, context, "");
         verify(httpServletResponse).sendRedirect(captor.capture());
         Assert.assertTrue(captor.getValue().contains(PasswordChangeEnforceConstants.AUTHENTICATOR_NAME));
@@ -291,6 +284,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("123456");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("456789");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn("456789");
+
         Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "processAuthenticationResponse",
                 httpServletRequest, httpServletResponse, context);
     }
@@ -311,6 +305,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn(null);
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn(null);
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn(null);
+
         Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "processAuthenticationResponse",
                 httpServletRequest, httpServletResponse, context);
     }
@@ -331,6 +326,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn("12345");
+
         Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "processAuthenticationResponse",
                 httpServletRequest, httpServletResponse, context);
     }
@@ -351,6 +347,105 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("456789");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn("12345");
+
+        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "processAuthenticationResponse",
+                httpServletRequest, httpServletResponse, context);
+    }
+
+    @Test(expectedExceptions = {AuthenticationFailedException.class})
+    public void testProcessResponseWithEmptyPassword() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+
+        when(context.getSequenceConfig()).thenReturn(sequenceConfig);
+        when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
+        when(mockedMap.get(anyObject())).thenReturn(stepConfig);
+        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
+        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
+        when(realmConfiguration.getUserStoreProperty("PasswordJavaRegEx")).thenReturn("^[\\S]{5,30}$");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("12345");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn("");
+
+        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "processAuthenticationResponse",
+                httpServletRequest, httpServletResponse, context);
+    }
+
+    @Test(expectedExceptions = {AuthenticationFailedException.class})
+    public void testProcessResponseWithInvalidPasswordFormat() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+
+        when(context.getSequenceConfig()).thenReturn(sequenceConfig);
+        when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
+        when(mockedMap.get(anyObject())).thenReturn(stepConfig);
+        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
+        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
+        when(realmConfiguration.getUserStoreProperty("PasswordJavaRegEx")).thenReturn("^[\\S]{5,30}$");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("12345");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("123");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn("123");
+
+        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "processAuthenticationResponse",
+                httpServletRequest, httpServletResponse, context);
+    }
+
+    @Test(expectedExceptions = {AuthenticationFailedException.class})
+    public void testProcessResponseWithInvalidOperation() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+
+        when(context.getSequenceConfig()).thenReturn(sequenceConfig);
+        when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
+        when(mockedMap.get(anyObject())).thenReturn(stepConfig);
+        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
+        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
+        when(realmConfiguration.getUserStoreProperty("PasswordJavaRegEx")).thenReturn("^[\\S]{5,30}$");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("12345");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("123456");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn("123456");
+
+        doThrow(new UserStoreException("InvalidOperation dummy exception"))
+                .when(userStoreManager).updateCredential("admin", "123456", "12345");
+
+        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "processAuthenticationResponse",
+                httpServletRequest, httpServletResponse, context);
+    }
+
+    @Test(expectedExceptions = {AuthenticationFailedException.class})
+    public void testProcessResponseWithInvalidCurrentPassword() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+
+        when(context.getSequenceConfig()).thenReturn(sequenceConfig);
+        when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
+        when(mockedMap.get(anyObject())).thenReturn(stepConfig);
+        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
+        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
+        when(realmConfiguration.getUserStoreProperty("PasswordJavaRegEx")).thenReturn("^[\\S]{5,30}$");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("12345");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("123456");
+        when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION)).thenReturn("123456");
+
+        doThrow(new UserStoreException("PasswordInvalid dummy exception"))
+                .when(userStoreManager).updateCredential("admin", "123456", "12345");
+
         Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "processAuthenticationResponse",
                 httpServletRequest, httpServletResponse, context);
     }
