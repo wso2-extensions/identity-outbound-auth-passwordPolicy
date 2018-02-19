@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
+import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforceConstants;
 import org.wso2.carbon.identity.policy.password.PasswordChangeHandler;
@@ -93,7 +94,11 @@ public class PasswordChangeHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_ID, -1234);
 
-        passwordChangeHandler.handleEvent(event);   // Shouldn't throw user store exception
+        try {
+            passwordChangeHandler.handleEvent(event);   // Shouldn't throw user store exception
+        } catch (IdentityEventException e) {
+            Assert.fail("The authenticator failed the authentication flow");
+        }
     }
 
     @Test
@@ -113,7 +118,11 @@ public class PasswordChangeHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_ID, -1234);
 
-        passwordChangeHandler.handleEvent(event);   // Shouldn't throw user store exception
+        try {
+            passwordChangeHandler.handleEvent(event);   // Shouldn't throw user store exception
+        } catch (IdentityEventException e) {
+            Assert.fail("The authenticator failed the authentication flow");
+        }
     }
 
     @Test
@@ -133,7 +142,11 @@ public class PasswordChangeHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_ID, -1234);
 
-        passwordChangeHandler.handleEvent(event);   // Shouldn't throw user store exception
+        try {
+            passwordChangeHandler.handleEvent(event);   // Shouldn't throw user store exception
+        } catch (IdentityEventException e) {
+            Assert.fail("The authenticator failed the authentication flow");
+        }
     }
 
     @Test
@@ -182,7 +195,11 @@ public class PasswordChangeHandlerTest {
                 .getUserClaimValue(eq(MultitenantUtils.getTenantAwareUsername("user")),
                         eq(PasswordChangeEnforceConstants.EMAIL_ADDRESS_CLAIM), isNull(String.class));
 
-        passwordChangeHandler.handleEvent(event);   // Shouldn't throw user store exception
+        try {
+            passwordChangeHandler.handleEvent(event);   // Shouldn't throw user store exception
+        } catch (IdentityEventException e) {
+            Assert.fail("The authenticator failed the authentication flow");
+        }
 
         verify(eventStreamService, times(1)).publish(any(org.wso2.carbon.databridge.commons.Event.class));
     }

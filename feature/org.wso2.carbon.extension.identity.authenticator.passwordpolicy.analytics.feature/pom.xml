@@ -36,23 +36,6 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
-                    <execution>
-                        <phase>process-resources</phase>
-                        <configuration>
-                            <target>
-                                <ant antfile="build.xml" target="zip" />
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
@@ -69,6 +52,7 @@
                                     <includes>
                                         <include>p2.inf</include>
                                         <include>templates/Password-Rotation-Policy-Notifications.xml</include>
+                                        <include>PasswordRotationPolicy-Publisher-email-ExpiredPasswords-1.0.0.xml</include>
                                         <include>../${project.build.directory}/password_rotation_policy-1.0.0.car</include>
                                     </includes>
                                 </resource>
@@ -105,6 +89,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <target>
+                                <ant antfile="build.xml" target="zip" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                     <execution>
                         <id>clean_target</id>
                         <phase>install</phase>

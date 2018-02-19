@@ -20,6 +20,9 @@ package org.wso2.carbon.identity.policy.password.internal;
 
 import org.wso2.carbon.event.stream.core.EventStreamService;
 
+/**
+ * The data holder for the password reset enforcer.
+ */
 public class PasswordResetEnforcerDataHolder {
     private static PasswordResetEnforcerDataHolder instance;
 

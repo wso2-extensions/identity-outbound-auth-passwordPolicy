@@ -36,7 +36,7 @@ public class PasswordChangeEnforceConstants {
     public static final int DEFAULT_CREDENTIAL_EXP_IN_DAYS = 30;
 
     public static final String LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM =
-            "http://wso2.org/claims/lastPasswordChangedTimestamp";
+            "http://wso2.org/claims/identity/lastPasswordUpdateTime";
     public static final String EMAIL_ADDRESS_CLAIM = "http://wso2.org/claims/emailaddress";
 
     public static final String PASSWORD_CHANGE_STREAM_NAME =

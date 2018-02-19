@@ -54,7 +54,9 @@ public class PasswordResetEnforcerServiceComponent {
                     .registerService(AbstractEventHandler.class.getName(),
                             new PasswordChangeHandler(), null);
 
-            log.debug("PasswordChangeEnforcerOnExpiration handler is activated");
+            if (log.isDebugEnabled()) {
+                log.debug("PasswordChangeEnforcerOnExpiration handler is activated");
+            }
         } catch (Throwable e) {
             log.fatal("Error while activating the PasswordChangeEnforcerOnExpiration handler ", e);
         }
@@ -66,7 +68,9 @@ public class PasswordResetEnforcerServiceComponent {
      * @param ctxt the component context.
      */
     protected void deactivate(ComponentContext ctxt) {
-        log.debug("PasswordChangeEnforcerOnExpiration is deactivated");
+        if (log.isDebugEnabled()) {
+            log.debug("PasswordChangeEnforcerOnExpiration is deactivated");
+        }
     }
 
     protected void setEventStreamService(EventStreamService eventStreamService) {
@@ -74,6 +78,6 @@ public class PasswordResetEnforcerServiceComponent {
     }
 
     protected void unsetEventStreamService(EventStreamService eventStreamService) {
-        PasswordResetEnforcerDataHolder.getInstance().setEventStreamService(eventStreamService);
+        PasswordResetEnforcerDataHolder.getInstance().setEventStreamService(null);
     }
 }

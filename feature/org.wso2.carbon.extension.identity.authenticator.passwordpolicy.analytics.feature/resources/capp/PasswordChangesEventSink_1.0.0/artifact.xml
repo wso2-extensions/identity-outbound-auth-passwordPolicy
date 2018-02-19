@@ -17,7 +17,6 @@
   ~ under the License.
   -->
 
-<artifact name="PasswordChangesEventStream" version="1.0.0" type="event/stream"
-          serverRole="ComplexEventProcessor">
-    <file>org.wso2.carbon.identity.policy.password.PasswordChanges-1.0.0.json</file>
+<artifact name="PasswordChangesEventSink" version="1.0.0" type="analytics/eventstore" serverRole="DataAnalyticsServer">
+    <file>org_wso2_carbon_identity_policy_password_PasswordChanges.xml</file>
 </artifact>

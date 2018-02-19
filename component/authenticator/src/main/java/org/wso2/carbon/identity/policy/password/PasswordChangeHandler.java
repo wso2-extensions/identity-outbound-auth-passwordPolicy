@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
+import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.policy.password.internal.PasswordResetEnforcerDataHolder;
@@ -34,17 +35,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Event Handler class which handles password update by user, password update by admin and add user events.
+ * <p>
  * This updates the http://wso2.org/claims/lastPasswordChangedTimestamp claim upon the password change.
  * This also publishes the password change event to IS Analytics.
  */
 public class PasswordChangeHandler extends AbstractEventHandler {
-    private static Log log = LogFactory.getLog(PasswordChangeHandler.class);
+    private static final Log log = LogFactory.getLog(PasswordChangeHandler.class);
 
     @Override
-    public void handleEvent(Event event) {
+    public void handleEvent(Event event) throws IdentityEventException {
         // Fetching event properties
         String username = (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_NAME);
-        int tenantId = (int) event.getEventProperties().get(IdentityEventConstants.EventProperty.TENANT_ID);
+        String tenantDomain = (String) event.getEventProperties()
+                .get(IdentityEventConstants.EventProperty.TENANT_DOMAIN);
         UserStoreManager userStoreManager = (UserStoreManager) event.getEventProperties()
                 .get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
 
@@ -56,14 +60,17 @@ public class PasswordChangeHandler extends AbstractEventHandler {
         claimMap.put(PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, Long.toString(timestamp));
         try {
             userStoreManager.setUserClaimValues(username, claimMap, null);
-            log.debug("The claim uri " + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM
-                    + " of " + username + " updated with the current timestamp");
+            if (log.isDebugEnabled()) {
+                log.debug("The claim uri " + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM
+                        + " of " + username + " updated with the current timestamp");
+            }
         } catch (UserStoreException e) {
             log.error("Failed to update claim value for "
-                    + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM + " claim", e);
+                    + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM
+                    + " claim due to " + e.getMessage(), e);
         }
 
-        publishToISAnalytics(username, userStoreDomain, tenantId, userStoreManager, timestamp);
+        publishToISAnalytics(username, userStoreDomain, tenantDomain, userStoreManager, timestamp);
     }
 
     /**
@@ -71,11 +78,11 @@ public class PasswordChangeHandler extends AbstractEventHandler {
      *
      * @param username         The username of the user
      * @param userStoreDomain  The user store domain of the user
-     * @param tenantId         The tenantID of the user
+     * @param tenantDomain     The tenant domain of the user
      * @param userStoreManager The user store manager of the user
      * @param timestamp        The password changed timestamp
      */
-    private void publishToISAnalytics(String username, String userStoreDomain, int tenantId,
+    private void publishToISAnalytics(String username, String userStoreDomain, String tenantDomain,
                                       UserStoreManager userStoreManager, long timestamp) {
         // Fetching the email
         String email = null;
@@ -84,19 +91,19 @@ public class PasswordChangeHandler extends AbstractEventHandler {
             email = userStoreManager.getUserClaimValue(tenantAwareUsername,
                     PasswordChangeEnforceConstants.EMAIL_ADDRESS_CLAIM, null);
         } catch (UserStoreException e) {
-            log.error("Failed to fetch the tenant ID", e);
+            log.error("Failed to fetch the email due to " + e.getMessage(), e);
         }
 
         EventStreamService service = PasswordResetEnforcerDataHolder.getInstance().getEventStreamService();
 
         // Creating the event to be sent
         org.wso2.carbon.databridge.commons.Event dataBridgeEvent = new org.wso2.carbon.databridge.commons.Event();
-        dataBridgeEvent.setTimeStamp(System.currentTimeMillis());
+        dataBridgeEvent.setTimeStamp(timestamp);
         dataBridgeEvent.setStreamId(PasswordChangeEnforceConstants.PASSWORD_CHANGE_STREAM_NAME);
 
         // Creating the payload data
         Object[] payloadData = new Object[5];
-        payloadData[0] = tenantId;
+        payloadData[0] = tenantDomain;
         payloadData[1] = userStoreDomain;
         payloadData[2] = username;
         payloadData[3] = email;
@@ -104,7 +111,9 @@ public class PasswordChangeHandler extends AbstractEventHandler {
         dataBridgeEvent.setPayloadData(payloadData);
 
         service.publish(dataBridgeEvent);
-        log.debug("Published " + dataBridgeEvent.toString() + " to IS Analytics");
+        if (log.isDebugEnabled()) {
+            log.debug("Published " + dataBridgeEvent.toString() + " to IS Analytics");
+        }
     }
 
     @Override

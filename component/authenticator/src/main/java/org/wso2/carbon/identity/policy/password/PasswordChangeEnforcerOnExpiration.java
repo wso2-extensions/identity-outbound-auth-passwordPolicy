@@ -40,6 +40,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
@@ -110,7 +111,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
     private AuthenticatorFlowStatus initiateAuthRequest(HttpServletResponse response, AuthenticationContext context,
                                                         String errorMessage)
             throws AuthenticationFailedException {
-        // find the authenticated user.
+        // Find the authenticated user.
         AuthenticatedUser authenticatedUser = getUser(context);
         StepConfig stepConfig = context.getSequenceConfig().getStepMap().get(context.getCurrentStep() - 1);
 
@@ -127,7 +128,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
 
             if (hadPasswordExpired(tenantDomain, tenantAwareUsername)) {
-                // The password has changed or the password changed time is not set
+                // The password has expired or the password changed time is not set
                 try {
                     // Creating the URL to which the user will be redirected
                     String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
@@ -202,10 +203,14 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
 
                 // Since password is valid updating credentials
                 userStoreManager.updateCredential(tenantAwareUsername, newPassword, currentPassword);
-                log.debug("Updated user credentials of " + tenantAwareUsername);
+                if (log.isDebugEnabled()) {
+                    log.debug("Updated user credentials of " + tenantAwareUsername);
+                }
             } catch (UserStoreException e) {
                 String errorMessage = getAuthenticationErrorMessage(e);
-                log.debug(errorMessage, e);
+                if (log.isDebugEnabled()) {
+                    log.debug(errorMessage, e);
+                }
                 throw new AuthenticationFailedException(errorMessage, e);
             }
 
@@ -275,14 +280,16 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         if (StringUtils.isNotEmpty(regularExpression) && !isFormatCorrect(regularExpression, password)) {
             String errorMsg = userStoreManager.getRealmConfiguration()
                     .getUserStoreProperty("PasswordJavaRegExViolationErrorMsg");
-            if (StringUtils.isNotEmpty(errorMsg)) {
-                log.debug(errorMsg);
-                throw new AuthenticationFailedException(errorMsg);
+
+            if (StringUtils.isEmpty(errorMsg)) {
+                errorMsg = "New password doesn't meet the policy requirement. " +
+                        "It must be in the following format, " + regularExpression;
             }
-            log.debug("New password doesn't meet the policy requirement. " +
-                    "It must be in the following format, " + regularExpression);
-            throw new AuthenticationFailedException("New password doesn't meet the policy requirement. " +
-                    "It must be in the following format, " + regularExpression);
+
+            if (log.isDebugEnabled()) {
+                log.debug(errorMsg);
+            }
+            throw new AuthenticationFailedException(errorMsg);
         }
     }
 
@@ -335,9 +342,9 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
      */
     private void updateAuthenticatedUserInStepConfig(AuthenticationContext context,
                                                      AuthenticatedUser authenticatedUser) {
-        for (int i = 1; i <= context.getSequenceConfig().getStepMap().size(); i++) {
-            StepConfig stepConfig = context.getSequenceConfig().getStepMap().get(i);
-            stepConfig.setAuthenticatedUser(authenticatedUser);
+        Map<Integer, StepConfig> stepConfigMap = context.getSequenceConfig().getStepMap();
+        for (int i = 1; i <= stepConfigMap.size(); i++) {
+            stepConfigMap.get(i).setAuthenticatedUser(authenticatedUser);
         }
         context.setSubject(authenticatedUser);
     }
