@@ -30,7 +30,10 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
+import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.governance.IdentityGovernanceException;
+import org.wso2.carbon.identity.policy.password.internal.PasswordResetEnforcerDataHolder;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -69,7 +72,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
 
     @Override
     public String getFriendlyName() {
-        return PasswordChangeEnforceConstants.AUTHENTICATOR_NAME;
+        return PasswordChangeEnforceConstants.AUTHENTICATOR_FRIENDLY_NAME;
     }
 
     @Override
@@ -262,8 +265,28 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
             daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
         }
-        return (daysDifference > PasswordChangeUtils.getPasswordExpirationInDays() ||
-                passwordLastChangedTime == null);
+
+        // Retrieving properties set in identity event properties
+        Property[] identityProperties = null;
+        try {
+            identityProperties = PasswordResetEnforcerDataHolder.getInstance().getIdentityGovernanceService()
+                    .getConfiguration(PasswordChangeUtils.getPasswordExpiryPropertyNames(), tenantDomain);
+        } catch (IdentityGovernanceException e) {
+            log.warn("Error while retrieving password expiry properties. Using default property values.", e);
+        }
+
+        // Getting the password expiry in days
+        int passwordExpiryInDays = PasswordChangeEnforceConstants.DEFAULT_CREDENTIAL_EXP_IN_DAYS;
+        if (identityProperties != null) {
+            for (Property identityProperty : identityProperties) {
+                if (PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS
+                        .equals(identityProperty.getName())) {
+                    passwordExpiryInDays = Integer.parseInt(identityProperty.getValue());
+                }
+            }
+        }
+
+        return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
     }
 
     /**

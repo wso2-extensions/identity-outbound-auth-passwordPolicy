@@ -22,6 +22,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.testng.PowerMockObjectFactory;
+import org.powermock.reflect.Whitebox;
 import org.testng.Assert;
 import org.testng.IObjectFactory;
 import org.testng.annotations.BeforeMethod;
@@ -31,7 +32,9 @@ import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.event.event.Event;
+import org.wso2.carbon.identity.governance.IdentityGovernanceException;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforceConstants;
 import org.wso2.carbon.identity.policy.password.PasswordChangeHandler;
 import org.wso2.carbon.identity.policy.password.internal.PasswordResetEnforcerDataHolder;
@@ -43,11 +46,13 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.util.Map;
+import java.util.Properties;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -208,6 +213,80 @@ public class PasswordChangeHandlerTest {
     public void testGetName() {
         Assert.assertEquals(passwordChangeHandler.getName(),
                 PasswordChangeEnforceConstants.PASSWORD_CHANGE_EVENT_HANDLER_NAME);
+    }
+
+    @Test
+    public void testGetFriendlyName() {
+        Assert.assertEquals(passwordChangeHandler.getFriendlyName(),
+                PasswordChangeEnforceConstants.CONNECTOR_CONFIG_FRIENDLY_NAME);
+    }
+
+    @Test
+    public void testGetCategory() {
+        Assert.assertEquals(passwordChangeHandler.getCategory(),
+                PasswordChangeEnforceConstants.CONNECTOR_CONFIG_CATEGORY);
+    }
+
+    @Test
+    public void testGetSubCategory() {
+        Assert.assertEquals(passwordChangeHandler.getSubCategory(),
+                PasswordChangeEnforceConstants.CONNECTOR_CONFIG_SUB_CATEGORY);
+    }
+
+    @Test
+    public void testGetOrder() {
+        Assert.assertEquals(passwordChangeHandler.getOrder(), 0);
+    }
+
+    @Test
+    public void testGetPropertyNameMapping() {
+        Map<String, String> propertyNameMapping = passwordChangeHandler.getPropertyNameMapping();
+        Assert.assertEquals(propertyNameMapping.size(), 1);
+        Assert.assertEquals(
+                propertyNameMapping.get(PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS),
+                PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DISPLAYED_NAME
+        );
+    }
+
+    @Test
+    public void testGetPropertyDescriptionMapping() {
+        Map<String, String> propertyDescriptionMapping = passwordChangeHandler.getPropertyDescriptionMapping();
+        Assert.assertEquals(propertyDescriptionMapping.size(), 1);
+        Assert.assertEquals(
+                propertyDescriptionMapping.get(PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS),
+                PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DESCRIPTION
+        );
+    }
+
+    @Test
+    public void testGetPropertyNames() {
+        String[] propertyNames = passwordChangeHandler.getPropertyNames();
+        Assert.assertEquals(propertyNames.length, 1);
+        Assert.assertEquals(propertyNames[0], PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+    }
+
+    @Test
+    public void testGetDefaultPropertyValues() throws IdentityGovernanceException {
+        ModuleConfiguration moduleConfiguration = mock(ModuleConfiguration.class);
+        Whitebox.setInternalState(passwordChangeHandler, "configs", moduleConfiguration);
+        Properties moduleProperties = new Properties();
+        moduleProperties.setProperty(PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS, "13");
+        when(moduleConfiguration.getModuleProperties()).thenReturn(moduleProperties);
+
+        Properties defaultPropertyValues = passwordChangeHandler.getDefaultPropertyValues("carbon.super");
+        Assert.assertEquals(defaultPropertyValues.size(), 1);
+        Assert.assertEquals(
+                defaultPropertyValues.get(PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS),
+                "13"
+        );
+    }
+
+    @Test
+    public void testGetDefaultPropertyValuesWithPropertyNames() throws IdentityGovernanceException {
+        Assert.assertNull(passwordChangeHandler.getDefaultPropertyValues(
+                new String[]{PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS},
+                "carbon.super"
+        ));
     }
 
     @ObjectFactory

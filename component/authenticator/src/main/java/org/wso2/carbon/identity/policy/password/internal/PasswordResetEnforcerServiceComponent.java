@@ -21,10 +21,13 @@ package org.wso2.carbon.identity.policy.password.internal;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.ApplicationAuthenticator;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.governance.IdentityGovernanceService;
+import org.wso2.carbon.identity.governance.common.IdentityConnectorConfig;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforcerOnExpiration;
 import org.wso2.carbon.identity.policy.password.PasswordChangeHandler;
 
@@ -33,6 +36,9 @@ import org.wso2.carbon.identity.policy.password.PasswordChangeHandler;
  * @scr.reference name="eventStreamManager.service"
  * interface="org.wso2.carbon.event.stream.core.EventStreamService" cardinality="1..1"
  * policy="dynamic" bind="setEventStreamService" unbind="unsetEventStreamService"
+ * @scr.reference name="IdentityGovernanceService"
+ * interface="org.wso2.carbon.identity.governance.IdentityGovernanceService" cardinality="1..1"
+ * policy="dynamic" bind="setIdentityGovernanceService" unbind="unsetIdentityGovernanceService"
  */
 public class PasswordResetEnforcerServiceComponent {
     private static Log log = LogFactory.getLog(PasswordResetEnforcerServiceComponent.class);
@@ -44,16 +50,18 @@ public class PasswordResetEnforcerServiceComponent {
      */
     protected void activate(ComponentContext ctxt) {
         try {
-            // register the connector to enforce password change upon expiration.
-            ctxt.getBundleContext()
-                    .registerService(ApplicationAuthenticator.class.getName(),
-                            new PasswordChangeEnforcerOnExpiration(), null);
+            BundleContext bundleContext = ctxt.getBundleContext();
+            PasswordChangeHandler passwordChangeHandler = new PasswordChangeHandler();
 
-            // register the listener to capture password change events.
-            ctxt.getBundleContext()
-                    .registerService(AbstractEventHandler.class.getName(),
-                            new PasswordChangeHandler(), null);
+            // Register the connector to enforce password change upon expiration.
+            bundleContext.registerService(ApplicationAuthenticator.class.getName(),
+                    new PasswordChangeEnforcerOnExpiration(), null);
 
+            // Register the listener to capture password change events.
+            bundleContext.registerService(AbstractEventHandler.class.getName(), passwordChangeHandler, null);
+
+            // Register the connector config to render the resident identity provider configurations
+            bundleContext.registerService(IdentityConnectorConfig.class.getName(), passwordChangeHandler, null);
             if (log.isDebugEnabled()) {
                 log.debug("PasswordChangeEnforcerOnExpiration handler is activated");
             }
@@ -79,5 +87,13 @@ public class PasswordResetEnforcerServiceComponent {
 
     protected void unsetEventStreamService(EventStreamService eventStreamService) {
         PasswordResetEnforcerDataHolder.getInstance().setEventStreamService(null);
+    }
+
+    protected void setIdentityGovernanceService(IdentityGovernanceService idpManager) {
+        PasswordResetEnforcerDataHolder.getInstance().setIdentityGovernanceService(idpManager);
+    }
+
+    protected void unsetIdentityGovernanceService(IdentityGovernanceService idpManager) {
+        PasswordResetEnforcerDataHolder.getInstance().setIdentityGovernanceService(null);
     }
 }

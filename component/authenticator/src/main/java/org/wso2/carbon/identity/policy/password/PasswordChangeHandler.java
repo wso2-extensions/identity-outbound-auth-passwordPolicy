@@ -25,6 +25,8 @@ import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.governance.IdentityGovernanceException;
+import org.wso2.carbon.identity.governance.common.IdentityConnectorConfig;
 import org.wso2.carbon.identity.policy.password.internal.PasswordResetEnforcerDataHolder;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -33,6 +35,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Event Handler class which handles password update by user, password update by admin and add user events.
@@ -40,7 +43,7 @@ import java.util.Map;
  * This updates the http://wso2.org/claims/lastPasswordChangedTimestamp claim upon the password change.
  * This also publishes the password change event to IS Analytics.
  */
-public class PasswordChangeHandler extends AbstractEventHandler {
+public class PasswordChangeHandler extends AbstractEventHandler implements IdentityConnectorConfig {
     private static final Log log = LogFactory.getLog(PasswordChangeHandler.class);
 
     @Override
@@ -119,5 +122,61 @@ public class PasswordChangeHandler extends AbstractEventHandler {
     @Override
     public String getName() {
         return PasswordChangeEnforceConstants.PASSWORD_CHANGE_EVENT_HANDLER_NAME;
+    }
+
+    @Override
+    public String getFriendlyName() {
+        return PasswordChangeEnforceConstants.CONNECTOR_CONFIG_FRIENDLY_NAME;
+    }
+
+    @Override
+    public String getCategory() {
+        return PasswordChangeEnforceConstants.CONNECTOR_CONFIG_CATEGORY;
+    }
+
+    @Override
+    public String getSubCategory() {
+        return PasswordChangeEnforceConstants.CONNECTOR_CONFIG_SUB_CATEGORY;
+    }
+
+    @Override
+    public int getOrder() {
+        return 0;
+    }
+
+    @Override
+    public Map<String, String> getPropertyNameMapping() {
+        Map<String, String> nameMapping = new HashMap<>();
+        nameMapping.put(PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS,
+                PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DISPLAYED_NAME);
+        return nameMapping;
+    }
+
+    @Override
+    public Map<String, String> getPropertyDescriptionMapping() {
+        Map<String, String> nameMapping = new HashMap<>();
+        nameMapping.put(PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS,
+                PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DESCRIPTION);
+        return nameMapping;
+    }
+
+    @Override
+    public String[] getPropertyNames() {
+        return PasswordChangeUtils.getPasswordExpiryPropertyNames();
+    }
+
+    @Override
+    public Properties getDefaultPropertyValues(String tenantDomain) throws IdentityGovernanceException {
+        Properties properties = new Properties();
+        properties.put(PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS,
+                configs.getModuleProperties()
+                        .getProperty(PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS));
+        return properties;
+    }
+
+    @Override
+    public Map<String, String> getDefaultPropertyValues(String[] propertyNames, String tenantDomain)
+            throws IdentityGovernanceException {
+        return null;
     }
 }

@@ -24,6 +24,7 @@ package org.wso2.carbon.identity.policy.password;
  */
 public class PasswordChangeEnforceConstants {
     public static final String AUTHENTICATOR_NAME = "password-reset-enforcer";
+    public static final String AUTHENTICATOR_FRIENDLY_NAME = "Password Reset Enforcer";
     public static final String AUTHENTICATOR_TYPE = "LOCAL";
     public static final String STATE = "state";
 
@@ -41,7 +42,15 @@ public class PasswordChangeEnforceConstants {
 
     public static final String PASSWORD_CHANGE_STREAM_NAME =
             "org.wso2.carbon.identity.policy.password.PasswordChanges:1.0.0";
-    public static final String PASSWORD_CHANGE_EVENT_HANDLER_NAME = "passwordChangeEventHandler";
+    public static final String PASSWORD_CHANGE_EVENT_HANDLER_NAME = "passwordExpiry";
+
+    public static final String CONNECTOR_CONFIG_FRIENDLY_NAME = "Password Expiry";
+    public static final String CONNECTOR_CONFIG_CATEGORY = "Password Policies";
+    public static final String CONNECTOR_CONFIG_SUB_CATEGORY = "DEFAULT";
+    public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS = "passwordExpiry.passwordExpiryInDays";
+    public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DISPLAYED_NAME = "Password Expiry In Days";
+    public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DESCRIPTION =
+            "Number of days after which the password will expire";
 
     private PasswordChangeEnforceConstants() {      // To prevent instantiation
     }

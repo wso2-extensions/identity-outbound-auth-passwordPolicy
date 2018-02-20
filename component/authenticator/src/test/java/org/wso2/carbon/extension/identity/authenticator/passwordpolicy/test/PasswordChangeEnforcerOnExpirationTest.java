@@ -42,8 +42,10 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.L
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforceConstants;
 import org.wso2.carbon.identity.policy.password.PasswordChangeEnforcerOnExpiration;
+import org.wso2.carbon.identity.policy.password.internal.PasswordResetEnforcerDataHolder;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
@@ -110,10 +112,14 @@ public class PasswordChangeEnforcerOnExpirationTest {
     @Mock
     private RealmService realmService;
 
+    @Mock
+    private IdentityGovernanceService identityGovernanceService;
+
     @BeforeMethod
     public void setUp() {
         passwordChangeEnforcerOnExpiration = new PasswordChangeEnforcerOnExpiration();
         initMocks(this);
+        PasswordResetEnforcerDataHolder.getInstance().setIdentityGovernanceService(identityGovernanceService);
     }
 
     @Test
@@ -124,7 +130,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
     @Test
     public void testGetFriendlyName() {
         Assert.assertEquals(passwordChangeEnforcerOnExpiration.getFriendlyName(),
-                PasswordChangeEnforceConstants.AUTHENTICATOR_NAME);
+                PasswordChangeEnforceConstants.AUTHENTICATOR_FRIENDLY_NAME);
     }
 
     @Test

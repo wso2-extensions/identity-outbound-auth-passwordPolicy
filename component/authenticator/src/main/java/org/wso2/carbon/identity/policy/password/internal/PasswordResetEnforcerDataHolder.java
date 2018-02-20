@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.policy.password.internal;
 
 import org.wso2.carbon.event.stream.core.EventStreamService;
+import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 
 /**
  * The data holder for the password reset enforcer.
@@ -27,6 +28,7 @@ public class PasswordResetEnforcerDataHolder {
     private static PasswordResetEnforcerDataHolder instance;
 
     private EventStreamService eventStreamService;
+    private IdentityGovernanceService identityGovernanceService;
 
     private PasswordResetEnforcerDataHolder() {     // Prevent instantiation
     }
@@ -49,5 +51,13 @@ public class PasswordResetEnforcerDataHolder {
 
     public void setEventStreamService(EventStreamService eventStreamService) {
         this.eventStreamService = eventStreamService;
+    }
+
+    public IdentityGovernanceService getIdentityGovernanceService() {
+        return identityGovernanceService;
+    }
+
+    public void setIdentityGovernanceService(IdentityGovernanceService identityGovernanceService) {
+        this.identityGovernanceService = identityGovernanceService;
     }
 }

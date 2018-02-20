@@ -75,6 +75,11 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.governance</groupId>
+            <artifactId>org.wso2.carbon.identity.governance</artifactId>
+            <version>1.0.35</version>
+        </dependency>
     </dependencies>
 
     <build>
