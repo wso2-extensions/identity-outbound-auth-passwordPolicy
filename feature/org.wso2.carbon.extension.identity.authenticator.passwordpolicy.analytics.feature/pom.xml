@@ -17,8 +17,8 @@
   ~ under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -74,7 +74,7 @@
                         </goals>
                         <configuration>
                             <id>org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector</id>
-                            <propertiesFile>feature.properties</propertiesFile>
+                            <propertiesFile>../etc/feature.properties</propertiesFile>
                             <adviceFile>
                                 <properties>
                                     <propertyDef>org.wso2.carbon.p2.category.type:server</propertyDef>
@@ -90,10 +90,11 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>create_car</id>
                         <phase>process-resources</phase>
                         <configuration>
                             <target>
-                                <ant antfile="build.xml" target="zip" />
+                                <ant antfile="build.xml" target="zip"/>
                             </target>
                         </configuration>
                         <goals>

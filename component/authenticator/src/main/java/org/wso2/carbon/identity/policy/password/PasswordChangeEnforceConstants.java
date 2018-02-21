@@ -52,6 +52,10 @@ public class PasswordChangeEnforceConstants {
     public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DESCRIPTION =
             "Number of days after which the password will expire";
 
+    public static final String IDENTITY_MESSAGE_HANDLER_TYPE =
+            "org.wso2.carbon.identity.core.handler.AbstractIdentityMessageHandler";
+    public static final String DATA_PUBLISHING_ENABLED_PROPERTY_NAME = "data.publishing.enabled";
+
     private PasswordChangeEnforceConstants() {      // To prevent instantiation
     }
 }

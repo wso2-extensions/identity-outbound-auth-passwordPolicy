@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.policy.password.internal;
 
 import org.wso2.carbon.event.stream.core.EventStreamService;
+import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 
 /**
@@ -29,6 +30,7 @@ public class PasswordResetEnforcerDataHolder {
 
     private EventStreamService eventStreamService;
     private IdentityGovernanceService identityGovernanceService;
+    private ApplicationManagementService applicationManagementService;
 
     private PasswordResetEnforcerDataHolder() {     // Prevent instantiation
     }
@@ -59,5 +61,13 @@ public class PasswordResetEnforcerDataHolder {
 
     public void setIdentityGovernanceService(IdentityGovernanceService identityGovernanceService) {
         this.identityGovernanceService = identityGovernanceService;
+    }
+
+    public ApplicationManagementService getApplicationManagementService() {
+        return applicationManagementService;
+    }
+
+    public void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
+        this.applicationManagementService = applicationManagementService;
     }
 }

@@ -25,6 +25,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.event.stream.core.EventStreamService;
 import org.wso2.carbon.identity.application.authentication.framework.ApplicationAuthenticator;
+import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 import org.wso2.carbon.identity.governance.common.IdentityConnectorConfig;
@@ -39,6 +40,9 @@ import org.wso2.carbon.identity.policy.password.PasswordChangeHandler;
  * @scr.reference name="IdentityGovernanceService"
  * interface="org.wso2.carbon.identity.governance.IdentityGovernanceService" cardinality="1..1"
  * policy="dynamic" bind="setIdentityGovernanceService" unbind="unsetIdentityGovernanceService"
+ * @scr.reference name="ApplicationManagementService"
+ * interface="org.wso2.carbon.identity.application.mgt.ApplicationManagementService" cardinality="1..1"
+ * policy="dynamic" bind="setApplicationManagementService" unbind="unsetApplicationManagementService"
  */
 public class PasswordResetEnforcerServiceComponent {
     private static Log log = LogFactory.getLog(PasswordResetEnforcerServiceComponent.class);
@@ -95,5 +99,13 @@ public class PasswordResetEnforcerServiceComponent {
 
     protected void unsetIdentityGovernanceService(IdentityGovernanceService idpManager) {
         PasswordResetEnforcerDataHolder.getInstance().setIdentityGovernanceService(null);
+    }
+
+    protected void setApplicationManagementService(ApplicationManagementService applicationManagementService) {
+        PasswordResetEnforcerDataHolder.getInstance().setApplicationManagementService(applicationManagementService);
+    }
+
+    protected void unsetApplicationManagementService(ApplicationManagementService applicationManagementService) {
+        PasswordResetEnforcerDataHolder.getInstance().setApplicationManagementService(null);
     }
 }

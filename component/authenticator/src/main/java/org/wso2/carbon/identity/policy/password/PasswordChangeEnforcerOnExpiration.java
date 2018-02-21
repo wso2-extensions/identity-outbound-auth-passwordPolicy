@@ -272,7 +272,8 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             identityProperties = PasswordResetEnforcerDataHolder.getInstance().getIdentityGovernanceService()
                     .getConfiguration(PasswordChangeUtils.getPasswordExpiryPropertyNames(), tenantDomain);
         } catch (IdentityGovernanceException e) {
-            log.warn("Error while retrieving password expiry properties. Using default property values.", e);
+            log.warn("Using default property values because error occurred while retrieving password expiry " +
+                    "properties due to " + e.getMessage(), e);
         }
 
         // Getting the password expiry in days

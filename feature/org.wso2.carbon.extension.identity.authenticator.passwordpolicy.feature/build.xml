@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<project name="create-sample-capps" default="zip" basedir="resources">
+    <property name="zip_name" value="password_reset_enforcer_artifacts"/>
+    <property name="authenticator_target_dir" value="../../component/authenticator/target"/>
+    <property name="is_feature_target_dir" value="target"/>
+    <property name="is_analytics_feature_target_dir"
+              value="../org.wso2.carbon.extension.identity.authenticator.passwordpolicy.analytics.feature/target"/>
+
+    <target name="zip">
+        <mkdir dir="${is_feature_target_dir}/${zip_name}/is"/>
+
+        <copy todir="${is_feature_target_dir}/${zip_name}/is">
+            <fileset file="${authenticator_target_dir}/../src/main/resources/pwd-reset.jsp"/>
+            <fileset file="resources/org.wso2.carbon.identity.policy.password.PasswordChanges_1.0.0.json"/>
+            <fileset file="resources/PasswordPolicy-Publisher-wso2event-PasswordChanges.xml"/>
+        </copy>
+
+        <mkdir dir="${is_feature_target_dir}/${zip_name}/is-analytics"/>
+
+        <copy todir="${is_feature_target_dir}/${zip_name}/is-analytics">
+            <fileset file="${is_analytics_feature_target_dir}/password_rotation_policy-1.0.0.car"/>
+            <fileset file="${is_analytics_feature_target_dir}/../resources/eventpublishers/PasswordRotationPolicy-Publisher-email-ExpiredPasswords-1.0.0.xml"/>
+            <fileset file="${is_analytics_feature_target_dir}/../resources/templates/password-rotation-policy-notifications.xml"/>
+        </copy>
+
+        <zip destfile="${is_feature_target_dir}/${zip_name}.zip">
+            <zipfileset dir="${is_feature_target_dir}/${zip_name}"/>
+        </zip>
+
+        <delete dir="${is_feature_target_dir}/${zip_name}"/>
+    </target>
+</project>

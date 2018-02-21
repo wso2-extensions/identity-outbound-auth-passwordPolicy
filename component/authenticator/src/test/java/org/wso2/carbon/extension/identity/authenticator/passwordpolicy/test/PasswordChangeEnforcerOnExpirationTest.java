@@ -18,7 +18,7 @@
  */
 package org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test;
 
-import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -60,7 +60,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -157,6 +160,10 @@ public class PasswordChangeEnforcerOnExpirationTest {
 
     @Test
     public void testUpdateAuthenticatedUserInStepConfig() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -175,6 +182,10 @@ public class PasswordChangeEnforcerOnExpirationTest {
 
     @Test
     public void testProcessWithLogoutFailure() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.isLogoutRequest()).thenReturn(false);
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD)).thenReturn("1234");
         when(httpServletRequest.getParameter(PasswordChangeEnforceConstants.NEW_PWD)).thenReturn("7894");
@@ -187,6 +198,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
         when(Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "getUser", context)).
                 thenReturn(user);
+
         AuthenticatorFlowStatus status = passwordChangeEnforcerOnExpiration.process(httpServletRequest,
                 httpServletResponse, context);
         Assert.assertEquals(status, AuthenticatorFlowStatus.SUCCESS_COMPLETED);
@@ -203,6 +215,7 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
+
         AuthenticatorFlowStatus status = passwordChangeEnforcerOnExpiration.process(httpServletRequest,
                 httpServletResponse, context);
         Assert.assertEquals(status, AuthenticatorFlowStatus.SUCCESS_COMPLETED);
@@ -210,6 +223,10 @@ public class PasswordChangeEnforcerOnExpirationTest {
 
     @Test(expectedExceptions = {AuthenticationFailedException.class})
     public void testInitiateAuthRequestWithException() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -220,10 +237,18 @@ public class PasswordChangeEnforcerOnExpirationTest {
                 httpServletResponse, context, ""))
                 .thenReturn(user);
 
+        AuthenticatorFlowStatus status = Whitebox
+                .invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
+                        httpServletResponse, context, "");
+        Assert.assertEquals(status, AuthenticatorFlowStatus.INCOMPLETE);
     }
 
     @Test
     public void testInitiateAuthRequest() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -231,9 +256,10 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
         when(stepConfig.getAuthenticatedUser()).thenReturn(user);
-        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
-                httpServletResponse, context, "");
-        AuthenticatorFlowStatus status = AuthenticatorFlowStatus.SUCCESS_COMPLETED;
+
+        AuthenticatorFlowStatus status = Whitebox
+                .invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
+                        httpServletResponse, context, "");
         Assert.assertEquals(status, AuthenticatorFlowStatus.SUCCESS_COMPLETED);
     }
 
@@ -244,6 +270,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
         mockStatic(FrameworkUtils.class);
         mockStatic(CarbonUtils.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -265,17 +293,64 @@ public class PasswordChangeEnforcerOnExpirationTest {
         when(configurationFacade.getAuthenticationEndpointURL()).thenReturn("login.do");
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn(null);
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
+
+        AuthenticatorFlowStatus status = Whitebox.invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
                 httpServletResponse, context, "");
-        verify(httpServletResponse).sendRedirect(captor.capture());
-        Assert.assertTrue(captor.getValue().contains(PasswordChangeEnforceConstants.AUTHENTICATOR_NAME));
+        verify(httpServletResponse)
+                .sendRedirect(Matchers.matches(".*" + PasswordChangeEnforceConstants.AUTHENTICATOR_NAME + ".*"));
+        Assert.assertEquals(status, AuthenticatorFlowStatus.INCOMPLETE);
+    }
+
+    @Test
+    public void testInitiateAuthRequestSuccessWithRetrying() throws Exception {
+        mockStatic(IdentityTenantUtil.class);
+        mockStatic(ConfigurationFacade.class);
+        mockStatic(FrameworkUtils.class);
+        mockStatic(CarbonUtils.class);
+
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
+        when(context.getSequenceConfig()).thenReturn(sequenceConfig);
+        when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
+        when(mockedMap.get(anyObject())).thenReturn(stepConfig);
+        String path = Paths.get(System.getProperty("user.dir"), "src", "test", "resources").toString();
+        when(CarbonUtils.getCarbonConfigDirPath()).thenReturn(path);
+        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
+        when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
+        when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(localApplicationAuthenticator);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        when(userRealm.getUserStoreManager()
+                .getUserClaimValue(MultitenantUtils.getTenantAwareUsername("admin"),
+                        PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, null))
+                .thenReturn("1461315067665");
+        when(ConfigurationFacade.getInstance()).thenReturn(configurationFacade);
+        when(configurationFacade.getAuthenticationEndpointURL()).thenReturn("login.do");
+        when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
+                context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn(null);
+
+        when(userStoreManager.getUserClaimValue(eq("admin"),
+                eq(PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM), isNull(String.class)))
+                .thenReturn(null);
+        when(context.isRetrying()).thenReturn(true);
+
+        AuthenticatorFlowStatus status = Whitebox
+                .invokeMethod(passwordChangeEnforcerOnExpiration, "initiateAuthRequest",
+                        httpServletResponse, context, "");
+        Assert.assertEquals(status, AuthenticatorFlowStatus.INCOMPLETE);
+        verify(httpServletResponse, times(1))
+                .sendRedirect(Matchers.matches(".*&authFailure=true&authFailureMsg=.*"));
     }
 
     @Test
     public void testProcessAuthenticationResponse() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -299,6 +374,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
     public void testProcessAuthenticationResponseWithException() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -320,6 +397,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
     public void testProcessResponseWithSamePassword() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -341,6 +420,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
     public void testProcessResponseWithMismatchPassword() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -362,6 +443,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
     public void testProcessResponseWithEmptyPassword() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -385,6 +468,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
     public void testProcessResponseWithInvalidPasswordFormat() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -408,6 +493,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
     public void testProcessResponseWithInvalidOperation() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
@@ -434,6 +521,8 @@ public class PasswordChangeEnforcerOnExpirationTest {
     public void testProcessResponseWithInvalidCurrentPassword() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);

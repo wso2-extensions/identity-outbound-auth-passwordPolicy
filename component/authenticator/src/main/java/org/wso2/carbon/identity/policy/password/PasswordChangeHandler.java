@@ -21,6 +21,14 @@ package org.wso2.carbon.identity.policy.password;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.event.stream.core.EventStreamService;
+import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
+import org.wso2.carbon.identity.application.common.model.ApplicationBasicInfo;
+import org.wso2.carbon.identity.application.common.model.AuthenticationStep;
+import org.wso2.carbon.identity.application.common.model.LocalAuthenticatorConfig;
+import org.wso2.carbon.identity.application.common.model.ServiceProvider;
+import org.wso2.carbon.identity.application.mgt.ApplicationManagementService;
+import org.wso2.carbon.identity.core.model.IdentityEventListenerConfig;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
@@ -35,6 +43,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -52,28 +61,103 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         String username = (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_NAME);
         String tenantDomain = (String) event.getEventProperties()
                 .get(IdentityEventConstants.EventProperty.TENANT_DOMAIN);
-        UserStoreManager userStoreManager = (UserStoreManager) event.getEventProperties()
-                .get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
 
-        String userStoreDomain = UserCoreUtil.getDomainName(userStoreManager.getRealmConfiguration());
-        long timestamp = System.currentTimeMillis();
+        if (isAuthenticatorApplied(username, tenantDomain)) {
+            UserStoreManager userStoreManager = (UserStoreManager) event.getEventProperties()
+                    .get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
+            String userStoreDomain = UserCoreUtil.getDomainName(userStoreManager.getRealmConfiguration());
+            long timestamp = System.currentTimeMillis();
 
-        // Updating the last password changed claim
-        Map<String, String> claimMap = new HashMap<>();
-        claimMap.put(PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, Long.toString(timestamp));
-        try {
-            userStoreManager.setUserClaimValues(username, claimMap, null);
-            if (log.isDebugEnabled()) {
-                log.debug("The claim uri " + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM
-                        + " of " + username + " updated with the current timestamp");
+            // Updating the last password changed claim
+            Map<String, String> claimMap = new HashMap<>();
+            claimMap.put(PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,
+                    Long.toString(timestamp));
+            try {
+                userStoreManager.setUserClaimValues(username, claimMap, null);
+                if (log.isDebugEnabled()) {
+                    log.debug("The claim uri "
+                            + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM + " of "
+                            + username + " updated with the current timestamp");
+                }
+            } catch (UserStoreException e) {
+                log.error("Failed to update claim value for "
+                        + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM
+                        + " claim due to " + e.getMessage(), e);
             }
-        } catch (UserStoreException e) {
-            log.error("Failed to update claim value for "
-                    + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM
-                    + " claim due to " + e.getMessage(), e);
-        }
 
-        publishToISAnalytics(username, userStoreDomain, tenantDomain, userStoreManager, timestamp);
+            // Getting the event listener config in identity.xml
+            IdentityEventListenerConfig eventListenerConfig = IdentityUtil.readEventListenerProperty(
+                    PasswordChangeEnforceConstants.IDENTITY_MESSAGE_HANDLER_TYPE,
+                    this.getClass().getName()
+            );
+
+            // Checking whether data publishing is enabled
+            boolean isPublishingToISAnalyticsEnabled = false;
+            if (eventListenerConfig != null) {
+                isPublishingToISAnalyticsEnabled = Boolean.parseBoolean((String) eventListenerConfig.getProperties()
+                        .get(PasswordChangeEnforceConstants.DATA_PUBLISHING_ENABLED_PROPERTY_NAME));
+            }
+
+            if (isPublishingToISAnalyticsEnabled) {
+                publishToISAnalytics(username, userStoreDomain, tenantDomain, userStoreManager, timestamp);
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Password changed claim not updated and data not published to IS analytics " +
+                        "for user " + username + "@" + tenantDomain + " " +
+                        "since the authenticator was not added to the an application in this tenant: " +
+                        event.getEventProperties().get(IdentityEventConstants.EventProperty.TENANT_ID));
+            }
+        }
+    }
+
+    /**
+     * Check if the password expiry authenticator had been applied to at least one of the applications
+     * that the user has access to
+     *
+     * @param username     The username of the user
+     * @param tenantDomain The tenant domain to which the user belongs to
+     * @return True if there is at least one application managed by this user to which the authenticator was applied
+     */
+    private boolean isAuthenticatorApplied(String username, String tenantDomain) {
+        boolean isAuthenticatorApplied = false;
+        try {
+            ApplicationManagementService applicationManagementService = PasswordResetEnforcerDataHolder
+                    .getInstance().getApplicationManagementService();
+
+            // Looping the applications
+            ApplicationBasicInfo[] allApplicationBasicInfos = applicationManagementService
+                    .getAllApplicationBasicInfo(tenantDomain, username);
+            for (ApplicationBasicInfo applicationBasicInfo : allApplicationBasicInfos) {
+                String applicationName = applicationBasicInfo.getApplicationName();
+                ServiceProvider serviceProvider = applicationManagementService
+                        .getApplicationExcludingFileBasedSPs(applicationName, tenantDomain);
+                AuthenticationStep[] authenticationSteps = serviceProvider
+                        .getLocalAndOutBoundAuthenticationConfig().getAuthenticationSteps();
+
+                // Looping the authentication steps
+                for (AuthenticationStep authenticationStep : authenticationSteps) {
+                    LocalAuthenticatorConfig[] configs = authenticationStep.getLocalAuthenticatorConfigs();
+                    // Looping the authenticators in the step
+                    for (LocalAuthenticatorConfig config : configs) {
+                        if (Objects.equals(config.getName(), PasswordChangeEnforceConstants.AUTHENTICATOR_NAME)) {
+                            isAuthenticatorApplied = true;
+                            break;
+                        }
+                    }
+                    if (isAuthenticatorApplied) {
+                        break;
+                    }
+                }
+                if (isAuthenticatorApplied) {
+                    break;
+                }
+            }
+        } catch (IdentityApplicationManagementException e) {
+            log.warn("Considering the credentials of the user logging in as expirable since " +
+                    "retrieving of service provider data failed due to " + e.getMessage(), e);
+        }
+        return isAuthenticatorApplied;
     }
 
     /**

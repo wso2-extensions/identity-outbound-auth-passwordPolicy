@@ -40,17 +40,17 @@
             </activation>
             <modules>
                 <module>component/authenticator</module>
-                <module>feature/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.feature</module>
                 <module>feature/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.analytics.feature</module>
+                <module>feature/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.feature</module>
             </modules>
         </profile>
     </profiles>
 
     <dependencies>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.idp.mgt</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
@@ -58,39 +58,34 @@
             <version>${commons-logging.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.common</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.user.profile</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
-            <artifactId>org.wso2.carbon.identity.user.account.association</artifactId>
-            <version>${carbon.identity.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.core</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.authentication.framework</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.notification.mgt</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.provisioning</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
@@ -103,9 +98,9 @@
             <version>${carbon.kernel.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.application.mgt</artifactId>
-            <version>${carbon.identity.version}</version>
+            <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.oltu.oauth2</groupId>
@@ -116,16 +111,6 @@
             <groupId>org.apache.oltu.oauth2</groupId>
             <artifactId>org.apache.oltu.oauth2.common</artifactId>
             <version>${apache.oltu.oauth2.common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
-            <artifactId>org.wso2.carbon.identity.application.authenticator.openid</artifactId>
-            <version>${carbon.identity.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.identity</groupId>
-            <artifactId>org.wso2.carbon.identity.application.authenticator.oidc</artifactId>
-            <version>${carbon.identity.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
@@ -144,13 +129,13 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.framework</groupId>
-            <artifactId>org.wso2.carbon.identity.core</artifactId>
+            <artifactId>org.wso2.carbon.identity.event</artifactId>
             <version>${carbon.identity.framework.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.carbon.identity.framework</groupId>
-            <artifactId>org.wso2.carbon.identity.event</artifactId>
-            <version>${carbon.identity.framework.version}</version>
+            <groupId>org.wso2.carbon.identity.governance</groupId>
+            <artifactId>org.wso2.carbon.identity.governance</artifactId>
+            <version>1.0.35</version>
         </dependency>
     </dependencies>
 
@@ -343,8 +328,7 @@
     </distributionManagement>
 
     <properties>
-        <carbon.identity.version>5.0.7</carbon.identity.version>
-        <carbon.identity.framework.version>5.5.0</carbon.identity.framework.version>
+        <carbon.identity.framework.version>5.10.86</carbon.identity.framework.version>
         <commons-logging.version>4.4.3</commons-logging.version>
         <carbon.kernel.version>4.4.3</carbon.kernel.version>
         <oltu.version>1.0.0.wso2v2</oltu.version>
