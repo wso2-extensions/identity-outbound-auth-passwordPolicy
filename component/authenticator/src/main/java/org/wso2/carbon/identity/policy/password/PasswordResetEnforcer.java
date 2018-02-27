@@ -30,10 +30,7 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
-import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
-import org.wso2.carbon.identity.governance.IdentityGovernanceException;
-import org.wso2.carbon.identity.policy.password.internal.PasswordResetEnforcerDataHolder;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -53,10 +50,10 @@ import javax.servlet.http.HttpServletResponse;
  * this connector must only be present in an authentication step, where the user
  * is already identified by a previous step.
  */
-public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthenticator
+public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         implements LocalApplicationAuthenticator {
 
-    private static final Log log = LogFactory.getLog(PasswordChangeEnforcerOnExpiration.class);
+    private static final Log log = LogFactory.getLog(PasswordResetEnforcer.class);
 
     private static final long serialVersionUID = 307784186695787941L;
 
@@ -67,17 +64,17 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
 
     @Override
     public String getContextIdentifier(HttpServletRequest request) {
-        return request.getParameter(PasswordChangeEnforceConstants.STATE);
+        return request.getParameter(PasswordPolicyConstants.STATE);
     }
 
     @Override
     public String getFriendlyName() {
-        return PasswordChangeEnforceConstants.AUTHENTICATOR_FRIENDLY_NAME;
+        return PasswordPolicyConstants.AUTHENTICATOR_FRIENDLY_NAME;
     }
 
     @Override
     public String getName() {
-        return PasswordChangeEnforceConstants.AUTHENTICATOR_NAME;
+        return PasswordPolicyConstants.AUTHENTICATOR_NAME;
     }
 
     @Override
@@ -88,9 +85,9 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         if (context.isLogoutRequest()) {
             return AuthenticatorFlowStatus.SUCCESS_COMPLETED;
         }
-        if (StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD))
-                && StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.NEW_PWD))
-                && StringUtils.isNotEmpty(request.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION))) {
+        if (StringUtils.isNotEmpty(request.getParameter(PasswordPolicyConstants.CURRENT_PWD))
+                && StringUtils.isNotEmpty(request.getParameter(PasswordPolicyConstants.NEW_PWD))
+                && StringUtils.isNotEmpty(request.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION))) {
             try {
                 processAuthenticationResponse(request, response, context);
             } catch (Exception e) {
@@ -145,7 +142,7 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
                     String fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername,
                             tenantDomain);
                     String encodedUrl = (loginPage + ("?" + queryParams + "&username=" + fullyQualifiedUsername))
-                            + "&authenticators=" + getName() + ":" + PasswordChangeEnforceConstants.AUTHENTICATOR_TYPE
+                            + "&authenticators=" + getName() + ":" + PasswordPolicyConstants.AUTHENTICATOR_TYPE
                             + retryParam;
 
                     response.sendRedirect(encodedUrl);
@@ -175,9 +172,9 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
         String username = authenticatedUser.getAuthenticatedSubjectIdentifier();
         String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
 
-        String currentPassword = request.getParameter(PasswordChangeEnforceConstants.CURRENT_PWD);
-        String newPassword = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD);
-        String newPasswordConfirmation = request.getParameter(PasswordChangeEnforceConstants.NEW_PWD_CONFIRMATION);
+        String currentPassword = request.getParameter(PasswordPolicyConstants.CURRENT_PWD);
+        String newPassword = request.getParameter(PasswordPolicyConstants.NEW_PWD);
+        String newPasswordConfirmation = request.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION);
 
         // Checking current, new and repeat new passwords
         if (currentPassword == null || newPassword == null || newPasswordConfirmation == null) {
@@ -246,11 +243,13 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
 
         String passwordLastChangedTime;
         try {
-            passwordLastChangedTime = userStoreManager.getUserClaimValue(tenantAwareUsername,
-                    PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, null);
+            String[] claimURIs = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
+            Map<String, String> claimValueMap =
+                    userStoreManager.getUserClaimValues(tenantAwareUsername, claimURIs, null);
+            passwordLastChangedTime = claimValueMap.get(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM);
         } catch (org.wso2.carbon.user.core.UserStoreException e) {
             throw new AuthenticationFailedException("Error occurred while loading user claim - "
-                    + PasswordChangeEnforceConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, e);
+                    + PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, e);
         }
 
         long passwordChangedTime = 0;
@@ -266,25 +265,13 @@ public class PasswordChangeEnforcerOnExpiration extends AbstractApplicationAuthe
             daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
         }
 
-        // Retrieving properties set in identity event properties
-        Property[] identityProperties = null;
-        try {
-            identityProperties = PasswordResetEnforcerDataHolder.getInstance().getIdentityGovernanceService()
-                    .getConfiguration(PasswordChangeUtils.getPasswordExpiryPropertyNames(), tenantDomain);
-        } catch (IdentityGovernanceException e) {
-            log.warn("Using default property values because error occurred while retrieving password expiry " +
-                    "properties due to " + e.getMessage(), e);
-        }
-
-        // Getting the password expiry in days
-        int passwordExpiryInDays = PasswordChangeEnforceConstants.DEFAULT_CREDENTIAL_EXP_IN_DAYS;
-        if (identityProperties != null) {
-            for (Property identityProperty : identityProperties) {
-                if (PasswordChangeEnforceConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS
-                        .equals(identityProperty.getName())) {
-                    passwordExpiryInDays = Integer.parseInt(identityProperty.getValue());
-                }
-            }
+        // Getting the number of days before password expiry in days
+        String passwordExpiryInDaysProperty = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
+                PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+        int passwordExpiryInDays =
+                PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
+        if (passwordExpiryInDaysProperty != null) {
+            passwordExpiryInDays = Integer.parseInt(passwordExpiryInDaysProperty);
         }
 
         return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);

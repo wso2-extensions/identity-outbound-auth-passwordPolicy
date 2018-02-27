@@ -17,34 +17,40 @@
   ~ under the License.
   -->
 
-<project name="create-sample-capps" default="zip" basedir="resources">
-    <property name="zip_name" value="password_reset_enforcer_artifacts"/>
+<project name="create-capp" default="zip">
+    <property name="artifacts_zip_name" value="password_policy_artifacts"/>
+    <property name="authenticator_resources_dir" value="../../component/authenticator/src/main/resources"/>
     <property name="authenticator_target_dir" value="../../component/authenticator/target"/>
-    <property name="is_feature_target_dir" value="target"/>
-    <property name="is_analytics_feature_target_dir"
-              value="../org.wso2.carbon.extension.identity.authenticator.passwordpolicy.analytics.feature/target"/>
+    <property name="feature_resources_dir" value="resources"/>
+    <property name="feature_target_dir" value="target"/>
+    <property name="capp_base" value="resources/capp"/>
+    <property name="password_policy_capp" value="password_policy"/>
 
-    <target name="zip">
-        <mkdir dir="${is_feature_target_dir}/${zip_name}/is"/>
+    <target name="capp">
+        <zip destfile="${feature_target_dir}/${password_policy_capp}.car">
+            <zipfileset dir="${capp_base}"/>
+        </zip>
+    </target>
 
-        <copy todir="${is_feature_target_dir}/${zip_name}/is">
-            <fileset file="${authenticator_target_dir}/../src/main/resources/pwd-reset.jsp"/>
-            <fileset file="resources/org.wso2.carbon.identity.policy.password.PasswordChanges_1.0.0.json"/>
-            <fileset file="resources/PasswordPolicy-Publisher-wso2event-PasswordChanges.xml"/>
+    <target name="zip" depends="capp">
+        <mkdir dir="${feature_target_dir}/${artifacts_zip_name}/is"/>
+
+        <copy todir="${feature_target_dir}/${artifacts_zip_name}/is">
+            <fileset file="${authenticator_resources_dir}/pwd-reset.jsp"/>
         </copy>
 
-        <mkdir dir="${is_feature_target_dir}/${zip_name}/is-analytics"/>
+        <mkdir dir="${feature_target_dir}/${artifacts_zip_name}/is-analytics"/>
 
-        <copy todir="${is_feature_target_dir}/${zip_name}/is-analytics">
-            <fileset file="${is_analytics_feature_target_dir}/password_rotation_policy-1.0.0.car"/>
-            <fileset file="${is_analytics_feature_target_dir}/../resources/eventpublishers/PasswordRotationPolicy-Publisher-email-ExpiredPasswords-1.0.0.xml"/>
-            <fileset file="${is_analytics_feature_target_dir}/../resources/templates/password-rotation-policy-notifications.xml"/>
+        <copy todir="${feature_target_dir}/${artifacts_zip_name}/is-analytics">
+            <fileset file="${feature_resources_dir}/eventpublishers/PasswordPolicy-Publisher-email-Notifications-1.0.0.xml"/>
+            <fileset file="${feature_resources_dir}/templates/password-policy-notifications.xml"/>
+            <fileset file="${feature_target_dir}/${password_policy_capp}.car"/>
         </copy>
 
-        <zip destfile="${is_feature_target_dir}/${zip_name}.zip">
-            <zipfileset dir="${is_feature_target_dir}/${zip_name}"/>
+        <zip destfile="${feature_target_dir}/${artifacts_zip_name}.zip">
+            <zipfileset dir="${feature_target_dir}/${artifacts_zip_name}"/>
         </zip>
 
-        <delete dir="${is_feature_target_dir}/${zip_name}"/>
+        <delete dir="${feature_target_dir}/${artifacts_zip_name}"/>
     </target>
 </project>

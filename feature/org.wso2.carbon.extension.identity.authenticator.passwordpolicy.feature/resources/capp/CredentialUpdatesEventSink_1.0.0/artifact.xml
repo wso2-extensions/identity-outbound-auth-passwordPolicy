@@ -17,6 +17,6 @@
   ~ under the License.
   -->
 
-<artifact name="PasswordChangesEventSink" version="1.0.0" type="analytics/eventstore" serverRole="DataAnalyticsServer">
-    <file>org_wso2_carbon_identity_policy_password_PasswordChanges.xml</file>
+<artifact name="CredentialUpdatesEventSink" version="1.0.0" type="analytics/eventstore" serverRole="DataAnalyticsServer">
+    <file>org_wso2_carbon_identity_policy_password_CredentialUpdates.xml</file>
 </artifact>

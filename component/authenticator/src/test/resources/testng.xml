@@ -3,9 +3,9 @@
 <suite name="Identity-connector-password-policy-test-suite">
     <test name="password-policy-authenticator-all" parallel="false">
         <classes>
-            <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordChangeEnforcerOnExpirationTest"/>
+            <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordResetEnforcerTest"/>
             <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordChangeHandlerTest"/>
-            <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordChangeUtilsTest"/>
+            <class name="org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test.PasswordPolicyUtilsTest"/>
         </classes>
     </test>
 </suite>

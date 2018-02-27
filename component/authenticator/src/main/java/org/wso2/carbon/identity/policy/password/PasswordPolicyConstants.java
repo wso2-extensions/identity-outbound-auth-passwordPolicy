@@ -22,7 +22,7 @@ package org.wso2.carbon.identity.policy.password;
 /**
  * Password Change authenticator's constants
  */
-public class PasswordChangeEnforceConstants {
+public class PasswordPolicyConstants {
     public static final String AUTHENTICATOR_NAME = "password-reset-enforcer";
     public static final String AUTHENTICATOR_FRIENDLY_NAME = "Password Reset Enforcer";
     public static final String AUTHENTICATOR_TYPE = "LOCAL";
@@ -32,30 +32,38 @@ public class PasswordChangeEnforceConstants {
     public static final String NEW_PWD = "NEW_PWD";
     public static final String NEW_PWD_CONFIRMATION = "NEW_PWD_CONFIRMATION";
 
-    public static final String IDM_PROPERTIES_FILE = "identity-mgt.properties";
-    public static final String CREDENTIAL_EXP_IN_DAYS = "Authentication.Policy.Password.Reset.Time.In.Days";
-    public static final int DEFAULT_CREDENTIAL_EXP_IN_DAYS = 30;
-
     public static final String LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM =
             "http://wso2.org/claims/identity/lastPasswordUpdateTime";
-    public static final String EMAIL_ADDRESS_CLAIM = "http://wso2.org/claims/emailaddress";
 
     public static final String PASSWORD_CHANGE_STREAM_NAME =
-            "org.wso2.carbon.identity.policy.password.PasswordChanges:1.0.0";
+            "org.wso2.carbon.identity.policy.password.PendingNotifications:1.0.0";
     public static final String PASSWORD_CHANGE_EVENT_HANDLER_NAME = "passwordExpiry";
 
     public static final String CONNECTOR_CONFIG_FRIENDLY_NAME = "Password Expiry";
     public static final String CONNECTOR_CONFIG_CATEGORY = "Password Policies";
     public static final String CONNECTOR_CONFIG_SUB_CATEGORY = "DEFAULT";
+
     public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS = "passwordExpiry.passwordExpiryInDays";
     public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DISPLAYED_NAME = "Password Expiry In Days";
     public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DESCRIPTION =
             "Number of days after which the password will expire";
+    public static final int CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE = 30;
 
-    public static final String IDENTITY_MESSAGE_HANDLER_TYPE =
-            "org.wso2.carbon.identity.core.handler.AbstractIdentityMessageHandler";
-    public static final String DATA_PUBLISHING_ENABLED_PROPERTY_NAME = "data.publishing.enabled";
+    public static final String CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS = "passwordExpiry.enableEmailNotifications";
+    public static final String CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS_DISPLAYED_NAME =
+            "Enable Sending Email Notifications";
+    public static final String CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS_DESCRIPTION =
+            "Enable to send email notifications to reset the password. " +
+                    "This requires an IS Analytics instance.";
+    public static final boolean CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS_DEFAULT_VALUE = false;
 
-    private PasswordChangeEnforceConstants() {      // To prevent instantiation
+    public static final String CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS = "passwordExpiry.priorReminderTimeInDays";
+    public static final String CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DISPLAYED_NAME =
+            "Prior Reminder Time In Days";
+    public static final String CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DESCRIPTION =
+            "Number of days before the password expiry that the users should be reminded of password expiry";
+    public static final int CONNECTOR_CONFIG_PRIOR_NOTICE_TIME_IN_DAYS_DEFAULT_VALUE = 0;
+
+    private PasswordPolicyConstants() {      // To prevent instantiation
     }
 }
