@@ -1,6 +1,6 @@
 # Configuring Password Policy
 
-* [Setting up Password Policy](#setting-up-password-policy)
+* [Setting up Password Reset Enforcer](#setting-up-password-reset-enforcer)
 * [Enabling the Password History Feature](#enabling-the-password-history-feature)
 * [Enabling Email Notifications](#enabling-email-notifications)
 
@@ -93,7 +93,7 @@ Follow the steps given below to test the Password Reset Enforcer.
 
 1. In the `Identity` section under the `Main` tab, click `List` under `Claims`.
 2. Click `http://wso2.org/claims`.
-3. Click `Edit` next to `Last Password Update Time` claim.
+3. Click `Edit` next to `Last Password Update` claim.
 4. To test the sample, the password needs be expired manually. To edit the claim manually later, select `Supported by Default` checkbox.
 5. Click `Update` to save the changes.
    ![Updating the Claim](img/update-claim.png "Updating the Claim")
@@ -152,7 +152,7 @@ The following artifacts need to be deployed for IS Analytics to work properly
 2. Copy the email event publisher (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is-analytics/PasswordRotationPolicy-Publisher-email-Notifications-1.0.0.xml`) to the `<IS_ANALYTICS_HOME>/repository/deployment/server/eventpublishers/` directory.
    You may edit the `<inline>` tag in this file to change the email template according to your requirements.
 3. [Start](https://docs.wso2.com/display/DAS310/Running+the+Product) the IS Analytics Server and log in. (Restart the server if the server is already running)
-4. Install Password Reset Enforcer Carbon App (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is-analytics/password_policy-1.0.0.car`)
+4. Install Password Reset Enforcer Carbon App (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is-analytics/password_policy.car`)
 
 #### Configuring IS Analytics
 
@@ -173,7 +173,7 @@ For IS Analytics to send notifications a new scenario needs to be added in the T
 
 #### Enabling Data Publishers
 
-The email notifications depends on the data published from the following [audit data publishers](https://github.com/nadundesilva/identity-outbound-auth-passwordPolicy.git).
+The email notifications depends on the data published from the following [audit data publishers](https://docs.wso2.com/display/IS550/Prerequisites+to+Publish+Statistics#PrerequisitestoPublishStatistics-ConfiguringAuditDataPublishers).
 
 * User Operation Audit Data Publisher (`org.wso2.carbon.identity.data.publisher.audit.user.operation.impl.UserOperationDataPublisher`)
 * Resident IdP Properties Update Audit Data Publisher (`org.wso2.carbon.identity.data.publisher.audit.idp.properties.impl.ResidentIdPPropertiesDataPublisher`)

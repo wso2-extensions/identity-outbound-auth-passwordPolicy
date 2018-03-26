@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -81,7 +81,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
     public AuthenticatorFlowStatus process(HttpServletRequest request, HttpServletResponse response,
                                            AuthenticationContext context)
             throws AuthenticationFailedException {
-        // if the logout request comes, then no need to go through and doing complete the flow.
+        // If the logout request comes, then no need to go through and doing complete the flow.
         if (context.isLogoutRequest()) {
             return AuthenticatorFlowStatus.SUCCESS_COMPLETED;
         }
@@ -102,7 +102,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
     }
 
     /**
-     * this will prompt user to change the credentials only if the last password
+     * This will prompt user to change the credentials only if the last password
      * changed time has gone beyond the pre-configured value.
      *
      * @param response the response
@@ -132,7 +132,8 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                 try {
                     // Creating the URL to which the user will be redirected
                     String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
-                            .replace("login.do", "pwd-reset.jsp");
+                            .replace(PasswordPolicyConstants.LOGIN_STANDARD_PAGE,
+                                    PasswordPolicyConstants.PASSWORD_RESET_ENFORCER_PAGE);
                     String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                             context.getCallerSessionKey(), context.getContextIdentifier());
                     String retryParam = "";
@@ -295,10 +296,6 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             if (StringUtils.isEmpty(errorMsg)) {
                 errorMsg = "New password doesn't meet the policy requirement. " +
                         "It must be in the following format, " + regularExpression;
-            }
-
-            if (log.isDebugEnabled()) {
-                log.debug(errorMsg);
             }
             throw new AuthenticationFailedException(errorMsg);
         }

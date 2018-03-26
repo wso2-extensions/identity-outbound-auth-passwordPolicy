@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -63,6 +63,9 @@ public class PasswordPolicyConstants {
     public static final String CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DESCRIPTION =
             "Number of days before the password expiry that the users should be reminded of password expiry";
     public static final int CONNECTOR_CONFIG_PRIOR_NOTICE_TIME_IN_DAYS_DEFAULT_VALUE = 0;
+
+    public static final String LOGIN_STANDARD_PAGE = "login.do";
+    public static final String PASSWORD_RESET_ENFORCER_PAGE = "pwd-reset.jsp";
 
     private PasswordPolicyConstants() {      // To prevent instantiation
     }
