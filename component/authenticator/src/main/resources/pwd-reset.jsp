@@ -20,6 +20,7 @@
 <%@page import="java.util.Arrays" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="org.owasp.encoder.Encode" %>
 <%@page import="org.wso2.carbon.identity.application.authentication.endpoint.util.Constants" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.TenantDataManager" %>
@@ -130,19 +131,19 @@
 
                 </div>
                 <input type="hidden" name="sessionDataKey"
-                   value='<%=request.getParameter("sessionDataKey")%>'/>
+                   value='<%=Encode.forHtmlAttribute(request.getParameter("sessionDataKey"))%>'/>
                  <div class='col-md-12 form-group'>
                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group">
                            <input id="currentPassword" name="CURRENT_PWD" type="password" class="form-control" tabindex="0"
-                                  placeholder="Current Password">
+                                  placeholder="Current Password" autocomplete="off">
                        </div>
                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group">
                            <input id="newPassword" name="NEW_PWD" type="password" class="form-control"
-                                  placeholder="New Password">
+                                  placeholder="New Password" autocomplete="off">
                           </div>
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group">
                            <input id="repeatPassword" name="NEW_PWD_CONFIRMATION" type="password" class="form-control"
-                                  placeholder="Repeat Password">
+                                  placeholder="Repeat Password" autocomplete="off">
                             </div>
                             <div class='form-row'>
                                <div class='col-md-12 form-group'>
