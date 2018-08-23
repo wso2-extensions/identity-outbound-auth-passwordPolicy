@@ -23,7 +23,7 @@
 3. Copy the authentication page (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/pwd-reset.jsp`) to the `<IS_HOME>/repository/deployment/server/webapps/authenticationendpoint/` directory.
    
    > This directory is created after the first time you run Identity Server. If this is your first time, start the server once first.
-4. Copy the connector (`org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-1.0.5.jar`) to the `<IS_HOME>/repository/components/dropins/` directory.
+4. Copy the connector (`org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-<version>.jar`) to the `<IS_HOME>/repository/components/dropins/` directory.
 
 > Please note that the Identity Server needs to be restarted after doing the above steps for the changes to take effect.
 
