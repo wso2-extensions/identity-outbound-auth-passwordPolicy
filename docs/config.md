@@ -141,6 +141,8 @@ Edit the `<IS_ANALYTICS_HOME>/repository/conf/output-event-adapters.xml` file an
     <property key="jobQueueSize">10000</property>
 </adapterConfig>
 ```
+> * In gmail [account security settings](https://myaccount.google.com/security) you may have to enable "Allow less secure apps" option in order to connect account to WSO2 products.
+> * When SMTP is used with SSL, it is required to extract the certificate of the email server and add it to the trust store of WSO2 DAS. For detailed instructions, see [Creating New Keystores - Adding the public key to client-truststore.jks](https://docs.wso2.com/display/DAS300/Creating+New+Keystores#CreatingNewKeystores-AddPublicKey).
 
 Please note that the server needs to be restarted for the changes to take effect. (We can restart the server in the next section deploying artifacts.)
 
