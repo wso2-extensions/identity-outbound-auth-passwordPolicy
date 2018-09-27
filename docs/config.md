@@ -175,10 +175,29 @@ For IS Analytics to send notifications a new scenario needs to be added in the T
 
 #### Enabling Data Publishers
 
-The email notifications depends on the data published from the following [audit data publishers](https://docs.wso2.com/display/IS550/Prerequisites+to+Publish+Statistics#PrerequisitestoPublishStatistics-ConfiguringAuditDataPublishers).
+The email notifications depends on the data published from the following audit data publishers
 
-* User Operation Audit Data Publisher (`org.wso2.carbon.identity.data.publisher.audit.user.operation.impl.UserOperationDataPublisher`)
-* Resident IdP Properties Update Audit Data Publisher (`org.wso2.carbon.identity.data.publisher.audit.idp.properties.impl.ResidentIdPPropertiesDataPublisher`)
+* Add the following lines to <IS_HOME>/repository/conf/identity/identity-event.properties file.
+
+>module.name.13=userOperationDataDASPublisher
+userOperationDataDASPublisher.subscription.1=POST_UPDATE_CREDENTIAL
+userOperationDataDASPublisher.subscription.2=POST_UPDATE_CREDENTIAL_BY_ADMIN
+userOperationDataDASPublisher.subscription.3=POST_ADD_USER
+userOperationDataDASPublisher.subscription.4=POST_DELETE_USER
+userOperationDataDASPublisher.subscription.5=POST_SET_USER_CLAIMS\
+
+
+* Follow the below steps to configure Identity Properties Update Audit Data Publishers:
+
+Copy the org.wso2.carbon.identity.data.publisher.audit.idp.properties-x.x.x.jar file to <IS_HOME>/repository/component/dropins/ directory.
+
+Copy the org.wso2.is.analytics.stream.IdPPropertiesUpdate_1.0.0.json file to <IS_HOME>/repository/deployment/server/eventstreams/ directory.
+
+Copy the IsAnalytics-Publisher-wso2event-IdPPropertiesUpdate.xml file to <IS_HOME>/repository/deployment/server/eventpublishers/ directory.
+
+Add the following lines to <IS_HOME>/repository/conf/identity/identity.xml file under the <EventListeners> tag.
+
+>\<EventListener type="org.wso2.carbon.idp.mgt.listener.IdentityProviderMgtListener" name="org.wso2.carbon.identity.data.publisher.audit.idp.properties.impl.ResidentIdPPropertiesDataPublisher" orderId="200" enable="true"/>
 
 > Please note that the user emails and some of the configurations will be saved in IS Analytics tables if you enable these data publishers. Upon user deletion in the Identity Server, the emails will be deleted from the tables in IS Analytics as well.
 
