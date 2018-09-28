@@ -191,14 +191,14 @@ userOperationDataDASPublisher.subscription.5=POST_SET_USER_CLAIMS
 
 * Follow the below steps to configure Identity Properties Update Audit Data Publishers:
 
-Copy the <PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/org.wso2.carbon.identity.data.publisher.audit.idp.properties-x.x.x.jar file to <IS_HOME>/repository/component/dropins/ directory.
+Copy the `<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/org.wso2.carbon.identity.data.publisher.audit.idp.properties-x.x.x.jar ` file to `<IS_HOME>/repository/component/dropins/ directory`.
 
-Copy the       <PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/org.wso2.is.analytics.stream.IdPPropertiesUpdate_1.0.0.json file to <IS_HOME>/repository/deployment/server/eventstreams/ directory.
+Copy the       `<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/org.wso2.is.analytics.stream.IdPPropertiesUpdate_1.0.0.json` file to `<IS_HOME>/repository/deployment/server/eventstreams/ directory`.
 
 Copy the  
-<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/IsAnalytics-Publisher-wso2event-IdPPropertiesUpdate.xml file to <IS_HOME>/repository/deployment/server/eventpublishers/ directory.
+`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/IsAnalytics-Publisher-wso2event-IdPPropertiesUpdate.xml` file to `<IS_HOME>/repository/deployment/server/eventpublishers/ directory`.
 
-Add the following lines to <IS_HOME>/repository/conf/identity/identity.xml file under the <EventListeners> tag.
+Add the following lines to `<IS_HOME>/repository/conf/identity/identity.xml ` file under the `<EventListeners> ` tag.
 
 ```xml
 <EventListener type="org.wso2.carbon.idp.mgt.listener.IdentityProviderMgtListener" name="org.wso2.carbon.identity.data.publisher.audit.idp.properties.impl.ResidentIdPPropertiesDataPublisher" orderId="200" enable="true"/>
