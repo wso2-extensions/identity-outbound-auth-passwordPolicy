@@ -175,7 +175,7 @@ For IS Analytics to send notifications a new scenario needs to be added in the T
 
 #### Enabling Data Publishers
 
-The email notifications depends on the data published from the following audit data publishers
+The email notifications depends on the data published from the following [audit data publishers](https://docs.wso2.com/display/IS560/Prerequisites+to+Publish+Statistics#PrerequisitestoPublishStatistics-Configuringauditdatapublishers)
 
 * Add the following lines to <IS_HOME>/repository/conf/identity/identity-event.properties file.
 
@@ -186,6 +186,7 @@ userOperationDataDASPublisher.subscription.3=POST_ADD_USER
 userOperationDataDASPublisher.subscription.4=POST_DELETE_USER
 userOperationDataDASPublisher.subscription.5=POST_SET_USER_CLAIMS
 
+ > Replace the module number `13` in `module.name.13=passwordExpiry` to one higher than the largest module number in the `identity-event.properties` file.
 
 * Follow the below steps to configure Identity Properties Update Audit Data Publishers:
 
