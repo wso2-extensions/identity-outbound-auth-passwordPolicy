@@ -151,7 +151,7 @@ Please note that the server needs to be restarted for the changes to take effect
 The following artifacts need to be deployed for IS Analytics to work properly
 
 1. Copy the domain template (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is-analytics/password-policy-notifications.xml`) to the `<IS_ANALYTICS_HOME>/repository/conf/template-manager/domain-template/` directory.
-2. Copy the email event publisher (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is-analytics/PasswordRotationPolicy-Publisher-email-Notifications-1.0.0.xml`) to the `<IS_ANALYTICS_HOME>/repository/deployment/server/eventpublishers/` directory.
+2. Copy the email event publisher (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is-analytics/PasswordPolicy-Publisher-email-Notifications-1.0.0.xml`) to the `<IS_ANALYTICS_HOME>/repository/deployment/server/eventpublishers/` directory.
    You may edit the `<inline>` tag in this file to change the email template according to your requirements.
 3. [Start](https://docs.wso2.com/display/DAS310/Running+the+Product) the IS Analytics Server and log in. (Restart the server if the server is already running)
 4. Install Password Reset Enforcer Carbon App (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is-analytics/password_policy.car`)
@@ -184,16 +184,16 @@ userOperationDataDASPublisher.subscription.1=POST_UPDATE_CREDENTIAL
 userOperationDataDASPublisher.subscription.2=POST_UPDATE_CREDENTIAL_BY_ADMIN
 userOperationDataDASPublisher.subscription.3=POST_ADD_USER
 userOperationDataDASPublisher.subscription.4=POST_DELETE_USER
-userOperationDataDASPublisher.subscription.5=POST_SET_USER_CLAIMS\
+userOperationDataDASPublisher.subscription.5=POST_SET_USER_CLAIMS
 
 
 * Follow the below steps to configure Identity Properties Update Audit Data Publishers:
 
-Copy the org.wso2.carbon.identity.data.publisher.audit.idp.properties-x.x.x.jar file to <IS_HOME>/repository/component/dropins/ directory.
+Copy the <PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/org.wso2.carbon.identity.data.publisher.audit.idp.properties-x.x.x.jar file to <IS_HOME>/repository/component/dropins/ directory.
 
-Copy the org.wso2.is.analytics.stream.IdPPropertiesUpdate_1.0.0.json file to <IS_HOME>/repository/deployment/server/eventstreams/ directory.
+Copy the <PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/org.wso2.is.analytics.stream.IdPPropertiesUpdate_1.0.0.json file to <IS_HOME>/repository/deployment/server/eventstreams/ directory.
 
-Copy the IsAnalytics-Publisher-wso2event-IdPPropertiesUpdate.xml file to <IS_HOME>/repository/deployment/server/eventpublishers/ directory.
+Copy the <PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/IsAnalytics-Publisher-wso2event-IdPPropertiesUpdate.xml file to <IS_HOME>/repository/deployment/server/eventpublishers/ directory.
 
 Add the following lines to <IS_HOME>/repository/conf/identity/identity.xml file under the <EventListeners> tag.
 
