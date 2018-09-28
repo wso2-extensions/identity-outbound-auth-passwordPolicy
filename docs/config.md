@@ -179,13 +179,14 @@ The email notifications depends on the data published from the following [audit 
 
 * Add the following lines to <IS_HOME>/repository/conf/identity/identity-event.properties file.
 
->module.name.13=userOperationDataDASPublisher
+```xml
+module.name.13=userOperationDataDASPublisher
 userOperationDataDASPublisher.subscription.1=POST_UPDATE_CREDENTIAL
 userOperationDataDASPublisher.subscription.2=POST_UPDATE_CREDENTIAL_BY_ADMIN
 userOperationDataDASPublisher.subscription.3=POST_ADD_USER
 userOperationDataDASPublisher.subscription.4=POST_DELETE_USER
 userOperationDataDASPublisher.subscription.5=POST_SET_USER_CLAIMS
-
+```
  > Replace the module number `13` in `module.name.13=passwordExpiry` to one higher than the largest module number in the `identity-event.properties` file.
 
 * Follow the below steps to configure Identity Properties Update Audit Data Publishers:
@@ -199,8 +200,9 @@ Copy the
 
 Add the following lines to <IS_HOME>/repository/conf/identity/identity.xml file under the <EventListeners> tag.
 
->\<EventListener type="org.wso2.carbon.idp.mgt.listener.IdentityProviderMgtListener" name="org.wso2.carbon.identity.data.publisher.audit.idp.properties.impl.ResidentIdPPropertiesDataPublisher" orderId="200" enable="true"/>
-
+```xml
+<EventListener type="org.wso2.carbon.idp.mgt.listener.IdentityProviderMgtListener" name="org.wso2.carbon.identity.data.publisher.audit.idp.properties.impl.ResidentIdPPropertiesDataPublisher" orderId="200" enable="true"/>
+```
 > Please note that the user emails and some of the configurations will be saved in IS Analytics tables if you enable these data publishers. Upon user deletion in the Identity Server, the emails will be deleted from the tables in IS Analytics as well.
 
 #### Configuring Identity Server
