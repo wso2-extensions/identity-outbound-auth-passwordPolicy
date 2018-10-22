@@ -10,6 +10,8 @@
 
 1. Download the Password Reset Enforcer and its artifacts from [WSO2 Store](https://store.wso2.com/store/assets/isconnector/details/502efeb1-cc59-4b62-a197-8c612797933c).
 2. Add the following lines to `<IS_HOME>/repository/conf/identity/identity-event.properties` file
+
+> Please make sure that the you have latest wum updated IS pack .
    ```
    module.name.13=passwordExpiry
    passwordExpiry.subscription.1=POST_UPDATE_CREDENTIAL
@@ -112,6 +114,8 @@ This will force the users to not use a previously used password again for a numb
 Please follow the instructions given in the [Password History Validation Policy](https://docs.wso2.com/display/IS540/Password+History+Validation) to enable this feature.
 
 ## Enabling Email Notifications
+
+> Please note that this feature will only work with IS 5.6 and above.
 
 To enable email notifications you need [WSO2 IS Analytics](https://wso2.com/identity-and-access-management) Instance running alongside the WSO2 Identity Server.
 
