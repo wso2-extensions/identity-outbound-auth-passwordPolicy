@@ -11,7 +11,7 @@
 1. Download the Password Reset Enforcer and its artifacts from [WSO2 Store](https://store.wso2.com/store/assets/isconnector/details/502efeb1-cc59-4b62-a197-8c612797933c).
 2. Add the following lines to `<IS_HOME>/repository/conf/identity/identity-event.properties` file
 
-> Please make sure that the you have latest wum updated IS pack .
+> Please make sure that you have the latest wum updated IS pack.
    ```
    module.name.13=passwordExpiry
    passwordExpiry.subscription.1=POST_UPDATE_CREDENTIAL
