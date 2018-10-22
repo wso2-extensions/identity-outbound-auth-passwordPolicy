@@ -9,9 +9,10 @@
 ### Deploying Artifacts
 
 1. Download the Password Reset Enforcer and its artifacts from [WSO2 Store](https://store.wso2.com/store/assets/isconnector/details/502efeb1-cc59-4b62-a197-8c612797933c).
-2. Add the following lines to `<IS_HOME>/repository/conf/identity/identity-event.properties` file
 
-> Please make sure that you have downloaded the latest wum updated IS pack.
+2. Download the latest wum updated IS pack from [here](https://wso2.com/identity-and-access-management/)
+
+2. Add the following lines to `<IS_HOME>/repository/conf/identity/identity-event.properties` file
 
    ```
    module.name.13=passwordExpiry
@@ -116,7 +117,7 @@ Please follow the instructions given in the [Password History Validation Policy]
 
 ## Enabling Email Notifications
 
-> Please note that this feature will only work with IS 5.6 and above.
+> This feature is only supported for IS versions 5.6.0 and above.
 
 To enable email notifications you need [WSO2 IS Analytics](https://wso2.com/identity-and-access-management) Instance running alongside the WSO2 Identity Server.
 
