@@ -181,8 +181,6 @@ For IS Analytics to send notifications a new scenario needs to be added in the T
 
 #### Enabling Data Publishers
 
-The email notifications depends on the data published from the following [audit data publishers](https://docs.wso2.com/display/IS560/Prerequisites+to+Publish+Statistics#PrerequisitestoPublishStatistics-Configuringauditdatapublishers)
-
 * Add the following lines to <IS_HOME>/repository/conf/identity/identity-event.properties file.
 
 ```xml
@@ -210,6 +208,13 @@ Add the following lines to `<IS_HOME>/repository/conf/identity/identity.xml ` fi
 <EventListener type="org.wso2.carbon.idp.mgt.listener.IdentityProviderMgtListener" name="org.wso2.carbon.identity.data.publisher.audit.idp.properties.impl.ResidentIdPPropertiesDataPublisher" orderId="200" enable="true"/>
 ```
 > Please note that the user emails and some of the configurations will be saved in IS Analytics tables if you enable these data publishers. Upon user deletion in the Identity Server, the emails will be deleted from the tables in IS Analytics as well.
+
+
+* Follow the steps below to configure user-operations audit data publishers:
+
+Copy the `org.wso2.carbon.identity.data.publisher.audit.user.operation-x.x.x.jar` file from the `<IS_HOME>/repository/components/plugins/`  directory to the  `<IS_HOME>/repository/component/dropins/` directory.
+
+Copy the `org.wso2.is.analytics.stream.OverallUserData_x.x.x.json` file from the  `<IS_HOME>/repository/components/features/org.wso2.carbon.identity.data.publisher.audit.user.operation.server_x.x.x/`  directory to the `<IS_HOME>/repository/deployment/server/eventstreams/` directory.
 
 #### Configuring Identity Server
 
