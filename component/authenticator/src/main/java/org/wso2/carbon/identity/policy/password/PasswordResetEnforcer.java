@@ -31,8 +31,11 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.A
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.mgt.policy.PolicyViolationException;
+import org.wso2.carbon.identity.password.history.exeption.IdentityPasswordHistoryException;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
@@ -200,7 +203,8 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
 
             // Updating the credentials
             try {
-                validatePassword(userStoreManager, newPassword);
+                String domain = UserCoreUtil.extractDomainFromName(tenantAwareUsername);
+                validatePassword(userStoreManager, newPassword, domain);
 
                 // Since password is valid updating credentials
                 userStoreManager.updateCredential(tenantAwareUsername, newPassword, currentPassword);
@@ -285,8 +289,12 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
      * @param password         The password that needs to be validated
      * @throws AuthenticationFailedException If the password is invalid
      */
-    private void validatePassword(UserStoreManager userStoreManager, String password)
+    private void validatePassword(UserStoreManager userStoreManager, String password, String domain)
             throws AuthenticationFailedException {
+
+        if (StringUtils.isNotBlank(domain) && !UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME.equals(domain)) {
+            userStoreManager = userStoreManager.getSecondaryUserStoreManager(domain);
+        }
         String regularExpression = userStoreManager.getRealmConfiguration()
                 .getUserStoreProperty("PasswordJavaRegEx");
         if (StringUtils.isNotEmpty(regularExpression) && !isFormatCorrect(regularExpression, password)) {
@@ -328,7 +336,25 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         if (e.getMessage().contains("PasswordInvalid")) {
             errorMessage = "Invalid credentials. Cannot proceed with the password change.";
         }
+        if (isPasswordPolicyViolationError(e)) {
+            errorMessage = e.getMessage();
+        }
         return errorMessage;
+    }
+
+    private boolean isPasswordPolicyViolationError(Throwable e) {
+
+        while (e != null) {
+            if (e.getCause() instanceof PolicyViolationException) {
+                return true;
+            }
+            if (e.getCause() instanceof IdentityPasswordHistoryException) {
+                return true;
+            }
+            e = e.getCause();
+        }
+
+        return false;
     }
 
     /**
