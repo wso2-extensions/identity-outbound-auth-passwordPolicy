@@ -20,16 +20,12 @@ package org.wso2.carbon.identity.policy.password;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
-import org.wso2.carbon.identity.governance.IdentityGovernanceException;
-import org.wso2.carbon.identity.policy.password.internal.PasswordPolicyDataHolder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Utilities for password change enforcing.
@@ -61,40 +57,20 @@ public class PasswordPolicyUtils {
      * @return The required property
      */
     public static String getIdentityEventProperty(String tenantDomain, String propertyName) {
+
         // Retrieving properties set in identity event properties
-        Property[] identityProperties = null;
-        try {
-            identityProperties = PasswordPolicyDataHolder.getInstance().getIdentityGovernanceService()
-                    .getConfiguration(PasswordPolicyUtils.getPasswordExpiryPropertyNames(), tenantDomain);
-        } catch (IdentityGovernanceException e) {
-            log.warn("Using default property values because error occurred while retrieving password expiry " +
-                    "properties due to " + e.getMessage(), e);
-        }
-
-        // Getting the password expiry in days
         String propertyValue = null;
-        if (identityProperties != null) {
-            for (Property identityProperty : identityProperties) {
-                if (Objects.equals(propertyName, identityProperty.getName())) {
-                    propertyValue = identityProperty.getValue();
-                }
+        try {
+            ModuleConfiguration moduleConfiguration = IdentityEventConfigBuilder.getInstance()
+                    .getModuleConfigurations(PasswordPolicyConstants.PASSWORD_CHANGE_EVENT_HANDLER_NAME);
+
+            if (moduleConfiguration != null) {
+                propertyValue = moduleConfiguration.getModuleProperties().getProperty(propertyName);
             }
-        }
-
-        if (propertyValue == null) {
-            // Loading default value from module configuration
-            try {
-                ModuleConfiguration moduleConfiguration = IdentityEventConfigBuilder.getInstance()
-                        .getModuleConfigurations(PasswordPolicyConstants.PASSWORD_CHANGE_EVENT_HANDLER_NAME);
-
-                if (moduleConfiguration != null) {
-                    propertyValue = moduleConfiguration.getModuleProperties().getProperty(propertyName);
-                } else {
-                    log.warn("Using default property values because no module configurations are present.");
-                }
-            } catch (IdentityEventException e) {
-                log.warn("Using default property values because error occurred while retrieving module properties " +
-                        "because " + e.getMessage(), e);
+        } catch (IdentityEventException e) {
+            log.warn("An error occurred while retrieving module properties");
+            if (log.isDebugEnabled()) {
+                log.debug("An error occurred while retrieving module properties because " + e.getMessage(), e);
             }
         }
         return propertyValue;

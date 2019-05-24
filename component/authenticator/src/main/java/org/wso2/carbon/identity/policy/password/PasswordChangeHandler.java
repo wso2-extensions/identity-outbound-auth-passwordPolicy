@@ -129,6 +129,12 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         if (passwordExpiryInDays == null) {     // To avoid null pointer exceptions if user had not added module config
             passwordExpiryInDays =
                     Integer.toString(PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE);
+            if (log.isDebugEnabled()) {
+                log.debug("Using the default property value: " +
+                        PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE + " for the " +
+                        "configuration: " + PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS
+                        + " because no module configuration is present.");
+            }
         }
         properties.setProperty(PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS, passwordExpiryInDays);
 
@@ -138,6 +144,12 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         if (enableDataPublishing == null) {     // To avoid null pointer exceptions if user had not added module config
             enableDataPublishing =
                     Boolean.toString(PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS_DEFAULT_VALUE);
+            if (log.isDebugEnabled()) {
+                log.debug("Using the default property value: " +
+                        PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS_DEFAULT_VALUE + " for the "
+                        + "configuration: " + PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS
+                        + " because no module configuration is present.");
+            }
         }
         properties.setProperty(PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS,
                 enableDataPublishing);
@@ -148,6 +160,12 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         if (priorReminderTimeInDays == null) {   // To avoid null pointer exceptions if user had not added module config
             priorReminderTimeInDays =
                     Integer.toString(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_NOTICE_TIME_IN_DAYS_DEFAULT_VALUE);
+            if (log.isDebugEnabled()) {
+                log.debug("Using the default property value: " +
+                        PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_NOTICE_TIME_IN_DAYS_DEFAULT_VALUE + " for the "
+                        + "configuration: " + PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS
+                        + " because no module configuration is present.");
+            }
         }
         properties.setProperty(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS,
                 priorReminderTimeInDays);
