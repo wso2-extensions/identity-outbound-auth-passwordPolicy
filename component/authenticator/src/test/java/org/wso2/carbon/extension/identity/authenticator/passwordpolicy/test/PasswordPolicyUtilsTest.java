@@ -55,20 +55,4 @@ public class PasswordPolicyUtilsTest {
         Assert.assertEquals(passwordExpiryPropertyNames[2],
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS);
     }
-
-    @Test
-    public void testGetIdentityEventProperty() throws IdentityGovernanceException {
-        Property[] properties = new Property[1];
-        Property property = new Property();
-        property.setName("test");
-        property.setValue("testValue");
-        properties[0] = property;
-
-        IdentityGovernanceService identityGovernanceService = mock(IdentityGovernanceService.class);
-        when(identityGovernanceService.getConfiguration(Mockito.any(String[].class), Mockito.eq(TENANT_DOMAIN)))
-                .thenReturn(properties);
-        PasswordPolicyDataHolder.getInstance().setIdentityGovernanceService(identityGovernanceService);
-
-        Assert.assertEquals(PasswordPolicyUtils.getIdentityEventProperty(TENANT_DOMAIN, "test"), "testValue");
-    }
 }
