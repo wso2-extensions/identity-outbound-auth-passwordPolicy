@@ -117,7 +117,7 @@ Please follow the instructions given in the [Password History Validation Policy]
 
 ## Enabling Email Notifications
 
-> This feature is only supported for IS versions 5.6.0 and above.
+> This feature is only supported for IS versions 5.6.0 .
 
 To enable email notifications you need [WSO2 IS Analytics](https://wso2.com/identity-and-access-management) Instance running alongside the WSO2 Identity Server.
 
