@@ -41,7 +41,7 @@ import org.wso2.carbon.identity.policy.password.PasswordResetEnforcer;
         immediate = true
 )
 public class PasswordPolicyServiceComponent {
-    private static Log log = LogFactory.getLog(PasswordPolicyServiceComponent.class);
+    private static final Log log = LogFactory.getLog(PasswordPolicyServiceComponent.class);
 
     @Activate
     protected void activate(ComponentContext ctxt) {
