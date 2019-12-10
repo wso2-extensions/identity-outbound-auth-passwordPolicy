@@ -59,6 +59,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
@@ -186,11 +187,14 @@ public class PasswordResetEnforcerTest {
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
+        when(userStoreManager.getRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.isLogoutRequest()).thenReturn(false);
         when(httpServletRequest.getParameter(PasswordPolicyConstants.CURRENT_PWD)).thenReturn("1234");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD)).thenReturn("7894");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION)).thenReturn("7894");
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
+        when(realmService.getTenantUserRealm(anyInt())).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
         AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
@@ -244,7 +248,7 @@ public class PasswordResetEnforcerTest {
     }
 
     @Test
-    public void testInitiateAuthRequest() throws Exception {
+    public void testInitiateAuthRequestForFederatedUser() throws Exception {
         mockStatic(IdentityTenantUtil.class);
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
@@ -252,7 +256,7 @@ public class PasswordResetEnforcerTest {
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
+        AuthenticatedUser user = AuthenticatedUser.createFederateAuthenticatedUserFromSubjectIdentifier("fooUser");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
         when(stepConfig.getAuthenticatedUser()).thenReturn(user);
