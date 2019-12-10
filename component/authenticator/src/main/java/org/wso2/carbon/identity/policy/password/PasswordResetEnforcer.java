@@ -46,6 +46,7 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -116,16 +117,14 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             throws AuthenticationFailedException {
         // Find the authenticated user.
         AuthenticatedUser authenticatedUser = getUser(context);
-        StepConfig stepConfig = context.getSequenceConfig().getStepMap().get(context.getCurrentStep() - 1);
 
         if (authenticatedUser == null) {
             throw new AuthenticationFailedException("Authentication failed!. " +
                     "Cannot proceed further without identifying the user");
         }
 
-        // The password reset flow for local authenticator
-        if (stepConfig.getAuthenticatedAutenticator().getApplicationAuthenticator() instanceof
-                LocalApplicationAuthenticator) {
+        // The password policy is enforced only for local users
+        if (!authenticatedUser.isFederatedUser()) {
             String tenantDomain = authenticatedUser.getTenantDomain();
             String username = authenticatedUser.getAuthenticatedSubjectIdentifier();
             String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
