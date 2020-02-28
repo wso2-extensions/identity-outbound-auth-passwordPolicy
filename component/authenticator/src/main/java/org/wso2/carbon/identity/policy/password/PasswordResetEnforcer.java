@@ -42,6 +42,7 @@ import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
+import java.security.PrivilegedActionException;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -346,8 +347,9 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         while (e != null) {
             if (e.getCause() instanceof PolicyViolationException) {
                 return true;
-            }
-            if (e.getCause() instanceof IdentityPasswordHistoryException) {
+            } else if (e.getCause() instanceof IdentityPasswordHistoryException) {
+                return true;
+            } else if(e.getCause() instanceof PrivilegedActionException) {
                 return true;
             }
             e = e.getCause();
