@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.A
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
+import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.mgt.policy.PolicyViolationException;
 import org.wso2.carbon.identity.password.history.exeption.IdentityPasswordHistoryException;
 import org.wso2.carbon.user.api.UserRealm;
@@ -42,7 +43,6 @@ import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
-import java.security.PrivilegedActionException;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -349,7 +349,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                 return true;
             } else if (e.getCause() instanceof IdentityPasswordHistoryException) {
                 return true;
-            } else if(e.getCause() instanceof PrivilegedActionException) {
+            } else if (e.getCause() instanceof IdentityEventException) {
                 return true;
             }
             e = e.getCause();
