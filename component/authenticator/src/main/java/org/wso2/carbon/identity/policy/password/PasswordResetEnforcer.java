@@ -349,7 +349,9 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                 return true;
             } else if (e.getCause() instanceof IdentityPasswordHistoryException) {
                 return true;
-            } else if (e.getCause() instanceof IdentityEventException) {
+            } else if (e.getCause() instanceof IdentityEventException &&
+                    ((IdentityEventException) e.getCause()).getErrorCode()
+                            .equals(PasswordPolicyConstants.PASSWORD_HISTORY_VIOLATION_ERROR_CODE)) {
                 return true;
             }
             e = e.getCause();
