@@ -66,6 +66,7 @@ public class PasswordPolicyConstants {
 
     public static final String LOGIN_STANDARD_PAGE = "login.do";
     public static final String PASSWORD_RESET_ENFORCER_PAGE = "pwd-reset.jsp";
+    public static final String PASSWORD_HISTORY_VIOLATION_ERROR_CODE = "22001";
 
     private PasswordPolicyConstants() {      // To prevent instantiation
     }
