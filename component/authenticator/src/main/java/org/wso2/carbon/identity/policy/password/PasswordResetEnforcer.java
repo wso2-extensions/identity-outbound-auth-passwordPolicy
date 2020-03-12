@@ -43,6 +43,8 @@ import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -141,11 +143,14 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                             context.getCallerSessionKey(), context.getContextIdentifier());
                     String retryParam = "";
                     if (context.isRetrying()) {
-                        retryParam = "&authFailure=true&authFailureMsg=" + errorMessage;
+                        retryParam = "&authFailure=true" +
+                                "&authFailureMsg=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8.name());
                     }
                     String fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername,
                             tenantDomain);
-                    String encodedUrl = (loginPage + ("?" + queryParams + "&username=" + fullyQualifiedUsername))
+                    String encodedUrl =
+                            (loginPage + ("?" + queryParams
+                            + "&username=" + URLEncoder.encode(fullyQualifiedUsername, StandardCharsets.UTF_8.name())))
                             + "&authenticators=" + getName() + ":" + PasswordPolicyConstants.AUTHENTICATOR_TYPE
                             + retryParam;
 
