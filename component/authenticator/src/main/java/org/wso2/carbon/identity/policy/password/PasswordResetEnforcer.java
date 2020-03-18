@@ -133,6 +133,9 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
 
             if (hadPasswordExpired(tenantDomain, tenantAwareUsername)) {
+                if (getName().equals(context.getProperty(PasswordPolicyConstants.LAST_FAILED_AUTHENTICATOR))) {
+                    context.setRetrying(true);
+                }
                 // The password has expired or the password changed time is not set
                 try {
                     // Creating the URL to which the user will be redirected
@@ -159,6 +162,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                     throw new AuthenticationFailedException(e.getMessage(), e);
                 }
                 context.setCurrentAuthenticator(getName());
+                context.setRetrying(false);
                 return AuthenticatorFlowStatus.INCOMPLETE;
             }
         }
