@@ -279,13 +279,19 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
         }
 
-        // Getting the number of days before password expiry in days
-        String passwordExpiryInDaysProperty = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
-                PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-        int passwordExpiryInDays =
-                PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
-        if (passwordExpiryInDaysProperty != null) {
-            passwordExpiryInDays = Integer.parseInt(passwordExpiryInDaysProperty);
+        int passwordExpiryInDays = PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
+
+        // Getting the configured number of days before password expiry in days
+        String passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils
+                .getResidentIdpProperty(tenantDomain, PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+
+        if (StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
+            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
+                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+        }
+
+        if (passwordExpiryInDaysConfiguredValue != null) {
+            passwordExpiryInDays = Integer.parseInt(passwordExpiryInDaysConfiguredValue);
         }
 
         return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
