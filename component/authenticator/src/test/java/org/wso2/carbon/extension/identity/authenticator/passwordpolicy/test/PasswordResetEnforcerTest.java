@@ -46,6 +46,7 @@ import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 import org.wso2.carbon.identity.policy.password.PasswordPolicyConstants;
 import org.wso2.carbon.identity.policy.password.PasswordResetEnforcer;
 import org.wso2.carbon.identity.policy.password.internal.PasswordPolicyDataHolder;
+import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
@@ -70,7 +71,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@PrepareForTest({IdentityTenantUtil.class, ConfigurationFacade.class, FrameworkUtils.class, CarbonUtils.class})
+@PrepareForTest({IdentityTenantUtil.class, ConfigurationFacade.class, FrameworkUtils.class, CarbonUtils.class,
+        IdentityProviderManager.class})
 public class PasswordResetEnforcerTest {
     private PasswordResetEnforcer passwordResetEnforcer;
 
@@ -118,6 +120,9 @@ public class PasswordResetEnforcerTest {
 
     @Mock
     private IdentityGovernanceService identityGovernanceService;
+
+    @Mock
+    private IdentityProviderManager identityProviderManager;
 
     @BeforeMethod
     public void setUp() {
@@ -273,6 +278,7 @@ public class PasswordResetEnforcerTest {
         mockStatic(ConfigurationFacade.class);
         mockStatic(FrameworkUtils.class);
         mockStatic(CarbonUtils.class);
+        mockStatic(IdentityProviderManager.class);
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
@@ -297,6 +303,8 @@ public class PasswordResetEnforcerTest {
         when(configurationFacade.getAuthenticationEndpointURL()).thenReturn("login.do");
         when(FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier())).thenReturn(null);
+        when(IdentityProviderManager.getInstance()).thenReturn(identityProviderManager);
+        when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(null);
 
         AuthenticatorFlowStatus status = Whitebox.invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
                 httpServletResponse, context, "");
@@ -311,6 +319,7 @@ public class PasswordResetEnforcerTest {
         mockStatic(ConfigurationFacade.class);
         mockStatic(FrameworkUtils.class);
         mockStatic(CarbonUtils.class);
+        mockStatic(IdentityProviderManager.class);
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
@@ -340,6 +349,8 @@ public class PasswordResetEnforcerTest {
                 eq(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM), isNull(String.class)))
                 .thenReturn(null);
         when(context.isRetrying()).thenReturn(true);
+        when(IdentityProviderManager.getInstance()).thenReturn(identityProviderManager);
+        when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(null);
 
         AuthenticatorFlowStatus status = Whitebox
                 .invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
