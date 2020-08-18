@@ -12,21 +12,21 @@
 
 2. Download the latest wum updated IS pack from [here](https://wso2.com/identity-and-access-management/).
 
-2. Add the following lines to `<IS_HOME>/repository/conf/identity/identity-event.properties` file
+2. Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file
 
    ```
-   module.name.13=passwordExpiry
-   passwordExpiry.subscription.1=POST_UPDATE_CREDENTIAL
-   passwordExpiry.subscription.2=POST_UPDATE_CREDENTIAL_BY_ADMIN
-   passwordExpiry.subscription.3=POST_ADD_USER
-   passwordExpiry.passwordExpiryInDays=30
-   passwordExpiry.enableDataPublishing=false
-   passwordExpiry.priorReminderTimeInDays=0
+   [[event_handler]]
+   name= "passwordExpiry"
+   subscriptions =["POST_UPDATE_CREDENTIAL", "POST_UPDATE_CREDENTIAL_BY_ADMIN", "POST_ADD_USER"]
+   [event_handler.properties]
+   passwordExpiryInDays= "30"
+   enableDataPublishing= false
+   priorReminderTimeInDays= "0"
    ```
-   > Replace the module number `13` in `module.name.13=passwordExpiry` to one higher than the largest module number in the `identity-event.properties` file.
 3. Copy the authentication page (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/pwd-reset.jsp`) to the `<IS_HOME>/repository/deployment/server/webapps/authenticationendpoint/` directory.
    
    > This directory is created after the first time you run Identity Server. If this is your first time, start the server once first.
+
 4. Copy the connector (`org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-<version>.jar`) to the `<IS_HOME>/repository/components/dropins/` directory.
 
 > Please note that the Identity Server needs to be restarted after doing the above steps for the changes to take effect.
