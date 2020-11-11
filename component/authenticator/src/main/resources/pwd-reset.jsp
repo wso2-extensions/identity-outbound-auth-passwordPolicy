@@ -16,15 +16,18 @@
   ~ under the License.
   --%>
 
-<%@page import="java.util.ArrayList" %>
-<%@page import="java.util.Arrays" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Arrays" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="org.owasp.encoder.Encode" %>
-<%@page import="org.wso2.carbon.identity.application.authentication.endpoint.util.Constants" %>
+<%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.Constants" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.TenantDataManager" %>
+<%@ page import="java.io.File" %>
 
+<%@ include file="includes/localize.jsp" %>
+<jsp:directive.include file="includes/init-url.jsp"/>
 
 <%
     request.getSession().invalidate();
@@ -33,16 +36,16 @@
     if (request.getAttribute(Constants.IDP_AUTHENTICATOR_MAP) != null) {
         idpAuthenticatorMapping = (Map<String, String>) request.getAttribute(Constants.IDP_AUTHENTICATOR_MAP);
     }
-    
+
     String errorMessage = "Authentication Failed! Please Retry";
     String authenticationFailed = "false";
-    
+
     if (Boolean.parseBoolean(request.getParameter(Constants.AUTH_FAILURE))) {
         authenticationFailed = "true";
-        
+
         if (request.getParameter(Constants.AUTH_FAILURE_MSG) != null) {
             errorMessage = request.getParameter(Constants.AUTH_FAILURE_MSG);
-            
+
             if (errorMessage.equalsIgnoreCase("authentication.fail.message")) {
                 errorMessage = "Authentication Failed! Please Retry";
             }
@@ -52,117 +55,105 @@
 
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WSO2 Identity Server</title>
-    
-    <link rel="icon" href="images/favicon.png" type="image/x-icon"/>
-    <link href="libs/bootstrap_3.3.5/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/Roboto.css" rel="stylesheet">
-    <link href="css/custom-common.css" rel="stylesheet">
-    
-    <script src="js/scripts.js"></script>
-    <script src="assets/js/jquery-1.7.1.min.js"></script>
-    <!--[if lt IE 9]>
-    <script src="js/html5shiv.min.js"></script>
-    <script src="js/respond.min.js"></script>
-    <![endif]-->
+    <!-- header -->
+    <%
+        File headerFile = new File(getServletContext().getRealPath("extensions/header.jsp"));
+        if (headerFile.exists()) {
+    %>
+        <jsp:include page="extensions/header.jsp"/>
+    <% } else { %>
+        <jsp:directive.include file="includes/header.jsp"/>
+    <% } %>
 </head>
 
-<body onload="getLoginDiv()">
+<body>
+    <main class="center-segment">
+        <div class="ui container medium center aligned middle aligned">
+            <!-- product-title -->
+            <%
+                File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
+                if (productTitleFile.exists()) {
+            %>
+                <jsp:include page="extensions/product-title.jsp"/>
+            <% } else { %>
+                <jsp:directive.include file="includes/product-title.jsp"/>
+            <% } %>
 
-<!-- header -->
-<header class="header header-default">
-    <div class="container-fluid"><br></div>
-    <div class="container-fluid">
-        <div class="pull-left brand float-remove-xs text-center-xs">
-            <a href="#">
-                <img src="images/logo-inverse.svg" alt="wso2" title="wso2" class="logo">
-                
-                <h1><em>Identity Server</em></h1>
-            </a>
-        </div>
-    </div>
-</header>
+            <div class="ui segment">
+                <!-- content -->
+                <h3 class="ui header">
+                    Change your password
+                </h3>
 
-<!-- page content -->
-<div class="container-fluid body-wrapper">
-    
-    <div class="row">
-        <div class="col-md-12">
-            
-            <!-- content -->
-            <div class="container col-xs-10 col-sm-6 col-md-6 col-lg-4 col-centered wr-content wr-login col-centered">
-                <div>
-                    <h2 class="wr-title blue-bg padding-double white boarder-bottom-blue margin-none">
-                        Change your password &nbsp;&nbsp;</h2>
+                <%
+                    if ("true".equals(authenticationFailed)) {
+                %>
+                <div class="ui visible negative message">
+                    <%=errorMessage%>
                 </div>
-                <div class="boarder-all ">
-                    <div class="clearfix"></div>
-                    <div class="padding-double login-form">
-                        <div id="errorDiv"></div>
-                        <%
-                            if ("true".equals(authenticationFailed)) {
-                        %>
-                        <div class="alert alert-danger" id="failed-msg">
-                            <%=errorMessage%>
+                <% } %>
+
+                <div id="ui visible negative message" hidden="hidden"></div>
+
+                <div class="ui divider hidden"></div>
+
+                <div class="segment-form">
+                    <form id="pin_form" class="ui large form" name="pin_form" action="../../commonauth"  method="POST">
+
+                        <input type="hidden" name="sessionDataKey" value='<%=Encode.forHtmlAttribute(request.getParameter("sessionDataKey"))%>'/>
+
+                        <div class="field">
+                            <label for="currentPassword">
+                                Current Password
+                            </label>
+                            <input id="currentPassword" name="CURRENT_PWD" type="password" tabindex="0" placeholder="Current Password" autocomplete="off">
                         </div>
-                        <% }
-                        
-                        %>
-                        <form id="pin_form" name="pin_form" action="../../commonauth"  method="POST">
-                            <div id="loginTable1" class="identity-box">
-                                <div class="row">
-                                    <div class="span6">
-                                        <!-- Token Pin -->
-                                        <div class="control-group">
-                                        
-                                        </div>
-                                        <input type="hidden" name="sessionDataKey"
-                                               value='<%=Encode.forHtmlAttribute(request.getParameter("sessionDataKey"))%>'/>
-                                        <div class='col-md-12 form-group'>
-                                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group">
-                                                <input id="currentPassword" name="CURRENT_PWD" type="password" class="form-control" tabindex="0"
-                                                       placeholder="Current Password" autocomplete="off">
-                                            </div>
-                                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group">
-                                                <input id="newPassword" name="NEW_PWD" type="password" class="form-control"
-                                                       placeholder="New Password" autocomplete="off">
-                                            </div>
-                                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group">
-                                                <input id="repeatPassword" name="NEW_PWD_CONFIRMATION" type="password" class="form-control"
-                                                       placeholder="Repeat Password" autocomplete="off">
-                                            </div>
-                                            <div class='col-xs-12 col-sm-12 col-md-12 col-lg-12 form-group'>
-                                                <button class='form-control btn btn-primary submit-button' type='submit' onclick="$('#loading').show();">Change password</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    
-                    </div>
+
+                        <div class="field">
+                            <label for="newPassword">
+                                New Password
+                            </label>
+                            <input id="newPassword" name="NEW_PWD" type="password" placeholder="New Password" autocomplete="off">
+                        </div>
+
+                        <div class="field">
+                            <label for="repeatPassword">
+                                Repeat Password
+                            </label>
+                            <input id="repeatPassword" name="NEW_PWD_CONFIRMATION" type="password" class="form-control" placeholder="Repeat Password" autocomplete="off">
+                        </div>
+
+                        <div class="ui divider hidden"></div>
+
+                        <div class="align-right buttons">
+                            <button id="recoverySubmit" class="ui primary button" type="submit" onclick="$('#loading').show();">
+                                Change password
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <!-- /content -->
-            
             </div>
         </div>
-        <!-- /content/body -->
-    
-    </div>
-</div>
+    </main>
+    <!-- /content/body -->
+    <!-- product-footer -->
+    <%
+        File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
+        if (productFooterFile.exists()) {
+    %>
+        <jsp:include page="extensions/product-footer.jsp"/>
+    <% } else { %>
+        <jsp:directive.include file="includes/product-footer.jsp"/>
+    <% } %>
 
-<!-- footer -->
-<footer class="footer">
-    <div class="container-fluid">
-        <p>WSO2 Identity Server | &copy;
-            <script>document.write(new Date().getFullYear());</script>
-            <a href="http://wso2.com/" target="_blank"><i class="icon fw fw-wso2"></i> Inc</a>. All Rights Reserved.
-        </p>
-    </div>
-</footer>
-<script src="libs/jquery_1.11.3/jquery-1.11.3.js"></script>
-<script src="libs/bootstrap_3.3.5/js/bootstrap.min.js"></script>
+    <!-- footer -->
+    <%
+        File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
+        if (footerFile.exists()) {
+    %>
+        <jsp:include page="extensions/footer.jsp"/>
+    <% } else { %>
+        <jsp:directive.include file="includes/footer.jsp"/>
+    <% } %>
 </body>
 </html>
