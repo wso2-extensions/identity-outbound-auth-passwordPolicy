@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.mgt.policy.PolicyViolationException;
 import org.wso2.carbon.identity.password.history.exeption.IdentityPasswordHistoryException;
+import org.wso2.carbon.user.api.ClaimManager;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserCoreConstants;
@@ -246,24 +247,38 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
     private boolean hadPasswordExpired(String tenantDomain, String tenantAwareUsername)
             throws AuthenticationFailedException {
         UserStoreManager userStoreManager;
+        UserRealm userRealm;
         try {
             int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
             RealmService realmService = IdentityTenantUtil.getRealmService();
-            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+            userRealm = realmService.getTenantUserRealm(tenantId);
             userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
         } catch (UserStoreException e) {
             throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
         }
 
         String passwordLastChangedTime;
+        String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
         try {
-            String[] claimURIs = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-            Map<String, String> claimValueMap =
-                    userStoreManager.getUserClaimValues(tenantAwareUsername, claimURIs, null);
-            passwordLastChangedTime = claimValueMap.get(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM);
-        } catch (org.wso2.carbon.user.core.UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading user claim - "
-                    + PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, e);
+            ClaimManager claimManager = userRealm.getClaimManager();
+            if (claimManager.getClaim(claimURI) != null) {
+                passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
+                if (passwordLastChangedTime == null) {
+                    claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
+                    if (claimManager.getClaim(claimURI) != null) {
+                        passwordLastChangedTime =
+                                getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
+                    }
+                }
+            } else if (claimManager
+                    .getClaim(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY) != null) {
+                claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
+                passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
+            } else {
+                throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI);
+            }
+        } catch (UserStoreException e){
+            throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
         }
 
         long passwordChangedTime = 0;
@@ -399,5 +414,17 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             stepConfigMap.get(i).setAuthenticatedUser(authenticatedUser);
         }
         context.setSubject(authenticatedUser);
+    }
+
+    private String getLastPasswordUpdateTime(UserStoreManager userStoreManager, String claimURI,
+                                             String tenantAwareUsername) throws UserStoreException {
+
+        String[] claimURIs = new String[]{claimURI};
+        Map<String, String> claimValueMap =
+                userStoreManager.getUserClaimValues(tenantAwareUsername, claimURIs, null);
+        if (claimValueMap != null && claimValueMap.get(claimURI) != null) {
+            return claimValueMap.get(claimURI);
+        }
+        return null;
     }
 }
