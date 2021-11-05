@@ -47,6 +47,8 @@ import org.wso2.carbon.identity.policy.password.PasswordPolicyConstants;
 import org.wso2.carbon.identity.policy.password.PasswordResetEnforcer;
 import org.wso2.carbon.identity.policy.password.internal.PasswordPolicyDataHolder;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
+import org.wso2.carbon.user.api.Claim;
+import  org.wso2.carbon.user.core.claim.ClaimManager;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
@@ -108,6 +110,9 @@ public class PasswordResetEnforcerTest {
 
     @Mock
     private UserStoreManager userStoreManager;
+
+    @Mock
+    private ClaimManager claimManager;
 
     @Mock
     private RealmConfiguration realmConfiguration;
@@ -295,6 +300,9 @@ public class PasswordResetEnforcerTest {
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        when(userRealm.getClaimManager()).thenReturn(claimManager);
+        when(userRealm.getClaimManager().getClaim(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM))
+                .thenReturn(new Claim());
         when(userRealm.getUserStoreManager()
                 .getUserClaimValue(MultitenantUtils.getTenantAwareUsername("admin"),
                         PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, null))
@@ -336,6 +344,9 @@ public class PasswordResetEnforcerTest {
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
+        when(userRealm.getClaimManager()).thenReturn(claimManager);
+        when(userRealm.getClaimManager().getClaim(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM))
+                .thenReturn(new Claim());
         when(userRealm.getUserStoreManager()
                 .getUserClaimValue(MultitenantUtils.getTenantAwareUsername("admin"),
                         PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, null))
