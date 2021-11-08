@@ -260,24 +260,16 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         String passwordLastChangedTime;
         String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
         try {
-            ClaimManager claimManager = userRealm.getClaimManager();
-            if (claimManager.getClaim(claimURI) != null) {
-                passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
-                if (passwordLastChangedTime == null) {
-                    claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
-                    if (claimManager.getClaim(claimURI) != null) {
-                        passwordLastChangedTime =
-                                getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
-                    }
-                }
-            } else if (claimManager
-                    .getClaim(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY) != null) {
+            passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
+            if (passwordLastChangedTime == null) {
+                ClaimManager claimManager = userRealm.getClaimManager();
                 claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
-                passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
-            } else {
-                throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI);
+                if (claimManager.getClaim(claimURI) != null) {
+                    passwordLastChangedTime =
+                            getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
+                }
             }
-        } catch (UserStoreException e){
+        } catch (UserStoreException e) {
             throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
         }
 
