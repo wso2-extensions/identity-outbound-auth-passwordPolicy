@@ -1,7 +1,6 @@
 package org.wso2.carbon.identity.password.expiry.validation.handler;
 
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.testng.PowerMockObjectFactory;
 import org.testng.Assert;
@@ -13,39 +12,26 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
-import org.wso2.carbon.identity.password.expiry.validation.handler.PasswordExpiryPolicyUtils;
-import org.wso2.carbon.identity.password.expiry.validation.handler.PasswordExpiryValidationConstants;
-import org.wso2.carbon.identity.password.expiry.validation.handler.PasswordExpiryValidationHandler;
-import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.powermock.api.mockito.PowerMockito.doThrow;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @PrepareForTest({IdentityTenantUtil.class, MultitenantUtils.class, PasswordExpiryPolicyUtils.class, UserStoreManager.class})
 public class PasswordExpiryValidationHandlerTest {
     private static final String TENANT_DOMAIN = "carbon.super";
-    private static final int TENANT_ID = -1234;
     private static final String USERNAME = "admin";
     @Mock
     private UserStoreManager userStoreManager;
-    @Mock
-    private UserRealm userRealm;
-    @Mock
-    private RealmService realmService;
     private PasswordExpiryValidationHandler passwordExpiryValidationHandler;
 
 
