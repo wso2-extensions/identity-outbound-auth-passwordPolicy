@@ -29,7 +29,6 @@ public class PasswordExpiryValidationHandlerComponent {
             if (log.isDebugEnabled()) {
                 log.debug("PasswordExpiryValidation handler is activated");
             }
-            log.info("PasswordExpiryValidation handler is activated successfully");
         } catch (Throwable e) {
             log.fatal("Error while activating the PasswordExpiryValidation handler", e);
         }
