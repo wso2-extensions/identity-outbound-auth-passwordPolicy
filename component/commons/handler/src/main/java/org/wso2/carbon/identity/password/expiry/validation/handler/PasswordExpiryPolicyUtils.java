@@ -11,6 +11,9 @@ import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 
+/**
+ * This includes methods to read password expiry in days configuration.
+ */
 public class PasswordExpiryPolicyUtils {
     private static final Log log = LogFactory.getLog(PasswordExpiryPolicyUtils.class);
 
@@ -36,8 +39,7 @@ public class PasswordExpiryPolicyUtils {
         return propertyValue;
     }
 
-    public static String getResidentIdpProperty(String tenantDomain, String propertyName)
-             {
+    public static String getResidentIdpProperty(String tenantDomain, String propertyName) {
 
         IdentityProvider residentIdP = null;
         try {

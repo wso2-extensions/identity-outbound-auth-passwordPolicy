@@ -1,5 +1,8 @@
 package org.wso2.carbon.identity.password.expiry.validation.handler;
 
+/**
+ * Password expiry validation comments.
+ */
 public class PasswordExpiryValidationConstants {
 
     public static final String LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM =
