@@ -203,7 +203,7 @@ public class PasswordExpiryValidationHandlerTest {
     }
 
     @Test
-    public void testHandleEventForUserNotConfiguredPasswordConfiguredInDays()
+    public void testHandleEventForUserNotConfiguredPasswordExpiredInDays()
             throws org.wso2.carbon.user.core.UserStoreException {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordExpiryPolicyUtils.class);
