@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ public class PasswordExpiryValidationConstants {
     public static final String CREATED_CLAIM_TIMEZONE = "GMT";
     public static final String PASSWORD_CHANGE_EVENT_HANDLER_NAME = "passwordExpiry";
     public static final String CONFIG_PASSWORD_EXPIRY_IN_DAYS = "passwordExpiry.passwordExpiryInDays";
-    public static final String LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY =
-            "http://wso2.org/claims/lastPasswordChangedTimestamp";
     public static final String PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE = "30";
+    public static final String PASSWORD_EXPIRED_ERROR_MESSAGE = "Password has expired";
+    public static final String PASSWORD_EXPIRY_VALIDATION_EVENT_HANDLER_NAME = "passwordExpiryValidation";
 
 }

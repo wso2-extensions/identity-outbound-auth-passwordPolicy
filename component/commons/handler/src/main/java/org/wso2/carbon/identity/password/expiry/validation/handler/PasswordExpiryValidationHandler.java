@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import java.util.TimeZone;
  * Handler to check whether the password is expired. This will throw an identity event exception if password is expired.
  */
 public class PasswordExpiryValidationHandler extends AbstractEventHandler {
+
     private static final Log log = LogFactory.getLog(PasswordExpiryValidationHandler.class);
 
     @Override
@@ -50,11 +51,11 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
         String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
 
         try {
-            if (hadPasswordExpired(tenantDomain, tenantAwareUsername, userStoreManager)) {
+            if (isPasswordExpired(tenantDomain, tenantAwareUsername, userStoreManager)) {
                 if (log.isDebugEnabled()) {
                     log.debug("User: " + username + " password is expired.");
                 }
-                throw new IdentityEventException("Password has expired");
+                throw new IdentityEventException(PasswordExpiryValidationConstants.PASSWORD_EXPIRED_ERROR_MESSAGE);
             }
         } catch (UserStoreException e) {
             throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e);
@@ -64,15 +65,15 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
     }
      /**
      * Check whether the password is expired or not.
-     * @param tenantDomain
-     * @param tenantAwareUsername
+     * @param tenantDomain user tenant domain
+     * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
      * @param userStoreManager
      * @return true if password is expired or password last update time is null
      * @throws UserStoreException
      * @throws ParseException
      */
-    private boolean hadPasswordExpired(String tenantDomain, String tenantAwareUsername,
-                                       UserStoreManager userStoreManager) throws UserStoreException, ParseException {
+    private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
+                                      UserStoreManager userStoreManager) throws UserStoreException, ParseException {
 
         String passwordLastChangedTime = getPasswordLastChangeTime(tenantAwareUsername, userStoreManager);
         int passwordExpiryInDays =  getPasswordExpiryInDaysConfig(tenantDomain);
@@ -94,8 +95,17 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
         return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
     }
 
+    /**
+     * get users last password change time from the claims.
+     * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
+     * @param userStoreManager
+     * @return  last password change time
+     * @throws UserStoreException
+     * @throws ParseException
+     */
     private String getPasswordLastChangeTime(String tenantAwareUsername, UserStoreManager userStoreManager)
             throws UserStoreException, ParseException {
+
         String passwordLastChangedTime = getClaimValue(userStoreManager,
                 PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, tenantAwareUsername);
 
@@ -114,15 +124,29 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
         return passwordLastChangedTime;
     }
 
+    /**
+     * get password expiry in days configured value.
+     * @param tenantDomain user tenant domain
+     * @return password expiry days as a int
+     */
     private int getPasswordExpiryInDaysConfig(String tenantDomain) {
+
         String passwordExpiryInDaysConfiguredValue = PasswordExpiryPolicyUtils.getResidentIdpProperty(tenantDomain,
                 PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS);
         if (passwordExpiryInDaysConfiguredValue == null || StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
             String passwordExpiryInDaysIdentityEventProperty = PasswordExpiryPolicyUtils.getIdentityEventProperty(
                     tenantDomain, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-            passwordExpiryInDaysConfiguredValue =
-                    passwordExpiryInDaysIdentityEventProperty != null ? passwordExpiryInDaysIdentityEventProperty :
-                            PasswordExpiryValidationConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
+            if (passwordExpiryInDaysIdentityEventProperty != null) {
+                passwordExpiryInDaysConfiguredValue = passwordExpiryInDaysIdentityEventProperty;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Password expiry in days configuration can not be fetched or null. Hence using the " +
+                            "default: 30 days");
+                }
+                passwordExpiryInDaysConfiguredValue =
+                        PasswordExpiryValidationConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
+            }
+
         }
         return Integer.parseInt(passwordExpiryInDaysConfiguredValue);
     }
@@ -165,6 +189,6 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
 
     @Override
     public String getName() {
-        return "passwordExpiryValidation";
+        return PasswordExpiryValidationConstants.PASSWORD_EXPIRY_VALIDATION_EVENT_HANDLER_NAME;
     }
 }

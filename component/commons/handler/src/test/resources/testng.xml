@@ -1,7 +1,7 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="Identity-connector-password-policy-test-suite2">
-    <test name="password-policy-authenticator-all2" parallel="false">
+<suite name="Identity-connector-password-policy-test-suite">
+    <test name="password-policy-authenticator-all" parallel="false">
         <classes>
             <class name="org.wso2.carbon.identity.password.expiry.validation.handler.PasswordExpiryValidationHandlerTest"/>
         </classes>

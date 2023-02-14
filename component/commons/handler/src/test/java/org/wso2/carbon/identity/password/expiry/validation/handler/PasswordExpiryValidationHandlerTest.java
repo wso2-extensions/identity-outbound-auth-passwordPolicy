@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,8 @@ public class PasswordExpiryValidationHandlerTest {
     event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
     event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
     when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
-    when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+    when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
+            PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
 
     Map<String, String> claimValueMap = new HashMap<>();
     String timestamp = String.valueOf(System.currentTimeMillis());
@@ -94,7 +95,8 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
-        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
+                PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
 
         Map<String, String> claimValueMap = new HashMap<>();
         claimValueMap.put(PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,"1672559229000");
@@ -105,7 +107,7 @@ public class PasswordExpiryValidationHandlerTest {
             passwordExpiryValidationHandler.handleEvent(event);
             Assert.fail("This should throw identity event exception");
         } catch (IdentityEventException e) {
-            Assert.assertEquals("Password has expired",e.getMessage());
+            Assert.assertEquals(PasswordExpiryValidationConstants.PASSWORD_EXPIRED_ERROR_MESSAGE,e.getMessage());
         }
     }
 
@@ -120,7 +122,8 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
-        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
+                PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
 
         Map<String, String> claimValueMap = new HashMap<>();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -151,7 +154,8 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
-        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
+                PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
 
         Map<String, String> claimValueMap = new HashMap<>();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -168,7 +172,7 @@ public class PasswordExpiryValidationHandlerTest {
             passwordExpiryValidationHandler.handleEvent(event);
             Assert.fail("This should throw identity event exception");
         } catch (IdentityEventException e) {
-            Assert.assertEquals("Password has expired",e.getMessage());
+            Assert.assertEquals(PasswordExpiryValidationConstants.PASSWORD_EXPIRED_ERROR_MESSAGE, e.getMessage());
         }
     }
 
@@ -183,7 +187,8 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
-        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
+                PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
 
         Map<String, String> claimValueMap = new HashMap<>();
 
@@ -198,7 +203,7 @@ public class PasswordExpiryValidationHandlerTest {
             passwordExpiryValidationHandler.handleEvent(event);
             Assert.fail("This should throw identity event exception");
         } catch (IdentityEventException e) {
-            Assert.assertEquals("Password has expired",e.getMessage());
+            Assert.assertEquals(PasswordExpiryValidationConstants.PASSWORD_EXPIRED_ERROR_MESSAGE, e.getMessage());
         }
     }
 
@@ -214,8 +219,10 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
-        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn(null);
-        when(PasswordExpiryPolicyUtils.getIdentityEventProperty(TENANT_DOMAIN, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn(null);
+        when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
+                PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn(null);
+        when(PasswordExpiryPolicyUtils.getIdentityEventProperty(TENANT_DOMAIN,
+                PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn(null);
 
         Map<String, String> claimValueMap = new HashMap<>();
         String timestamp = String.valueOf(System.currentTimeMillis());
@@ -232,7 +239,8 @@ public class PasswordExpiryValidationHandlerTest {
 
     @Test
     public void testGetName(){
-        Assert.assertEquals(passwordExpiryValidationHandler.getName(),"passwordExpiryValidation");
+        Assert.assertEquals(passwordExpiryValidationHandler.getName(),
+                PasswordExpiryValidationConstants.PASSWORD_EXPIRY_VALIDATION_EVENT_HANDLER_NAME);
     }
 
     @ObjectFactory

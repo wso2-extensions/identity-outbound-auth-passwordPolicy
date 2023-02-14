@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ public class PasswordExpiryPolicyUtils {
 
     /**
      * Get identity event property for password expiry in days.
-     * @param tenantDomain
+     * @param tenantDomain user tenant domain
      * @param propertyName
-     * @return
+     * @return property value
      */
     public static String getIdentityEventProperty(String tenantDomain, String propertyName) {
 
@@ -56,7 +56,8 @@ public class PasswordExpiryPolicyUtils {
             //if identity property for password expiry in days can not be fetched, default value will be used.
             log.warn("An error occurred while retrieving module properties");
             if (log.isDebugEnabled()) {
-                log.debug("An error occurred while retrieving module properties because " + e.getMessage(), e);
+                log.debug("An error occurred while retrieving module properties of " +
+                        PasswordExpiryValidationConstants.PASSWORD_CHANGE_EVENT_HANDLER_NAME, e);
             }
         }
         return propertyValue;
@@ -64,9 +65,9 @@ public class PasswordExpiryPolicyUtils {
 
     /**
      * Get resident IDP property for password expiry in days configuration.
-     * @param tenantDomain
+     * @param tenantDomain user tenant domain
      * @param propertyName
-     * @return
+     * @return property value
      */
     public static String getResidentIdpProperty(String tenantDomain, String propertyName) {
 
