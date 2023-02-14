@@ -50,11 +50,11 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
         String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
 
         try {
-            if (isPasswordExpired(tenantDomain, tenantAwareUsername, userStoreManager)) {
+            if (hadPasswordExpired(tenantDomain, tenantAwareUsername, userStoreManager)) {
                 if (log.isDebugEnabled()) {
                     log.debug("User: " + username + " password is expired.");
                 }
-                throw new IdentityEventException("Password expired for user with username: " + tenantAwareUsername);
+                throw new IdentityEventException("Password has expired");
             }
         } catch (UserStoreException e) {
             throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e);
@@ -71,35 +71,11 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
      * @throws UserStoreException
      * @throws ParseException
      */
-    private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
-                                      UserStoreManager userStoreManager) throws UserStoreException, ParseException {
+    private boolean hadPasswordExpired(String tenantDomain, String tenantAwareUsername,
+                                       UserStoreManager userStoreManager) throws UserStoreException, ParseException {
 
-        String passwordLastChangedTime = getClaimValue(userStoreManager,
-                PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, tenantAwareUsername);
-
-        if (passwordLastChangedTime == null) {
-            String createdClaimValue = getClaimValue(userStoreManager,
-                    PasswordExpiryValidationConstants.CREATED_CLAIM, tenantAwareUsername);
-            if (createdClaimValue != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("User: " + tenantAwareUsername + " Claim: "
-                            + PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM +
-                            " is null.Hence considered claim:" + PasswordExpiryValidationConstants.CREATED_CLAIM);
-                }
-                passwordLastChangedTime = convertCreatedDateToEpochString(createdClaimValue);
-            }
-        }
-
-        String passwordExpiryInDaysConfiguredValue = PasswordExpiryPolicyUtils.getResidentIdpProperty(tenantDomain,
-                PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-        if (passwordExpiryInDaysConfiguredValue == null || StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
-            String passwordExpiryInDaysIdentityEventProperty = PasswordExpiryPolicyUtils.getIdentityEventProperty(
-                    tenantDomain, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-            passwordExpiryInDaysConfiguredValue =
-                    passwordExpiryInDaysIdentityEventProperty != null ? passwordExpiryInDaysIdentityEventProperty :
-                            PasswordExpiryValidationConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
-        }
-        int passwordExpiryInDays =  Integer.parseInt(passwordExpiryInDaysConfiguredValue);
+        String passwordLastChangedTime = getPasswordLastChangeTime(tenantAwareUsername, userStoreManager);
+        int passwordExpiryInDays =  getPasswordExpiryInDaysConfig(tenantDomain);
 
         long passwordChangedTime = 0;
         if (passwordLastChangedTime != null) {
@@ -116,6 +92,39 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
             log.debug("User: " + tenantAwareUsername + " password is updated before " + daysDifference + " Days");
         }
         return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
+    }
+
+    private String getPasswordLastChangeTime(String tenantAwareUsername, UserStoreManager userStoreManager)
+            throws UserStoreException, ParseException {
+        String passwordLastChangedTime = getClaimValue(userStoreManager,
+                PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, tenantAwareUsername);
+
+        if (passwordLastChangedTime == null) {
+            String createdClaimValue = getClaimValue(userStoreManager,
+                    PasswordExpiryValidationConstants.CREATED_CLAIM, tenantAwareUsername);
+            if (createdClaimValue != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("User: " + tenantAwareUsername + " Claim: "
+                            + PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM +
+                            " is null.Hence considered claim:" + PasswordExpiryValidationConstants.CREATED_CLAIM);
+                }
+                passwordLastChangedTime = convertCreatedDateToEpochString(createdClaimValue);
+            }
+        }
+        return passwordLastChangedTime;
+    }
+
+    private int getPasswordExpiryInDaysConfig(String tenantDomain) {
+        String passwordExpiryInDaysConfiguredValue = PasswordExpiryPolicyUtils.getResidentIdpProperty(tenantDomain,
+                PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+        if (passwordExpiryInDaysConfiguredValue == null || StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
+            String passwordExpiryInDaysIdentityEventProperty = PasswordExpiryPolicyUtils.getIdentityEventProperty(
+                    tenantDomain, PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+            passwordExpiryInDaysConfiguredValue =
+                    passwordExpiryInDaysIdentityEventProperty != null ? passwordExpiryInDaysIdentityEventProperty :
+                            PasswordExpiryValidationConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
+        }
+        return Integer.parseInt(passwordExpiryInDaysConfiguredValue);
     }
 
     /**

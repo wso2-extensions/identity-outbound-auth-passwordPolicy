@@ -105,7 +105,7 @@ public class PasswordExpiryValidationHandlerTest {
             passwordExpiryValidationHandler.handleEvent(event);
             Assert.fail("This should throw identity event exception");
         } catch (IdentityEventException e) {
-            Assert.assertEquals("Password expired for user with username: admin",e.getMessage());
+            Assert.assertEquals("Password has expired",e.getMessage());
         }
     }
 
@@ -168,7 +168,7 @@ public class PasswordExpiryValidationHandlerTest {
             passwordExpiryValidationHandler.handleEvent(event);
             Assert.fail("This should throw identity event exception");
         } catch (IdentityEventException e) {
-            Assert.assertEquals("Password expired for user with username: admin",e.getMessage());
+            Assert.assertEquals("Password has expired",e.getMessage());
         }
     }
 
@@ -198,7 +198,7 @@ public class PasswordExpiryValidationHandlerTest {
             passwordExpiryValidationHandler.handleEvent(event);
             Assert.fail("This should throw identity event exception");
         } catch (IdentityEventException e) {
-            Assert.assertEquals("Password expired for user with username: admin",e.getMessage());
+            Assert.assertEquals("Password has expired",e.getMessage());
         }
     }
 
