@@ -26,6 +26,9 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.password.expiry.validation.handler.PasswordExpiryValidationHandler;
 
+/**
+ * Password expiry validation handler.
+ */
 @Component(
         name = "org.wso2.carbon.identity.password.expiry.validation.handler.component",
         immediate = true

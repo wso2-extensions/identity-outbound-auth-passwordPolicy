@@ -31,5 +31,7 @@ public class PasswordExpiryValidationConstants {
     public static final String PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE = "30";
     public static final String PASSWORD_EXPIRED_ERROR_MESSAGE = "Password has expired";
     public static final String PASSWORD_EXPIRY_VALIDATION_EVENT_HANDLER_NAME = "passwordExpiryValidation";
+    public static final String LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY =
+            "http://wso2.org/claims/lastPasswordChangedTimestamp";
 
 }

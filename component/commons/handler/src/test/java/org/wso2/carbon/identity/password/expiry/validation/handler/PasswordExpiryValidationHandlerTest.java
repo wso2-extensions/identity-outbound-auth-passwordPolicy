@@ -28,9 +28,12 @@ import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
+import org.wso2.carbon.user.api.Claim;
+import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.claim.ClaimManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
@@ -46,8 +49,20 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 public class PasswordExpiryValidationHandlerTest {
     private static final String TENANT_DOMAIN = "carbon.super";
     private static final String USERNAME = "admin";
+    private static final int TENANT_ID = -1234;
     @Mock
     private UserStoreManager userStoreManager;
+    @Mock
+    private ClaimManager claimManager;
+
+    @Mock
+    private UserRealm userRealm;
+
+    @Mock
+    private RealmService realmService;
+
+    @Mock
+    private Claim claim;
     private PasswordExpiryValidationHandler passwordExpiryValidationHandler;
 
 
@@ -112,7 +127,7 @@ public class PasswordExpiryValidationHandlerTest {
     }
 
     @Test
-    public void testHandleEventForPasswordNonExpiredUserWithCreatedClaim() throws UserStoreException {
+    public void testHandleEventForPasswordNonExpiredUserWithNonIdentityClaim() throws UserStoreException {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordExpiryPolicyUtils.class);
         mockStatic(UserStoreManager.class);
@@ -121,19 +136,24 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(IdentityTenantUtil.getTenantId(TENANT_DOMAIN)).thenReturn(TENANT_ID);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(TENANT_ID)).thenReturn(userRealm);
+        when(userRealm.getClaimManager()).thenReturn(claimManager);
+        when(claimManager.getClaim(PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY)).thenReturn(claim);
 
+        String time = String.valueOf(System.currentTimeMillis());
         Map<String, String> claimValueMap = new HashMap<>();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
 
-        String createdTime = formatter.format(date) + "T00:00:00.000Z";
         claimValueMap.put(PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,null);
-        claimValueMap.put(PasswordExpiryValidationConstants.CREATED_CLAIM,createdTime);
+        claimValueMap.put(PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY, time);
+
         String[] claimURIs = new String[]{PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-        String[] claimURIs1 = new String[]{PasswordExpiryValidationConstants.CREATED_CLAIM};
+        String[] claimURIs1 = new String[]{PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY};
         when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
         when(userStoreManager.getUserClaimValues(USERNAME, claimURIs1, null)).thenReturn(claimValueMap);
         try {
@@ -144,7 +164,7 @@ public class PasswordExpiryValidationHandlerTest {
     }
 
     @Test
-    public void testHandleEventForUserClaimsNull() throws org.wso2.carbon.user.core.UserStoreException {
+    public void testHandleEventForUserClaimsNull() throws UserStoreException {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordExpiryPolicyUtils.class);
         mockStatic(UserStoreManager.class);
@@ -153,19 +173,22 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(IdentityTenantUtil.getTenantId(TENANT_DOMAIN)).thenReturn(TENANT_ID);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(TENANT_ID)).thenReturn(userRealm);
+        when(userRealm.getClaimManager()).thenReturn(claimManager);
+        when(claimManager.getClaim(PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY)).thenReturn(claim);
 
         Map<String, String> claimValueMap = new HashMap<>();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-
-        String createdTime = formatter.format(date) + "T00:00:00.000Z";
         claimValueMap.put(PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,null);
-        claimValueMap.put(PasswordExpiryValidationConstants.CREATED_CLAIM,null);
+        claimValueMap.put(PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY,null);
         String[] claimURIs = new String[]{PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-        String[] claimURIs1 = new String[]{PasswordExpiryValidationConstants.CREATED_CLAIM};
+        String[] claimURIs1 = new String[]{PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY};
+
         when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
         when(userStoreManager.getUserClaimValues(USERNAME, claimURIs1, null)).thenReturn(claimValueMap);
         try {
@@ -177,7 +200,7 @@ public class PasswordExpiryValidationHandlerTest {
     }
 
     @Test
-    public void testHandleEventForPasswordExpiredUserWithCreatedClaim() throws UserStoreException {
+    public void testHandleEventForPasswordExpiredUserWithNonIdentityClaim() throws UserStoreException {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordExpiryPolicyUtils.class);
         mockStatic(UserStoreManager.class);
@@ -189,14 +212,19 @@ public class PasswordExpiryValidationHandlerTest {
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(IdentityTenantUtil.getTenantId(TENANT_DOMAIN)).thenReturn(TENANT_ID);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(TENANT_ID)).thenReturn(userRealm);
+        when(userRealm.getClaimManager()).thenReturn(claimManager);
+        when(claimManager.getClaim(PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY)).thenReturn(claim);
 
         Map<String, String> claimValueMap = new HashMap<>();
 
-        String createdTime = "2023-01-04T06:00:28.542Z";
+        String time = "1672559229000";
         claimValueMap.put(PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,null);
-        claimValueMap.put(PasswordExpiryValidationConstants.CREATED_CLAIM,createdTime);
+        claimValueMap.put(PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY,time);
         String[] claimURIs = new String[]{PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-        String[] claimURIs1 = new String[]{PasswordExpiryValidationConstants.CREATED_CLAIM};
+        String[] claimURIs1 = new String[]{PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY};
         when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
         when(userStoreManager.getUserClaimValues(USERNAME, claimURIs1, null)).thenReturn(claimValueMap);
         try {

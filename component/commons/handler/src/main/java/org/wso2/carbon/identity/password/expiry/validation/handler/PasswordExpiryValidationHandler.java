@@ -19,19 +19,21 @@ package org.wso2.carbon.identity.password.expiry.validation.handler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.user.api.ClaimManager;
+import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Handler to check whether the password is expired. This will throw an identity event exception if password is expired.
@@ -59,8 +61,6 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
             }
         } catch (UserStoreException e) {
             throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e);
-        } catch (ParseException e) {
-            throw new IdentityEventException("Parse Exception occurred while password expiry validation", e);
         }
     }
      /**
@@ -73,9 +73,9 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
      * @throws ParseException
      */
     private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
-                                      UserStoreManager userStoreManager) throws UserStoreException, ParseException {
+                                      UserStoreManager userStoreManager) throws UserStoreException {
 
-        String passwordLastChangedTime = getPasswordLastChangeTime(tenantAwareUsername, userStoreManager);
+        String passwordLastChangedTime = getPasswordLastChangeTime(tenantDomain, tenantAwareUsername, userStoreManager);
         int passwordExpiryInDays =  getPasswordExpiryInDaysConfig(tenantDomain);
 
         long passwordChangedTime = 0;
@@ -97,30 +97,31 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
 
     /**
      * get users last password change time from the claims.
+     *
+     * @param tenantDomain user tenant domain
      * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
      * @param userStoreManager
      * @return  last password change time
      * @throws UserStoreException
      * @throws ParseException
      */
-    private String getPasswordLastChangeTime(String tenantAwareUsername, UserStoreManager userStoreManager)
-            throws UserStoreException, ParseException {
+    private String getPasswordLastChangeTime(String tenantDomain, String tenantAwareUsername,
+                                             UserStoreManager userStoreManager) throws UserStoreException {
 
-        String passwordLastChangedTime = getClaimValue(userStoreManager,
-                PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM, tenantAwareUsername);
+        String claimURI = PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
+        String passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
 
         if (passwordLastChangedTime == null) {
-            String createdClaimValue = getClaimValue(userStoreManager,
-                    PasswordExpiryValidationConstants.CREATED_CLAIM, tenantAwareUsername);
-            if (createdClaimValue != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("User: " + tenantAwareUsername + " Claim: "
-                            + PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM +
-                            " is null.Hence considered claim:" + PasswordExpiryValidationConstants.CREATED_CLAIM);
-                }
-                passwordLastChangedTime = convertCreatedDateToEpochString(createdClaimValue);
+            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+            RealmService realmService = IdentityTenantUtil.getRealmService();
+            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+            ClaimManager claimManager = userRealm.getClaimManager();
+            claimURI = PasswordExpiryValidationConstants.LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY;
+            if (claimManager.getClaim(claimURI) != null) {
+                passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
             }
         }
+
         return passwordLastChangedTime;
     }
 
@@ -169,22 +170,6 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
             return claimValueMap.get(claimURI);
         }
         return null;
-    }
-
-    /**
-     * Convert created time claim to epoch string.
-     *
-     * @param createdDate created date claim value
-     * @return converted timestamp as a string
-     * @throws ParseException
-     */
-    private static String convertCreatedDateToEpochString(String createdDate) throws ParseException {
-
-        SimpleDateFormat simpleDateFormat =
-                new SimpleDateFormat(PasswordExpiryValidationConstants.CREATED_CLAIM_FORMAT);
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone(PasswordExpiryValidationConstants.CREATED_CLAIM_TIMEZONE));
-
-        return String.valueOf(simpleDateFormat.parse(createdDate).getTime());
     }
 
     @Override
