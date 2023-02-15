@@ -43,7 +43,7 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
     private static final Log log = LogFactory.getLog(PasswordExpiryValidationHandler.class);
 
     /**
-     * Validate password expiry
+     * Validate password expiry.
      * @param event
      * @throws IdentityEventException Password has expire exception if password expired
      */
