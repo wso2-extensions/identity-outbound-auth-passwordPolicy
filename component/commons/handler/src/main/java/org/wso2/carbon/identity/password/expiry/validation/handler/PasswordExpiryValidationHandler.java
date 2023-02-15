@@ -42,6 +42,11 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(PasswordExpiryValidationHandler.class);
 
+    /**
+     * Validate password expiry
+     * @param event
+     * @throws IdentityEventException Password has expire exception if password expired
+     */
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
 
@@ -84,7 +89,7 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
         }
         int daysDifference = 0;
         long currentTimeMillis = System.currentTimeMillis();
-        if (passwordChangedTime > 0) {
+        if (passwordChangedTime > 0) { // obtain the day difference from last password changed time to current time
             Calendar currentTime = Calendar.getInstance();
             currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
             daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));

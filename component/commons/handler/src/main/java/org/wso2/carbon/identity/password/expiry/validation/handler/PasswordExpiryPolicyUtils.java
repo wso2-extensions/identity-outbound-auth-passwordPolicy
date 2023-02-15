@@ -88,11 +88,7 @@ public class PasswordExpiryPolicyUtils {
         IdentityProviderProperty property = IdentityApplicationManagementUtil
                 .getProperty(residentIdP.getIdpProperties(), propertyName);
 
-        String propertyValue = null;
-        if (property != null) {
-            propertyValue = property.getValue();
-        }
-        return propertyValue;
+        return property.getValue();
     }
 
 }
