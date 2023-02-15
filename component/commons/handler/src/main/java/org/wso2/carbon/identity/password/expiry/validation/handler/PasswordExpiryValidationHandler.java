@@ -92,7 +92,8 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
         if (passwordChangedTime > 0) { // obtain the day difference from last password changed time to current time
             Calendar currentTime = Calendar.getInstance();
             currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
-            daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
+            daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24)); // convert to
+            // days
         }
         if (log.isDebugEnabled()) {
             log.debug("User: " + tenantAwareUsername + " password is updated before " + daysDifference + " Days");
