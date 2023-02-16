@@ -18,17 +18,26 @@
 
 package org.wso2.carbon.identity.policy.password;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.governance.IdentityGovernanceException;
 import org.wso2.carbon.identity.governance.common.IdentityConnectorConfig;
+import org.wso2.carbon.user.api.ClaimManager;
+import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import java.text.ParseException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -42,12 +51,43 @@ import java.util.Properties;
 public class PasswordChangeHandler extends AbstractEventHandler implements IdentityConnectorConfig {
     private static final Log log = LogFactory.getLog(PasswordChangeHandler.class);
 
+
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
+
+        String eventName = event.getEventName();
         // Fetching event properties
         String username = (String) event.getEventProperties().get(IdentityEventConstants.EventProperty.USER_NAME);
         UserStoreManager userStoreManager = (UserStoreManager) event.getEventProperties()
                 .get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
+
+        //password grant handler - password expiry validation
+        if (eventName.equals(PasswordPolicyConstants.PASSWORD_GRANT_POST_AUTHENTICATION_EVENT)) {
+            if (log.isDebugEnabled()) {
+                log.info("Password Expiry Validation For user " + username);
+            }
+            String tenantDomain = (String) event.getEventProperties()
+                    .get(IdentityEventConstants.EventProperty.TENANT_DOMAIN);
+            String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
+            boolean authenticationStatus = (boolean) event.getEventProperties().get(
+                    PasswordPolicyConstants.AUTHENTICATION_STATUS);
+
+            if (authenticationStatus) { // only validate password expiry if user is authenticated
+                try {
+                    if (isPasswordExpired(tenantDomain, tenantAwareUsername, userStoreManager)) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("User: " + username + " password is expired.");
+                        }
+                        throw new IdentityEventException(PasswordPolicyConstants.PASSWORD_EXPIRED_ERROR_MESSAGE);
+                    }
+                } catch (org.wso2.carbon.user.api.UserStoreException e) {
+                    throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e)
+                            ;
+                }
+            }
+            return;
+        }
+
         long timestamp = System.currentTimeMillis();
 
         // Updating the last password changed claim
@@ -178,4 +218,123 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
             throws IdentityGovernanceException {
         return null;
     }
+
+    /**
+     * Check whether the password is expired or not.
+     * @param tenantDomain user tenant domain
+     * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
+     * @param userStoreManager
+     * @return true if password is expired or password last update time is null
+     * @throws org.wso2.carbon.user.api.UserStoreException
+     * @throws ParseException
+     */
+    private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
+                                      UserStoreManager userStoreManager) throws
+            org.wso2.carbon.user.api.UserStoreException {
+
+        String passwordLastChangedTime = getPasswordLastChangeTime(tenantDomain, tenantAwareUsername, userStoreManager);
+        int passwordExpiryInDays =  getPasswordExpiryInDaysConfig(tenantDomain);
+
+        long passwordChangedTime = 0;
+        if (passwordLastChangedTime != null) {
+            passwordChangedTime = Long.parseLong(passwordLastChangedTime);
+        }
+        int daysDifference = 0;
+        long currentTimeMillis = System.currentTimeMillis();
+        if (passwordChangedTime > 0) { // obtain the day difference from last password changed time to current time
+            Calendar currentTime = Calendar.getInstance();
+            currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
+            daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24)); // convert to
+            // days
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("User: " + tenantAwareUsername + " password is updated before " + daysDifference + " Days");
+        }
+        return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
+    }
+
+    /**
+     * get users last password change time from the claims.
+     *
+     * @param tenantDomain user tenant domain
+     * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
+     * @param userStoreManager
+     * @return  last password change time
+     * @throws org.wso2.carbon.user.api.UserStoreException
+     * @throws ParseException
+     */
+    private String getPasswordLastChangeTime(String tenantDomain, String tenantAwareUsername,
+                                             UserStoreManager userStoreManager) throws
+            org.wso2.carbon.user.api.UserStoreException {
+
+        String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
+        String passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
+
+        if (passwordLastChangedTime == null) {
+            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+            RealmService realmService = IdentityTenantUtil.getRealmService();
+            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+            ClaimManager claimManager = userRealm.getClaimManager();
+            claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
+            if (claimManager.getClaim(claimURI) != null) {
+                passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
+            }
+        }
+
+        return passwordLastChangedTime;
+    }
+
+    /**
+     * get password expiry in days configured value.
+     * @param tenantDomain user tenant domain
+     * @return password expiry days as a int
+     */
+    private int getPasswordExpiryInDaysConfig(String tenantDomain) {
+
+        String passwordExpiryInDaysConfiguredValue = null;
+        try {
+            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getResidentIdpProperty(tenantDomain,
+                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+        } catch (AuthenticationFailedException e) {
+            log.warn("Authentication Exception occurred while reading password expiry residentIdp property");
+        }
+
+        if (passwordExpiryInDaysConfiguredValue == null || StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
+            String passwordExpiryInDaysIdentityEventProperty = this.configs.getModuleProperties().getProperty(
+                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+            if (StringUtils.isNotEmpty(passwordExpiryInDaysIdentityEventProperty)) {
+                passwordExpiryInDaysConfiguredValue = passwordExpiryInDaysIdentityEventProperty;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Password expiry in days configuration can not be fetched or null. Hence using the " +
+                            "default: " + PasswordPolicyConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE + " days");
+                }
+                passwordExpiryInDaysConfiguredValue =
+                        PasswordPolicyConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
+            }
+
+        }
+        return Integer.parseInt(passwordExpiryInDaysConfiguredValue);
+    }
+
+    /**
+     * Get value of provided claim uri.
+     *
+     * @param userStoreManager
+     * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
+     * @return claim value
+     * @throws org.wso2.carbon.user.api.UserStoreException
+     */
+    private String getClaimValue(UserStoreManager userStoreManager, String claimURI,
+                                 String tenantAwareUsername) throws org.wso2.carbon.user.api.UserStoreException {
+
+        String[] claimURIs = new String[]{claimURI};
+        Map<String, String> claimValueMap =
+                userStoreManager.getUserClaimValues(tenantAwareUsername, claimURIs, null);
+        if (claimValueMap != null && claimValueMap.get(claimURI) != null) {
+            return claimValueMap.get(claimURI);
+        }
+        return null;
+    }
+
 }

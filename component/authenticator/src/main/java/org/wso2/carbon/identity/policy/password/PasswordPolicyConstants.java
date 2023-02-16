@@ -72,6 +72,12 @@ public class PasswordPolicyConstants {
     public static final String PASSWORD_HISTORY_VIOLATION_ERROR_CODE = "22001";
     public static final String LAST_FAILED_AUTHENTICATOR = "LastFailedAuthenticator";
 
+    //password grant flow - password expiry validation
+    public static final String PASSWORD_GRANT_POST_AUTHENTICATION_EVENT = "PASSWORD_GRANT_POST_AUTHENTICATION_EVENT";
+    public static final String AUTHENTICATION_STATUS = "authenticationStatus";
+    public static final String PASSWORD_EXPIRED_ERROR_MESSAGE = "Password has expired";
+    public static final String PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE = "30";
+
     private PasswordPolicyConstants() {      // To prevent instantiation
     }
 }
