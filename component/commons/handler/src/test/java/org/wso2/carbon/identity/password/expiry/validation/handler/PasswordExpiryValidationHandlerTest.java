@@ -82,6 +82,7 @@ public class PasswordExpiryValidationHandlerTest {
     event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
     event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
     event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+    event.getEventProperties().put(PasswordExpiryValidationConstants.AUTHENTICATION_STATUS,true);
     when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
     when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
             PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
@@ -109,6 +110,7 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        event.getEventProperties().put(PasswordExpiryValidationConstants.AUTHENTICATION_STATUS,true);
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
@@ -136,6 +138,7 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        event.getEventProperties().put(PasswordExpiryValidationConstants.AUTHENTICATION_STATUS,true);
 
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
@@ -173,6 +176,7 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        event.getEventProperties().put(PasswordExpiryValidationConstants.AUTHENTICATION_STATUS,true);
 
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
@@ -209,6 +213,8 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        event.getEventProperties().put(PasswordExpiryValidationConstants.AUTHENTICATION_STATUS,true);
+
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
@@ -246,6 +252,8 @@ public class PasswordExpiryValidationHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        event.getEventProperties().put(PasswordExpiryValidationConstants.AUTHENTICATION_STATUS,true);
+
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordExpiryPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordExpiryValidationConstants.CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn(null);
@@ -258,6 +266,26 @@ public class PasswordExpiryValidationHandlerTest {
         String[] claimURIs = new String[]{PasswordExpiryValidationConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
 
         when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
+        try {
+            passwordExpiryValidationHandler.handleEvent(event);
+        } catch (IdentityEventException e) {
+            Assert.fail("Identity Event Exception!");
+        }
+    }
+
+    @Test
+    public void testAuthenticationFailedUser(){
+        mockStatic(IdentityTenantUtil.class);
+        mockStatic(PasswordExpiryPolicyUtils.class);
+        mockStatic(UserStoreManager.class);
+        mockStatic(MultitenantUtils.class);
+        Event event = new Event("PASSWORD_EXPIRY_VALIDATION");
+        event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
+        event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
+        event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
+        event.getEventProperties().put(PasswordExpiryValidationConstants.AUTHENTICATION_STATUS,false);
+        when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
+
         try {
             passwordExpiryValidationHandler.handleEvent(event);
         } catch (IdentityEventException e) {

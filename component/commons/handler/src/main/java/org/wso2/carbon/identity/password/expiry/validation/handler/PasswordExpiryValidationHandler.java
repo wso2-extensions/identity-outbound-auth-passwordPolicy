@@ -56,16 +56,20 @@ public class PasswordExpiryValidationHandler extends AbstractEventHandler {
         UserStoreManager userStoreManager = (UserStoreManager) event.getEventProperties()
                 .get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
         String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
+        boolean authenticationStatus = (boolean) event.getEventProperties().get(
+                PasswordExpiryValidationConstants.AUTHENTICATION_STATUS);
 
-        try {
-            if (isPasswordExpired(tenantDomain, tenantAwareUsername, userStoreManager)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("User: " + username + " password is expired.");
+        if (authenticationStatus) {
+            try {
+                if (isPasswordExpired(tenantDomain, tenantAwareUsername, userStoreManager)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("User: " + username + " password is expired.");
+                    }
+                    throw new IdentityEventException(PasswordExpiryValidationConstants.PASSWORD_EXPIRED_ERROR_MESSAGE);
                 }
-                throw new IdentityEventException(PasswordExpiryValidationConstants.PASSWORD_EXPIRED_ERROR_MESSAGE);
+            } catch (UserStoreException e) {
+                throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e);
             }
-        } catch (UserStoreException e) {
-            throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e);
         }
     }
      /**

@@ -33,5 +33,6 @@ public class PasswordExpiryValidationConstants {
     public static final String PASSWORD_EXPIRY_VALIDATION_EVENT_HANDLER_NAME = "passwordExpiryValidation";
     public static final String LAST_CREDENTIAL_CHANGED_TIMESTAMP_CLAIM_NON_IDENTITY =
             "http://wso2.org/claims/lastPasswordChangedTimestamp";
+    public static final String AUTHENTICATION_STATUS = "authenticationStatus";
 
 }
