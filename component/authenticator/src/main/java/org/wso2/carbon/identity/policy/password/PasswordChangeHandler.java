@@ -63,9 +63,6 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
 
         //password grant handler - password expiry validation
         if (eventName.equals(PasswordPolicyConstants.PASSWORD_GRANT_POST_AUTHENTICATION_EVENT)) {
-            if (log.isDebugEnabled()) {
-                log.info("Password Expiry Validation For user " + username);
-            }
             String tenantDomain = (String) event.getEventProperties()
                     .get(IdentityEventConstants.EventProperty.TENANT_DOMAIN);
             String tenantAwareUsername = MultitenantUtils.getTenantAwareUsername(username);
@@ -73,6 +70,9 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
                     PasswordPolicyConstants.AUTHENTICATION_STATUS);
 
             if (authenticationStatus) { // only validate password expiry if user is authenticated
+                if (log.isDebugEnabled()) {
+                    log.info("Checking password validity of " + username);
+                }
                 try {
                     if (isPasswordExpired(tenantDomain, tenantAwareUsername, userStoreManager)) {
                         if (log.isDebugEnabled()) {

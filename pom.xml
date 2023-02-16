@@ -34,7 +34,6 @@
     <modules>
         <module>component/authenticator</module>
         <module>feature/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.feature</module>
-        <module>component/commons/handler</module>
     </modules>
 
     <dependencyManagement>
