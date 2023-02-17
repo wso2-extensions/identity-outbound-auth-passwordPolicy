@@ -471,8 +471,6 @@ public class PasswordChangeHandlerTest {
         }
     }
 
-    //
-
     @Test
     public void testGetName() {
         Assert.assertEquals(passwordChangeHandler.getName(),
