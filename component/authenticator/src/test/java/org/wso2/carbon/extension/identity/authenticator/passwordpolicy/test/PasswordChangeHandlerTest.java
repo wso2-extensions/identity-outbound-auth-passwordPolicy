@@ -65,7 +65,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@PrepareForTest({IdentityTenantUtil.class, MultitenantUtils.class, IdentityUtil.class, PasswordPolicyUtils.class, UserStoreManager.class, ModuleConfiguration.class})
+@PrepareForTest({IdentityTenantUtil.class, MultitenantUtils.class, IdentityUtil.class, PasswordPolicyUtils.class, UserStoreManager.class})
 public class PasswordChangeHandlerTest {
     private static final String TENANT_DOMAIN = "carbon.super";
     private static final int TENANT_ID = -1234;
@@ -83,14 +83,11 @@ public class PasswordChangeHandlerTest {
     private Claim claim;
     @Captor
     private ArgumentCaptor<Map<String, String>> claimValueArguementCaptor;
-    @Mock
-    private ModuleConfiguration moduleConfiguration;
 
     @BeforeMethod
     public void setUp() {
         passwordChangeHandler = new PasswordChangeHandler();
         initMocks(this);
-        passwordChangeHandler.init(moduleConfiguration);
 
     }
 
