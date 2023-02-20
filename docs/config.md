@@ -263,5 +263,5 @@ curl -v -X POST --basic -u <client_id>:<client_secret> -H 'Content-Type: applica
 2. If user's password is expired then the response will be HTTP 400 error with following error message.
 
 ```
-{"error_description":"Authentication Failed! Password has expired","error":"invalid_grant"}
+{"error_description":"Password has expired","error":"invalid_grant"}
 ```
