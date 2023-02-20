@@ -234,3 +234,34 @@ Follow the steps given below to enable notifications
 > Please make sure that the users have an email saved (Upon updating the email it will be sent to IS Analytics.) in the Identity Server. If they don't the expired password notifications will only be logged in IS Analytics.
 
 Now IS Analytics will check for expired passwords at the interval specified and send email notifications to the relevant users.
+
+## Setting up Password Expiry Validation in Password Grant Flow
+
+These steps can be followed to enable validating the user password expiry in password grant. This will pass an error message in response if the user password is expired.
+
+1. Follow steps in [Setting up Password Reset Enforcer](#setting-up-password-reset-enforcer)
+2. Add **PASSWORD_GRANT_POST_AUTHENTICATION** to subscriptions of *passwordExpiry* event handler in `<IS_HOME>/repository/conf/deployment.toml` file
+
+ ```
+   [[event_handler]]
+   name= "passwordExpiry"
+   subscriptions =["POST_UPDATE_CREDENTIAL", "POST_UPDATE_CREDENTIAL_BY_ADMIN", "POST_ADD_USER", "PASSWORD_GRANT_POST_AUTHENTICATION"]
+   [event_handler.properties]
+   passwordExpiryInDays= "30"
+   enableDataPublishing= false
+   priorReminderTimeInDays= "0"
+   ```
+3. Restart the WSO2 Identity Server
+
+#### Try Example
+
+1. Run following curl command with proper attribute values to the `client_id`, `client_secret`, `username`, `password`, `redirect_uri`
+
+```
+curl -v -X POST --basic -u <client_id>:<client_secret> -H 'Content-Type: application/x-www-form-urlencoded;charset=UTF-8' -k -d 'grant_type=password&username=<username>&password=<password>&redirect_uri=<redirect_uri>&scope=openid' https://<host>:<port>/oauth2/token
+```
+2. If user's password is expired then the response will be HTTP 400 error with following error message.
+
+```
+{"error_description":"Authentication Failed! Password has expired","error":"invalid_grant"}
+```
