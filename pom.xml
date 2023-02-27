@@ -34,6 +34,7 @@
     <modules>
         <module>component/authenticator</module>
         <module>feature/org.wso2.carbon.extension.identity.authenticator.passwordpolicy.feature</module>
+        <module>component/handler</module>
     </modules>
 
     <dependencyManagement>
@@ -42,11 +43,6 @@
                 <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.idp.mgt</artifactId>
                 <version>${carbon.identity.framework.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon</groupId>
-                <artifactId>org.wso2.carbon.logging</artifactId>
-                <version>${commons-logging.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity.framework</groupId>
@@ -112,6 +108,11 @@
                 <groupId>org.wso2.carbon.analytics-common</groupId>
                 <artifactId>org.wso2.carbon.event.stream.core</artifactId>
                 <version>${carbon.analytics-common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>${commons-logging.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.identity.framework</groupId>
@@ -317,9 +318,20 @@
     </distributionManagement>
 
     <properties>
+        <identity.framework.version>5.21.0</identity.framework.version>
+        <maven.compiler.plugin.version>3.6.1</maven.compiler.plugin.version>
+        <maven.scr.plugin.version>1.22.0</maven.scr.plugin.version>
+        <maven.bundle.plugin.version>3.2.0</maven.bundle.plugin.version>
+        <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
+        <http.client.version>4.5.13</http.client.version>
+        <http.core.version>4.4.8</http.core.version>
+        <commons-net.version>3.6</commons-net.version>
+        <commons-logging.version>1.2</commons-logging.version>
+        <carbon.kernel.package.import.version.range>[4.5.0, 5.0.0)</carbon.kernel.package.import.version.range>
+        <carbon.user.api.imp.pkg.version.range>[1.0.1, 2.0.0)</carbon.user.api.imp.pkg.version.range>
+
         <carbon.identity.framework.version>5.11.109</carbon.identity.framework.version>
         <carbon.identity.governance.version>1.1.7</carbon.identity.governance.version>
-        <commons-logging.version>4.4.23</commons-logging.version>
         <carbon.kernel.version>4.4.23</carbon.kernel.version>
         <testng.version>6.9.10</testng.version>
         <jacoco.version>0.7.9</jacoco.version>
@@ -332,5 +344,6 @@
         <org.apache.felix.scr.ds.annotations.version>1.2.8</org.apache.felix.scr.ds.annotations.version>
         <carbon.identity.package.import.version.range>[5.0.0, 6.0.0)</carbon.identity.package.import.version.range>
         <org.apache.commons.logging.version>1.0.4</org.apache.commons.logging.version>
+        <carbon.identity.package.import.version.range>[5.14.0, 6.0.0)</carbon.identity.package.import.version.range>
     </properties>
 </project>
