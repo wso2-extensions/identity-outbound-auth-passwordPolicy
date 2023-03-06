@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test;
+package org.wso2.carbon.extension.identity.handler.passwordpolicy.test;
 
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;

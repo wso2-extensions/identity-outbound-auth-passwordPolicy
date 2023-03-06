@@ -1,0 +1,24 @@
+/usr/bin/java
+/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home/bin/java
+/Library/Java/JavaVirtualMachines/jdk-17.0.5.jdk/Contents/Home/bin/java
+/Library/Java/JavaVirtualMachines/adoptopenjdk-16.jdk/Contents/Home/bin/java
+/System/Volumes/Update/mnt1/usr/bin/java
+/System/Volumes/Data/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home/bin/java
+/System/Volumes/Data/Library/Java/JavaVirtualMachines/jdk-17.0.5.jdk/Contents/Home/bin/java
+/System/Volumes/Data/Library/Java/JavaVirtualMachines/adoptopenjdk-16.jdk/Contents/Home/bin/java
+/System/Volumes/Data/Users/hasanthi/Library/Java/JavaVirtualMachines/azul-11.0.18/Contents/Home/bin/java
+/System/Volumes/Data/Users/hasanthi/Library/Java/JavaVirtualMachines/azul-1.8.0_362/Contents/Home/jre/bin/java
+/System/Volumes/Data/Users/hasanthi/Library/Java/JavaVirtualMachines/azul-1.8.0_362/Contents/Home/bin/java
+/System/Volumes/Data/Users/hasanthi/.sdkman/candidates/java/8.0.302-zulu/zulu-8.jdk/Contents/Home/jre/bin/java
+/System/Volumes/Data/Users/hasanthi/.sdkman/candidates/java/8.0.302-zulu/zulu-8.jdk/Contents/Home/bin/java
+/System/Volumes/Data/Users/hasanthi/Applications/zulu17.38.21-ca-jdk17.0.5-linux_x64/bin/java
+/System/Volumes/Data/Applications/IntelliJ IDEA.app/Contents/jbr/Contents/Home/bin/java
+/System/Volumes/Data/Applications/IntelliJ IDEA CE.app/Contents/jbr/Contents/Home/bin/java
+/Users/hasanthi/Library/Java/JavaVirtualMachines/azul-11.0.18/Contents/Home/bin/java
+/Users/hasanthi/Library/Java/JavaVirtualMachines/azul-1.8.0_362/Contents/Home/jre/bin/java
+/Users/hasanthi/Library/Java/JavaVirtualMachines/azul-1.8.0_362/Contents/Home/bin/java
+/Users/hasanthi/.sdkman/candidates/java/8.0.302-zulu/zulu-8.jdk/Contents/Home/jre/bin/java
+/Users/hasanthi/.sdkman/candidates/java/8.0.302-zulu/zulu-8.jdk/Contents/Home/bin/java
+/Users/hasanthi/Applications/zulu17.38.21-ca-jdk17.0.5-linux_x64/bin/java
+/Applications/IntelliJ IDEA.app/Contents/jbr/Contents/Home/bin/java
+/Applications/IntelliJ IDEA CE.app/Contents/jbr/Contents/Home/bin/java

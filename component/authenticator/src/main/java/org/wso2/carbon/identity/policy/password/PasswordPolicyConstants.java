@@ -46,7 +46,7 @@ public class PasswordPolicyConstants {
     public static final String CONNECTOR_CONFIG_CATEGORY = "Password Policies";
     public static final String CONNECTOR_CONFIG_SUB_CATEGORY = "DEFAULT";
 
-    public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS = "passwordExpiry.passwordExpiryInDays";
+    public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS = "passwordExpiry.passwordExpiryInDaysasee";
     public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DISPLAYED_NAME = "Password Expiry In Days";
     public static final String CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DESCRIPTION =
             "Number of days after which the password will expire";
