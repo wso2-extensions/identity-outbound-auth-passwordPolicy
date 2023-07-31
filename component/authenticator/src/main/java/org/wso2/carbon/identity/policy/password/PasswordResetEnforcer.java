@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2018, WSO2 LLC. (http://www.wso2.com).
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -242,7 +242,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
      * @param tenantDomain        The tenant domain of the user trying to authenticate
      * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
      * @return True if the password had expired
-     * @throws AuthenticationFailedException if the authentication failed for the user trying to login
+     * @throws AuthenticationFailedException if the authentication failed for the user trying to log in
      */
     private boolean hadPasswordExpired(String tenantDomain, String tenantAwareUsername)
             throws AuthenticationFailedException {
@@ -278,12 +278,12 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             passwordChangedTime = Long.parseLong(passwordLastChangedTime);
         }
 
-        int daysDifference = 0;
+        double daysDifference = 0.0;
         long currentTimeMillis = System.currentTimeMillis();
         if (passwordChangedTime > 0) {
             Calendar currentTime = Calendar.getInstance();
             currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
-            daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
+            daysDifference = ((double) (currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
         }
 
         int passwordExpiryInDays = PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
@@ -301,11 +301,11 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             passwordExpiryInDays = Integer.parseInt(passwordExpiryInDaysConfiguredValue);
         }
 
-        return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
+        return (daysDifference > (double) passwordExpiryInDays || passwordLastChangedTime == null);
     }
 
     /**
-     * Validate a password
+     * Validate a password.
      *
      * @param userStoreManager The user store to which the user belongs to
      * @param password         The password that needs to be validated
@@ -332,7 +332,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
     }
 
     /**
-     * Check if the format of the password is correct
+     * Check if the format of the password is correct.
      *
      * @param regularExpression The regular expression indicating the password format
      * @param password          The password to be checked
@@ -345,7 +345,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
     }
 
     /**
-     * Get a user readable error message for an exception
+     * Get a user readable error message for an exception.
      *
      * @param e The exception for which the error message should be returned
      * @return The user readable error message
