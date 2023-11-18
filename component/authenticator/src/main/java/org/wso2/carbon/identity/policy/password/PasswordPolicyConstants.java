@@ -42,7 +42,7 @@ public class PasswordPolicyConstants {
             "org.wso2.carbon.identity.policy.password.PendingNotifications:1.0.0";
     public static final String PASSWORD_CHANGE_EVENT_HANDLER_NAME = "passwordExpiry";
 
-    public static final String CONNECTOR_CONFIG_FRIENDLY_NAME = "Password Expiry";
+    public static final String CONNECTOR_CONFIG_FRIENDLY_NAME = "[Deprecated] Password Expiry";
     public static final String CONNECTOR_CONFIG_CATEGORY = "Password Policies";
     public static final String CONNECTOR_CONFIG_SUB_CATEGORY = "DEFAULT";
 
