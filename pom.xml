@@ -317,7 +317,7 @@
     </distributionManagement>
 
     <properties>
-        <carbon.identity.framework.version>5.11.109</carbon.identity.framework.version>
+        <carbon.identity.framework.version>5.20.254</carbon.identity.framework.version>
         <carbon.identity.governance.version>1.1.7</carbon.identity.governance.version>
         <commons-logging.version>4.4.23</commons-logging.version>
         <carbon.kernel.version>4.4.23</carbon.kernel.version>
