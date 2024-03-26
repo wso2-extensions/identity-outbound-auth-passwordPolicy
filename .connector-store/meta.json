@@ -1,0 +1,12 @@
+{
+    "name": "Password Policy",
+    "owner": "WSO2",
+    "category": "Local authenticator",
+    "documentationUrl": "https://github.com/wso2-extensions/identity-outbound-auth-passwordPolicy/tree/v1.0.20/docs",
+    "description": "The Password Policy authenticator allows you to reset the password during the authentication flow, if the password is expired, the user will be prompted to reset the password and sending email notification before the password expiry can be enabled through this. ",
+    "status": "Active",
+    "labels": [
+        "Password-Reset-Enforcer"
+    ],
+    "releases": []
+}
