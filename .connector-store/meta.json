@@ -8,13 +8,13 @@
     "labels": ["Password-Reset-Enforcer"],
     "releases": [
         {
-            "tagName": "2.0.0",
+            "tagName": "v2.0.0",
             "products": [
                 "IS 7.0.0"
             ]
         },
         {
-            "tagName": "1.0.29",
+            "tagName": "v1.0.29",
             "products": [
                 "IS 6.1.0",
                 "IS 6.0.0",
@@ -23,7 +23,7 @@
             ]
         },
         {
-            "tagName": "1.0.28",
+            "tagName": "v1.0.28",
             "products": [
                 "IS 6.1.0",
                 "IS 6.0.0",
@@ -32,45 +32,45 @@
             ]
         },
         {
-            "tagName": "1.0.26",
+            "tagName": "v1.0.26",
             "products": [
                 "IS 6.0.0",
                 "IS 5.10.0"
             ]
         },
         {
-            "tagName": "1.0.20",
+            "tagName": "v1.0.20",
             "products": [
                 "IS 5.10.0",
                 "IS 5.9.0"
             ]
         },
         {
-            "tagName": "1.0.19",
+            "tagName": "v1.0.19",
             "products": [
                 "IS 5.9.0"
             ]
         },
         {
-            "tagName": "1.0.18",
+            "tagName": "v1.0.18",
             "products": [
                 "IS 5.9.0"
             ]
         },
         {
-            "tagName": "1.0.17",
+            "tagName": "v1.0.17",
             "products": [
                 "IS 5.9.0"
             ]
         },
         {
-            "tagName": "1.0.16",
+            "tagName": "v1.0.16",
             "products": [
                 "IS 5.7.0"
             ]
         },
         {
-            "tagName": "1.0.11",
+            "tagName": "v1.0.11",
             "products": [
                 "IS 5.7.0"
             ]
