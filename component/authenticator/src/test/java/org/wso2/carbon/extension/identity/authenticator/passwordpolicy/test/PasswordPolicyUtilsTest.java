@@ -47,12 +47,14 @@ public class PasswordPolicyUtilsTest {
 
         String[] passwordExpiryPropertyNames = PasswordPolicyUtils.getPasswordExpiryPropertyNames();
 
-        Assert.assertEquals(passwordExpiryPropertyNames.length, 3);
+        Assert.assertEquals(passwordExpiryPropertyNames.length, 4);
         Assert.assertEquals(passwordExpiryPropertyNames[0],
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
         Assert.assertEquals(passwordExpiryPropertyNames[1],
                 PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS);
         Assert.assertEquals(passwordExpiryPropertyNames[2],
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS);
+        Assert.assertEquals(passwordExpiryPropertyNames[3],
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS);
     }
 }
