@@ -52,6 +52,7 @@ public class PasswordPolicyUtils {
         properties.add(PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
         properties.add(PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS);
         properties.add(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS);
+        properties.add(PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS);
         return properties.toArray(new String[properties.size()]);
     }
 

@@ -37,7 +37,6 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.text.ParseException;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -89,6 +88,13 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         }
 
         long timestamp = System.currentTimeMillis();
+        String tenantDomain = (String) event.getEventProperties()
+                .get(IdentityEventConstants.EventProperty.TENANT_DOMAIN);
+
+        // Store the last password update time in nanoseconds if the configuration is enabled.
+        if (isStoreTimeAsNanoseconds(tenantDomain)) {
+            timestamp = System.currentTimeMillis() * 1000000;
+        }
 
         // Updating the last password changed claim
         Map<String, String> claimMap = new HashMap<>();
@@ -139,6 +145,8 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
                 PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS_DISPLAYED_NAME);
         nameMapping.put(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DISPLAYED_NAME);
+        nameMapping.put(PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS,
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DISPLAYED_NAME);
         return nameMapping;
     }
 
@@ -151,6 +159,8 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
                 PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS_DESCRIPTION);
         nameMapping.put(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DESCRIPTION);
+        nameMapping.put(PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS,
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DESCRIPTION);
         return nameMapping;
     }
 
@@ -210,6 +220,22 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         properties.setProperty(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS,
                 priorReminderTimeInDays);
 
+        // Setting the store time as nanoseconds default value
+        String storeTimeAsNanoseconds = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS);
+        if (storeTimeAsNanoseconds == null) {   // To avoid null pointer exceptions if user had not added module config
+            storeTimeAsNanoseconds =
+                    Boolean.toString(PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DEFAULT_VALUE);
+            if (log.isDebugEnabled()) {
+                log.debug("Using the default property value: " +
+                        PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DEFAULT_VALUE + " for the "
+                        + "configuration: " + PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS
+                        + " because no module configuration is present.");
+            }
+        }
+        properties.setProperty(PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS,
+                storeTimeAsNanoseconds);
+
         return properties;
     }
 
@@ -240,12 +266,8 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
             passwordChangedTime = Long.parseLong(passwordLastChangedTime);
         }
         int daysDifference = 0;
-        long currentTimeMillis = System.currentTimeMillis();
         if (passwordChangedTime > 0) { // obtain the day difference from last password changed time to current time
-            Calendar currentTime = Calendar.getInstance();
-            currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
-            daysDifference = (int) ((currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24)); // convert to
-            // days
+            daysDifference = calculateDateDifference(passwordChangedTime, tenantDomain);
         }
         if (log.isDebugEnabled()) {
             log.debug("User: " + tenantAwareUsername + " password is updated before " + daysDifference + " Days");
@@ -335,6 +357,52 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
             return claimValueMap.get(claimURI);
         }
         return null;
+    }
+
+    /**
+     * Check whether to store the last password update time in nanoseconds.
+     *
+     * @param tenantDomain
+     * @return true if the configuration is enabled
+     */
+    private boolean isStoreTimeAsNanoseconds(String tenantDomain) {
+
+        String storeTimeAsNanoseconds = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS);
+        if (storeTimeAsNanoseconds == null) {
+            return PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DEFAULT_VALUE;
+        }
+        return Boolean.parseBoolean(storeTimeAsNanoseconds);
+    }
+
+    /**
+     * Calculate the date difference between the current time and the password changed time.
+     *
+     * @param passwordChangedTime
+     * @param tenantDomain
+     * @return date difference
+     */
+    private int calculateDateDifference(long passwordChangedTime, String tenantDomain) {
+
+        // Check whether the password changed time is stored in nanoseconds.
+        boolean isNanoSeconds = passwordChangedTime >= 1_000_000_000_000_000L;
+
+        // Check whether the password changed time should be stored in nanoseconds or not.
+        if (isStoreTimeAsNanoseconds(tenantDomain)) {
+
+            // Convert the password changed time to nanoseconds if it is stored in milliseconds.
+            if (!isNanoSeconds) {
+                passwordChangedTime = passwordChangedTime * 1_000_000;
+            }
+            long currentTIme = System.currentTimeMillis() * 1000000;
+            return (int) ((currentTIme - passwordChangedTime) / (1000 * 60 * 60 * 24) / 1000000);
+        }
+
+        // Convert the password changed time to milliseconds if it is stored in nanoseconds.
+        if (isNanoSeconds) {
+            passwordChangedTime = passwordChangedTime / 1_000_000;
+        }
+        return (int) ((System.currentTimeMillis() - passwordChangedTime) / (1000 * 60 * 60 * 24));
     }
 
 }

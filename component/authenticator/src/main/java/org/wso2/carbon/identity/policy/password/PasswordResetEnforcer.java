@@ -46,7 +46,6 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -279,11 +278,8 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         }
 
         double daysDifference = 0.0;
-        long currentTimeMillis = System.currentTimeMillis();
         if (passwordChangedTime > 0) {
-            Calendar currentTime = Calendar.getInstance();
-            currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
-            daysDifference = ((double) (currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
+            daysDifference = calculateDateDifference(passwordChangedTime, tenantDomain);
         }
 
         int passwordExpiryInDays = PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
@@ -418,5 +414,51 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             return claimValueMap.get(claimURI);
         }
         return null;
+    }
+
+    /**
+     * Check whether to store the last password update time in nanoseconds.
+     *
+     * @param tenantDomain
+     * @return true if the configuration is enabled
+     */
+    private boolean isStoreTimeAsNanoseconds(String tenantDomain) {
+
+        String storeTimeAsNanoseconds = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS);
+        if (storeTimeAsNanoseconds == null) {
+            return PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DEFAULT_VALUE;
+        }
+        return Boolean.parseBoolean(storeTimeAsNanoseconds);
+    }
+
+    /**
+     * Calculate the date difference between the current time and the password changed time.
+     *
+     * @param passwordChangedTime
+     * @param tenantDomain
+     * @return date difference
+     */
+    private int calculateDateDifference(long passwordChangedTime, String tenantDomain) {
+
+        // Check whether the password changed time is stored in nanoseconds.
+        boolean isNanoSeconds = passwordChangedTime >= 1_000_000_000_000_000L;
+
+        // Check whether the password changed time should be stored in nanoseconds or not.
+        if (isStoreTimeAsNanoseconds(tenantDomain)) {
+
+            // Convert the password changed time to nanoseconds if it is stored in milliseconds.
+            if (!isNanoSeconds) {
+                passwordChangedTime = passwordChangedTime * 1_000_000;
+            }
+            long currentTIme = System.currentTimeMillis() * 1000000;
+            return (int) ((currentTIme - passwordChangedTime) / (1000 * 60 * 60 * 24) / 1000000);
+        }
+
+        // Convert the password changed time to milliseconds if it is stored in nanoseconds.
+        if (isNanoSeconds) {
+            passwordChangedTime = passwordChangedTime / 1_000_000;
+        }
+        return (int) ((System.currentTimeMillis() - passwordChangedTime) / (1000 * 60 * 60 * 24));
     }
 }

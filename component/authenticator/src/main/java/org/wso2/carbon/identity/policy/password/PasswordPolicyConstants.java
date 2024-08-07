@@ -67,6 +67,13 @@ public class PasswordPolicyConstants {
             "Number of days before the password expiry that the users should be reminded of password expiry";
     public static final int CONNECTOR_CONFIG_PRIOR_NOTICE_TIME_IN_DAYS_DEFAULT_VALUE = 0;
 
+    public static final String CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS = "passwordExpiry.storeTimeAsNanoseconds";
+    public static final String CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DISPLAYED_NAME =
+            "Store Update Time As Nanoseconds";
+    public static final String CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DESCRIPTION =
+            "Store the last password update time in nanoseconds";
+    public static final boolean CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DEFAULT_VALUE = false;
+
     public static final String LOGIN_STANDARD_PAGE = "login.do";
     public static final String PASSWORD_RESET_ENFORCER_PAGE = "pwd-reset.jsp";
     public static final String PASSWORD_HISTORY_VIOLATION_ERROR_CODE = "22001";
