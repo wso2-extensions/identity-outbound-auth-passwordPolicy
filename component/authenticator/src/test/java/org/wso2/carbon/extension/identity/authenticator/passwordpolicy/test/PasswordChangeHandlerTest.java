@@ -503,7 +503,7 @@ public class PasswordChangeHandlerTest {
     @Test
     public void testGetPropertyNameMapping() {
         Map<String, String> propertyNameMapping = passwordChangeHandler.getPropertyNameMapping();
-        Assert.assertEquals(propertyNameMapping.size(), 3);
+        Assert.assertEquals(propertyNameMapping.size(), 4);
         Assert.assertEquals(
                 propertyNameMapping.get(PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS),
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DISPLAYED_NAME
@@ -516,12 +516,16 @@ public class PasswordChangeHandlerTest {
                 propertyNameMapping.get(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS),
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DISPLAYED_NAME
         );
+        Assert.assertEquals(
+                propertyNameMapping.get(PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS),
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DISPLAYED_NAME
+        );
     }
 
     @Test
     public void testGetPropertyDescriptionMapping() {
         Map<String, String> propertyDescriptionMapping = passwordChangeHandler.getPropertyDescriptionMapping();
-        Assert.assertEquals(propertyDescriptionMapping.size(), 3);
+        Assert.assertEquals(propertyDescriptionMapping.size(), 4);
         Assert.assertEquals(
                 propertyDescriptionMapping.get(PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS),
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DESCRIPTION
@@ -534,15 +538,20 @@ public class PasswordChangeHandlerTest {
                 propertyDescriptionMapping.get(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS),
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DESCRIPTION
         );
+        Assert.assertEquals(
+                propertyDescriptionMapping.get(PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS),
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS_DESCRIPTION
+        );
     }
 
     @Test
     public void testGetPropertyNames() {
         String[] propertyNames = passwordChangeHandler.getPropertyNames();
-        Assert.assertEquals(propertyNames.length, 3);
+        Assert.assertEquals(propertyNames.length, 4);
         Assert.assertEquals(propertyNames[0], PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
         Assert.assertEquals(propertyNames[1], PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS);
         Assert.assertEquals(propertyNames[2], PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS);
+        Assert.assertEquals(propertyNames[3], PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS);
     }
 
     @Test
@@ -555,6 +564,8 @@ public class PasswordChangeHandlerTest {
                 PasswordPolicyConstants.CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS)).thenReturn("true");
         when(PasswordPolicyUtils.getIdentityEventProperty(TENANT_DOMAIN,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS)).thenReturn("2");
+        when(PasswordPolicyUtils.getIdentityEventProperty(TENANT_DOMAIN,
+                PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS)).thenReturn("false");
 
         ModuleConfiguration moduleConfiguration = mock(ModuleConfiguration.class);
         Whitebox.setInternalState(passwordChangeHandler, "configs", moduleConfiguration);
@@ -563,7 +574,7 @@ public class PasswordChangeHandlerTest {
         when(moduleConfiguration.getModuleProperties()).thenReturn(moduleProperties);
 
         Properties defaultPropertyValues = passwordChangeHandler.getDefaultPropertyValues(TENANT_DOMAIN);
-        Assert.assertEquals(defaultPropertyValues.size(), 3);
+        Assert.assertEquals(defaultPropertyValues.size(), 4);
         Assert.assertEquals(
                 defaultPropertyValues.get(PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS),
                 "30"
@@ -575,6 +586,10 @@ public class PasswordChangeHandlerTest {
         Assert.assertEquals(
                 defaultPropertyValues.get(PasswordPolicyConstants.CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS),
                 "2"
+        );
+        Assert.assertEquals(
+                defaultPropertyValues.get(PasswordPolicyConstants.CONNECTOR_CONFIG_STORE_TIME_AS_NANOSECONDS),
+                "false"
         );
     }
 
