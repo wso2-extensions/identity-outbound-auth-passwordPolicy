@@ -24,14 +24,25 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.A
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.IdentityProviderProperty;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
+import org.wso2.carbon.identity.governance.listener.IdentityStoreEventListener;
+import org.wso2.carbon.identity.governance.store.UserIdentityDataStore;
+import org.wso2.carbon.identity.governance.store.UserStoreBasedIdentityDataStore;
 import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.jdbc.UniqueIDJDBCUserStoreManager;
+import org.wso2.carbon.user.core.ldap.UniqueIDActiveDirectoryUserStoreManager;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.DATA_STORE_PROPERTY_NAME;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.HUNDREDS_OF_NANOSECONDS;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.USER_OPERATION_EVENT_LISTENER_TYPE;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.WINDOWS_EPOCH_DIFF;
 
 /**
  * Utilities for password change enforcing.
@@ -115,5 +126,32 @@ public class PasswordPolicyUtils {
             propertyValue = property.getValue();
         }
         return propertyValue;
+    }
+
+    public static boolean isUserStoreBasedIdentityDataStore() throws AuthenticationFailedException {
+
+        try {
+            String storeClassName = IdentityUtil.readEventListenerProperty(USER_OPERATION_EVENT_LISTENER_TYPE,
+                            IdentityStoreEventListener.class.getName()).getProperties()
+                    .get(DATA_STORE_PROPERTY_NAME).toString();
+            Class clazz = Class.forName(storeClassName.trim());
+            UserIdentityDataStore identityDataStore = (UserIdentityDataStore) clazz.newInstance();
+            return identityDataStore instanceof UserStoreBasedIdentityDataStore;
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            throw new AuthenticationFailedException("Error while initializing the UserStoreBasedIdentityDataStore", e);
+        }
+    }
+
+    public static boolean isActiveDirectoryUserStore(UserStoreManager userStoreManager) {
+
+        return userStoreManager instanceof UniqueIDJDBCUserStoreManager
+                && userStoreManager.getSecondaryUserStoreManager() instanceof UniqueIDActiveDirectoryUserStoreManager;
+    }
+
+    public static String convertWindowsFileTimeToUnixTime(String windowsFileTime) {
+
+        long fileTime = Long.parseLong(windowsFileTime);
+        long millisSinceEpoch = (fileTime / HUNDREDS_OF_NANOSECONDS) - WINDOWS_EPOCH_DIFF;
+        return String.valueOf(millisSinceEpoch);
     }
 }

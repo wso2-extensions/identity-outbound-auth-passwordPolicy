@@ -53,6 +53,9 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.convertWindowsFileTimeToUnixTime;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.isActiveDirectoryUserStore;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.isUserStoreBasedIdentityDataStore;
 
 /**
  * this connector must only be present in an authentication step, where the user
@@ -271,6 +274,10 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             }
         } catch (UserStoreException e) {
             throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
+        }
+
+        if (isUserStoreBasedIdentityDataStore() && isActiveDirectoryUserStore(userStoreManager)) {
+            passwordLastChangedTime = convertWindowsFileTimeToUnixTime(passwordLastChangedTime);
         }
 
         long passwordChangedTime = 0;
