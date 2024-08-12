@@ -128,6 +128,12 @@ public class PasswordPolicyUtils {
         return propertyValue;
     }
 
+    /**
+     * Check whether the user store is based on identity data store.
+     *
+     * @return true if the user store is based on identity data store.
+     * @throws AuthenticationFailedException if an error occurs while initializing the UserStoreBasedIdentityDataStore.
+     */
     public static boolean isUserStoreBasedIdentityDataStore() throws AuthenticationFailedException {
 
         try {
@@ -142,12 +148,24 @@ public class PasswordPolicyUtils {
         }
     }
 
+    /**
+     * Check whether the user store is based on Active Directory.
+     *
+     * @param userStoreManager The user store manager.
+     * @return true if the user store is based on Active Directory.
+     */
     public static boolean isActiveDirectoryUserStore(UserStoreManager userStoreManager) {
 
         return userStoreManager instanceof UniqueIDJDBCUserStoreManager
                 && userStoreManager.getSecondaryUserStoreManager() instanceof UniqueIDActiveDirectoryUserStoreManager;
     }
 
+    /**
+     * Convert Windows file time to Unix time.
+     *
+     * @param windowsFileTime Windows file time.
+     * @return Unix time.
+     */
     public static String convertWindowsFileTimeToUnixTime(String windowsFileTime) {
 
         long fileTime = Long.parseLong(windowsFileTime);

@@ -276,6 +276,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
         }
 
+        // Check if the Identity datastore is set to Active Directory and do the conversion accordingly.
         if (isUserStoreBasedIdentityDataStore() && isActiveDirectoryUserStore(userStoreManager)) {
             passwordLastChangedTime = convertWindowsFileTimeToUnixTime(passwordLastChangedTime);
         }
