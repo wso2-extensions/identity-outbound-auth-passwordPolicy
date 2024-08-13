@@ -141,7 +141,7 @@ public class PasswordPolicyUtils {
                             IdentityStoreEventListener.class.getName()).getProperties()
                     .get(DATA_STORE_PROPERTY_NAME).toString();
             Class clazz = Class.forName(storeClassName.trim());
-            UserIdentityDataStore identityDataStore = (UserIdentityDataStore) clazz.newInstance();
+            Object identityDataStore = clazz.newInstance();
             return identityDataStore instanceof UserStoreBasedIdentityDataStore;
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             throw new AuthenticationFailedException("Error while initializing the UserStoreBasedIdentityDataStore", e);
