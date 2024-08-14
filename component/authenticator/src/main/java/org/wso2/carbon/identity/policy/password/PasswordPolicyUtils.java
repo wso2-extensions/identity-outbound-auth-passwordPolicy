@@ -29,7 +29,6 @@ import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.governance.listener.IdentityStoreEventListener;
-import org.wso2.carbon.identity.governance.store.UserIdentityDataStore;
 import org.wso2.carbon.identity.governance.store.UserStoreBasedIdentityDataStore;
 import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
@@ -161,10 +160,27 @@ public class PasswordPolicyUtils {
     }
 
     /**
-     * Convert Windows file time to Unix time.
+     * Converts a Windows FileTime string to Unix time in milliseconds.
      *
-     * @param windowsFileTime Windows file time.
-     * @return Unix time.
+     * Windows FileTime is a 64-bit value representing the number of 100-nanosecond
+     * intervals since January 1, 1601 (UTC).
+     *
+     * The conversion to Unix time (milliseconds since January 1, 1970, UTC) involves two steps:
+     *
+     * 1. Convert the Windows FileTime value from 100-nanosecond intervals to milliseconds:
+     *    - This is done by dividing the FileTime value by 10,000 (HUNDREDS_OF_NANOSECONDS).
+     *    - This converts the FileTime value from 100-nanosecond intervals to milliseconds.
+     *
+     * 2. Adjust for the difference in epoch start dates between Windows and Unix:
+     *    - Windows epoch starts on January 1, 1601, while Unix epoch starts on January 1, 1970.
+     *    - The difference between these two epochs is 11644473600000 milliseconds (WINDOWS_EPOCH_DIFF).
+     *    - Subtracting this value aligns the converted milliseconds with the Unix epoch.
+     *
+     * The resulting value represents the number of milliseconds since the Unix epoch,
+     * which is returned as a string.
+     *
+     * @param windowsFileTime A string representing the Windows FileTime to be converted.
+     * @return A string representing the Unix time in milliseconds.
      */
     public static String convertWindowsFileTimeToUnixTime(String windowsFileTime) {
 
