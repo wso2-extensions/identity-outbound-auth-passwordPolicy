@@ -24,14 +24,24 @@ import org.wso2.carbon.identity.application.authentication.framework.exception.A
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.IdentityProviderProperty;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
+import org.wso2.carbon.identity.governance.listener.IdentityStoreEventListener;
+import org.wso2.carbon.identity.governance.store.UserStoreBasedIdentityDataStore;
 import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.jdbc.UniqueIDJDBCUserStoreManager;
+import org.wso2.carbon.user.core.ldap.UniqueIDActiveDirectoryUserStoreManager;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.DATA_STORE_PROPERTY_NAME;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.HUNDREDS_OF_NANOSECONDS;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.USER_OPERATION_EVENT_LISTENER_TYPE;
+import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.WINDOWS_EPOCH_DIFF;
 
 /**
  * Utilities for password change enforcing.
@@ -115,5 +125,67 @@ public class PasswordPolicyUtils {
             propertyValue = property.getValue();
         }
         return propertyValue;
+    }
+
+    /**
+     * Check whether the user store is based on identity data store.
+     *
+     * @return true if the user store is based on identity data store.
+     * @throws AuthenticationFailedException if an error occurs while initializing the UserStoreBasedIdentityDataStore.
+     */
+    public static boolean isUserStoreBasedIdentityDataStore() throws AuthenticationFailedException {
+
+        try {
+            String storeClassName = IdentityUtil.readEventListenerProperty(USER_OPERATION_EVENT_LISTENER_TYPE,
+                            IdentityStoreEventListener.class.getName()).getProperties()
+                    .get(DATA_STORE_PROPERTY_NAME).toString();
+            Class clazz = Class.forName(storeClassName.trim());
+            Object identityDataStore = clazz.newInstance();
+            return identityDataStore instanceof UserStoreBasedIdentityDataStore;
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            throw new AuthenticationFailedException("Error while initializing the UserStoreBasedIdentityDataStore", e);
+        }
+    }
+
+    /**
+     * Check whether the user store is based on Active Directory.
+     *
+     * @param userStoreManager The user store manager.
+     * @return true if the user store is based on Active Directory.
+     */
+    public static boolean isActiveDirectoryUserStore(UserStoreManager userStoreManager) {
+
+        return userStoreManager instanceof UniqueIDJDBCUserStoreManager
+                && userStoreManager.getSecondaryUserStoreManager() instanceof UniqueIDActiveDirectoryUserStoreManager;
+    }
+
+    /**
+     * Converts a Windows FileTime string to Unix time in milliseconds.
+     *
+     * Windows FileTime is a 64-bit value representing the number of 100-nanosecond
+     * intervals since January 1, 1601 (UTC).
+     *
+     * The conversion to Unix time (milliseconds since January 1, 1970, UTC) involves two steps:
+     *
+     * 1. Convert the Windows FileTime value from 100-nanosecond intervals to milliseconds:
+     *    - This is done by dividing the FileTime value by 10,000 (HUNDREDS_OF_NANOSECONDS).
+     *    - This converts the FileTime value from 100-nanosecond intervals to milliseconds.
+     *
+     * 2. Adjust for the difference in epoch start dates between Windows and Unix:
+     *    - Windows epoch starts on January 1, 1601, while Unix epoch starts on January 1, 1970.
+     *    - The difference between these two epochs is 11644473600000 milliseconds (WINDOWS_EPOCH_DIFF).
+     *    - Subtracting this value aligns the converted milliseconds with the Unix epoch.
+     *
+     * The resulting value represents the number of milliseconds since the Unix epoch,
+     * which is returned as a string.
+     *
+     * @param windowsFileTime A string representing the Windows FileTime to be converted.
+     * @return A string representing the Unix time in milliseconds.
+     */
+    public static String convertWindowsFileTimeToUnixTime(String windowsFileTime) {
+
+        long fileTime = Long.parseLong(windowsFileTime);
+        long millisSinceEpoch = (fileTime / HUNDREDS_OF_NANOSECONDS) - WINDOWS_EPOCH_DIFF;
+        return String.valueOf(millisSinceEpoch);
     }
 }

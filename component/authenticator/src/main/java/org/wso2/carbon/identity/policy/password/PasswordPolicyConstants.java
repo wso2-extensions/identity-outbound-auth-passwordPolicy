@@ -78,6 +78,15 @@ public class PasswordPolicyConstants {
     public static final String PASSWORD_EXPIRED_ERROR_MESSAGE = "Password has expired";
     public static final String PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE = "30";
 
+    // UserStore based Identity Datastore constants.
+    public static final String USER_OPERATION_EVENT_LISTENER_TYPE = "org.wso2.carbon.user.core.listener" +
+            ".UserOperationEventListener";
+    public static final String DATA_STORE_PROPERTY_NAME = "Data.Store";
+
+    // Time conversion constants.
+    public static final long WINDOWS_EPOCH_DIFF = 11644473600000L;
+    public static final long HUNDREDS_OF_NANOSECONDS = 10000L;
+
     private PasswordPolicyConstants() {      // To prevent instantiation
     }
 }

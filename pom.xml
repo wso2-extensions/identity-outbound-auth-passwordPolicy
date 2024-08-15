@@ -320,7 +320,7 @@
         <carbon.identity.framework.version>5.11.109</carbon.identity.framework.version>
         <carbon.identity.governance.version>1.1.7</carbon.identity.governance.version>
         <commons-logging.version>4.4.23</commons-logging.version>
-        <carbon.kernel.version>4.4.23</carbon.kernel.version>
+        <carbon.kernel.version>4.9.0</carbon.kernel.version>
         <testng.version>6.9.10</testng.version>
         <jacoco.version>0.7.9</jacoco.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
