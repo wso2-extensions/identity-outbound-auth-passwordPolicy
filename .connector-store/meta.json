@@ -8,7 +8,7 @@
     "labels": ["Password-Reset-Enforcer"],
     "releases": [
         {
-            "tagName": "v2.0.3",
+            "tagName": "v2.0.4",
             "products": [
                 "IS 7.0.0",
                 "IS 6.1.0"
