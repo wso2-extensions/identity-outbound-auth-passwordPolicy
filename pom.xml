@@ -330,7 +330,7 @@
         <carbon.analytics-common.version>5.1.31</carbon.analytics-common.version>
         <maven.scr.plugin.version>1.24.0</maven.scr.plugin.version>
         <org.apache.felix.scr.ds.annotations.version>1.2.8</org.apache.felix.scr.ds.annotations.version>
-        <carbon.identity.package.import.version.range>[5.0.0, 6.0.0)</carbon.identity.package.import.version.range>
+        <carbon.identity.package.import.version.range>[5.0.0, 8.0.0)</carbon.identity.package.import.version.range>
         <org.apache.commons.logging.version>1.0.4</org.apache.commons.logging.version>
     </properties>
 </project>
