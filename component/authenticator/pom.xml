@@ -107,6 +107,10 @@
             <artifactId>org.wso2.carbon.identity.password.history</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wso2.carbon.identity.governance</groupId>
+            <artifactId>org.wso2.carbon.identity.password.expiry</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.scr.ds-annotations</artifactId>
         </dependency>
@@ -161,7 +165,7 @@
                             org.wso2.carbon.identity.mgt.*; version="${carbon.identity.package.import.version.range}",
                             org.apache.commons.logging.*; version="1.0.4",
                             org.osgi.framework,
-                            org.wso2.carbon.identity.application.authentication.framework.*,
+                            org.wso2.carbon.identity.application.authentication.framework.*; version="${carbon.identity.package.import.version.range},
                             javax.servlet,
                             javax.servlet.http,
                             org.wso2.carbon.databridge.commons; version="${carbon.analytics-common.version}",

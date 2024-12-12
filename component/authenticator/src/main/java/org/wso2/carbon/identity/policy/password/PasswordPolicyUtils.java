@@ -18,9 +18,12 @@
 
 package org.wso2.carbon.identity.policy.password;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
+import org.wso2.carbon.identity.application.authentication.framework.exception.PostAuthenticationFailedException;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.IdentityProviderProperty;
 import org.wso2.carbon.identity.application.common.util.IdentityApplicationManagementUtil;
@@ -30,12 +33,27 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.governance.listener.IdentityStoreEventListener;
 import org.wso2.carbon.identity.governance.store.UserStoreBasedIdentityDataStore;
+import org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRule;
+import org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRuleAttributeEnum;
+import org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRuleOperatorEnum;
+import org.wso2.carbon.identity.policy.password.internal.PasswordPolicyDataHolder;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
+import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
+import org.wso2.carbon.identity.role.v2.mgt.core.model.RoleBasicInfo;
 import org.wso2.carbon.idp.mgt.IdentityProviderManagementException;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
+import org.wso2.carbon.user.core.common.Group;
 import org.wso2.carbon.user.core.jdbc.UniqueIDJDBCUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDActiveDirectoryUserStoreManager;
 import static org.wso2.carbon.identity.policy.password.PasswordPolicyConstants.DATA_STORE_PROPERTY_NAME;
@@ -187,5 +205,215 @@ public class PasswordPolicyUtils {
         long fileTime = Long.parseLong(windowsFileTime);
         long millisSinceEpoch = (fileTime / HUNDREDS_OF_NANOSECONDS) - WINDOWS_EPOCH_DIFF;
         return String.valueOf(millisSinceEpoch);
+    }
+
+    public static boolean isPasswordExpiredForUser(String tenantDomain, double daysDifference,
+                                                   String passwordLastChangedTime, String userId, UserStoreManager
+                                                           userStoreManager) throws AuthenticationFailedException {
+        try {
+            List<PasswordExpiryRule> passwordExpiryRules =
+                    org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils
+                            .getPasswordExpiryRules(tenantDomain);
+            boolean skipIfNoApplicableRules =
+                    org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils
+                            .isSkipIfNoApplicableRulesEnabled(tenantDomain);
+            // Apply default password expiry policy if no rules given.
+            if (CollectionUtils.isEmpty(passwordExpiryRules)) {
+                return isPasswordExpiredUnderDefaultPolicy(tenantDomain, daysDifference, passwordLastChangedTime,
+                        skipIfNoApplicableRules);
+            }
+
+            // If the default behavior is to skip the password expiry, rules with skip logic are not necessary.
+            List<PasswordExpiryRule> filteredRules = passwordExpiryRules.stream()
+                    .filter(rule -> !skipIfNoApplicableRules ||
+                            !PasswordExpiryRuleOperatorEnum.NE.equals(rule.getOperator()))
+                    .collect(Collectors.toList());
+
+            Map<PasswordExpiryRuleAttributeEnum, Set<String>> fetchedUserAttributes =
+                    new EnumMap<>(PasswordExpiryRuleAttributeEnum.class);
+
+            for (PasswordExpiryRule rule : filteredRules) {
+                if (isRuleApplicable(rule, fetchedUserAttributes, tenantDomain, userId, userStoreManager)) {
+                    // Skip the rule if the operator is not equals.
+                    if (PasswordExpiryRuleOperatorEnum.NE.equals(rule.getOperator())) {
+                        return false;
+                    }
+                    int expiryDays =
+                            rule.getExpiryDays() > 0 ? rule.getExpiryDays() : getPasswordExpiryInDays(tenantDomain);
+                    return daysDifference >= expiryDays || passwordLastChangedTime == null;
+                }
+            }
+            // Apply default password expiry policy if no specific rule applies.
+            return isPasswordExpiredUnderDefaultPolicy(tenantDomain, daysDifference, passwordLastChangedTime,
+                    skipIfNoApplicableRules);
+
+        } catch (PostAuthenticationFailedException e) {
+            throw new AuthenticationFailedException("Error while reading the password expiry rules", e);
+        }
+    }
+
+    /**
+     * Check if the password has expired according to the default password expiry policy.
+     *
+     * @param tenantDomain            The tenant domain.
+     * @param daysDifference          The number of days since the password was last updated.
+     * @param lastPasswordUpdatedTime The last password updated time.
+     * @return true if the password has expired, false otherwise.
+     * @throws PostAuthenticationFailedException If an error occurs while checking the password expiry.
+     */
+    private static boolean isPasswordExpiredUnderDefaultPolicy(String tenantDomain, double daysDifference,
+                                                               String lastPasswordUpdatedTime,
+                                                               boolean skipIfNoApplicableRules)
+            throws AuthenticationFailedException {
+
+        if (skipIfNoApplicableRules) return false;
+        return lastPasswordUpdatedTime == null || daysDifference >= (double) getPasswordExpiryInDays(tenantDomain);
+    }
+
+    /**
+     * Check if the given rule is applicable for the user.
+     *
+     * @param rule                   Password expiry rule.
+     * @param fetchedUserAttributes  Fetched user attributes.
+     * @param tenantDomain           Tenant domain.
+     * @param userId                 User ID.
+     * @param userStoreManager       User store manager.
+     * @return true if the rule is applicable, false otherwise.
+     * @throws PostAuthenticationFailedException If an error occurred while checking the rule applicability.
+     */
+    private static boolean isRuleApplicable(PasswordExpiryRule rule,
+                                            Map<PasswordExpiryRuleAttributeEnum, Set<String>> fetchedUserAttributes,
+                                            String tenantDomain, String userId,
+                                            UserStoreManager userStoreManager)
+            throws AuthenticationFailedException {
+
+        PasswordExpiryRuleAttributeEnum ruleAttribute = rule.getAttribute();
+        Set<String> userAttributeValues =
+                getUserAttributes(ruleAttribute, fetchedUserAttributes, tenantDomain, userId, userStoreManager);
+        if (CollectionUtils.isEmpty(userAttributeValues)) {
+            return false;
+        }
+        return userAttributeValues.containsAll(rule.getValues());
+    }
+
+    private static Set<String> getUserAttributes(PasswordExpiryRuleAttributeEnum attribute,
+                                                 Map<PasswordExpiryRuleAttributeEnum, Set<String>> fetchedUserAttributes,
+                                                 String tenantDomain, String userId,
+                                                 UserStoreManager userStoreManager)
+            throws AuthenticationFailedException {
+
+        if (!fetchedUserAttributes.containsKey(attribute)) {
+            switch (attribute) {
+                case ROLES:
+                    // Fetch roles assigned to user via groups.
+                    Set<String> userGroupIds;
+                    if (fetchedUserAttributes.containsKey(PasswordExpiryRuleAttributeEnum.GROUPS)) {
+                        userGroupIds = fetchedUserAttributes.get(PasswordExpiryRuleAttributeEnum.GROUPS);
+                    } else {
+                        userGroupIds = getUserGroupIds(userId, userStoreManager);
+                        fetchedUserAttributes.put(PasswordExpiryRuleAttributeEnum.GROUPS, userGroupIds);
+                    }
+                    List<String> roleIdsOfGroups = getRoleIdsOfGroups(new ArrayList<>(userGroupIds), tenantDomain);
+
+                    List<RoleBasicInfo> userRoles = getUserRoles(tenantDomain, userId);
+                    Set<String> userRoleIds =
+                            userRoles.stream().map(RoleBasicInfo::getId).collect(Collectors.toSet());
+                    userRoleIds.addAll(roleIdsOfGroups);
+                    fetchedUserAttributes.put(PasswordExpiryRuleAttributeEnum.ROLES, userRoleIds);
+                    break;
+                case GROUPS:
+                    Set<String> groupIds = getUserGroupIds(userId, userStoreManager);
+                    fetchedUserAttributes.put(PasswordExpiryRuleAttributeEnum.GROUPS, groupIds);
+                    break;
+            }
+        }
+        return fetchedUserAttributes.get(attribute);
+    }
+
+    /**
+     * Get the group IDs of the given user.
+     *
+     * @param userId           The user ID.
+     * @param userStoreManager The user store manager.
+     * @return The group IDs of the user.
+     * @throws AuthenticationFailedException If an error occurs while getting the group IDs of the user.
+     */
+    private static Set<String> getUserGroupIds(String userId, UserStoreManager userStoreManager)
+            throws AuthenticationFailedException {
+
+        try {
+            List<Group> userGroups =
+                    ((AbstractUserStoreManager) userStoreManager).getGroupListOfUser(userId,
+                            null, null);
+            return userGroups.stream().map(Group::getGroupID).collect(Collectors.toSet());
+        } catch (UserStoreException e) {
+            throw new AuthenticationFailedException("Error while retrieving user groups.", e);
+        }
+    }
+
+    /**
+     * Get the roles of a given user.
+     *
+     * @param tenantDomain The tenant domain.
+     * @param userId       The user ID.
+     * @return The roles of the user.
+     * @throws AuthenticationFailedException If an error occurs while getting the user roles.
+     */
+    public static List<RoleBasicInfo> getUserRoles(String tenantDomain, String userId)
+            throws AuthenticationFailedException {
+
+        try {
+            RoleManagementService roleManagementService = PasswordPolicyDataHolder.getInstance()
+                    .getRoleManagementService();
+            return roleManagementService.getRoleListOfUser(userId, tenantDomain);
+        } catch (IdentityRoleManagementException e) {
+            throw new AuthenticationFailedException("Error while retrieving user roles.", e);
+        }
+    }
+
+    /**
+     * Get the role IDs of the given groups.
+     *
+     * @param groupIds     The group IDs.
+     * @param tenantDomain The tenant domain.
+     * @return The role IDs of the groups.
+     * @throws AuthenticationFailedException If an error occurs while getting the role IDs of the groups.
+     */
+    private static List<String> getRoleIdsOfGroups(List<String> groupIds, String tenantDomain)
+            throws AuthenticationFailedException {
+
+        try {
+            RoleManagementService roleManagementService = PasswordPolicyDataHolder.getInstance()
+                    .getRoleManagementService();
+            return roleManagementService.getRoleIdListOfGroups(groupIds, tenantDomain);
+        } catch (IdentityRoleManagementException e) {
+            throw new AuthenticationFailedException("Error while retrieving user roles.", e);
+        }
+    }
+
+    /**
+     * This method retrieves the password expiry in days configured for the given tenant domain.
+     *
+     * @param tenantDomain The tenant domain to retrieve the password expiry in days.
+     * @return The password expiry in days.
+     * @throws AuthenticationFailedException If an error occurs while retrieving the password expiry configuration.
+     */
+    private static int getPasswordExpiryInDays(String tenantDomain) throws AuthenticationFailedException {
+
+        int passwordExpiryInDays = PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
+
+        // Getting the configured number of days before password expiry in days
+        String passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils
+                .getResidentIdpProperty(tenantDomain, PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+
+        if (StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
+            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
+                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+        }
+
+        if (passwordExpiryInDaysConfiguredValue != null) {
+            passwordExpiryInDays = Integer.parseInt(passwordExpiryInDaysConfiguredValue);
+        }
+        return passwordExpiryInDays;
     }
 }

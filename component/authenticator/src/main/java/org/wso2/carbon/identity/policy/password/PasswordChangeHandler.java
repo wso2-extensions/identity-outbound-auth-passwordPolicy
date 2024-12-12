@@ -33,6 +33,7 @@ import org.wso2.carbon.user.api.ClaimManager;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
@@ -83,6 +84,9 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
                 } catch (org.wso2.carbon.user.api.UserStoreException e) {
                     throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e)
                             ;
+                } catch (AuthenticationFailedException e) {
+                    throw new IdentityEventException("Authentication Exception occurred while password expiry validation",
+                            e);
                 }
             }
             return;
@@ -230,10 +234,11 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
      */
     private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
                                       UserStoreManager userStoreManager) throws
-            org.wso2.carbon.user.api.UserStoreException {
+            org.wso2.carbon.user.api.UserStoreException, AuthenticationFailedException {
 
         String passwordLastChangedTime = getPasswordLastChangeTime(tenantDomain, tenantAwareUsername, userStoreManager);
         int passwordExpiryInDays =  getPasswordExpiryInDaysConfig(tenantDomain);
+        String userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(tenantAwareUsername);
 
         long passwordChangedTime = 0;
         if (passwordLastChangedTime != null) {
@@ -250,7 +255,8 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         if (log.isDebugEnabled()) {
             log.debug("User: " + tenantAwareUsername + " password is updated before " + daysDifference + " Days");
         }
-        return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
+        return PasswordPolicyUtils.isPasswordExpiredForUser(tenantDomain, daysDifference, passwordLastChangedTime,
+                userId, userStoreManager);
     }
 
     /**

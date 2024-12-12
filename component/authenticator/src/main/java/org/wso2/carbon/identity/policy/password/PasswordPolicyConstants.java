@@ -83,6 +83,10 @@ public class PasswordPolicyConstants {
             ".UserOperationEventListener";
     public static final String DATA_STORE_PROPERTY_NAME = "Data.Store";
 
+    public static final String CONNECTOR_CONFIG_NAME = "passwordExpiry";
+    public static final String PASSWORD_EXPIRY_RULES_PREFIX = "passwordExpiry.rule";
+    public static final String CONNECTOR_CONFIG_SKIP_IF_NO_APPLICABLE_RULES =
+            "passwordExpiry.skipIfNoApplicableRules";
     // Time conversion constants.
     public static final long WINDOWS_EPOCH_DIFF = 11644473600000L;
     public static final long HUNDREDS_OF_NANOSECONDS = 10000L;

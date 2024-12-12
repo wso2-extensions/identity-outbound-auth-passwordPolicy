@@ -47,6 +47,7 @@ import org.wso2.carbon.identity.policy.password.PasswordPolicyConstants;
 import org.wso2.carbon.identity.policy.password.PasswordPolicyUtils;
 import org.wso2.carbon.identity.policy.password.PasswordResetEnforcer;
 import org.wso2.carbon.identity.policy.password.internal.PasswordPolicyDataHolder;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 import org.wso2.carbon.user.api.Claim;
 import  org.wso2.carbon.user.core.claim.ClaimManager;
@@ -130,11 +131,15 @@ public class PasswordResetEnforcerTest {
     @Mock
     private IdentityProviderManager identityProviderManager;
 
+    @Mock
+    private RoleManagementService roleManagementService;
+
     @BeforeMethod
     public void setUp() {
         passwordResetEnforcer = new PasswordResetEnforcer();
         initMocks(this);
         PasswordPolicyDataHolder.getInstance().setIdentityGovernanceService(identityGovernanceService);
+        PasswordPolicyDataHolder.getInstance().setRoleManagementService(roleManagementService);
     }
 
     @Test

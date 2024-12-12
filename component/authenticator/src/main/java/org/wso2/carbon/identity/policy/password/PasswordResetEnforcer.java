@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.policy.password;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,20 +29,31 @@ import org.wso2.carbon.identity.application.authentication.framework.config.Conf
 import org.wso2.carbon.identity.application.authentication.framework.config.model.StepConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
+import org.wso2.carbon.identity.application.authentication.framework.exception.PostAuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.mgt.policy.PolicyViolationException;
 import org.wso2.carbon.identity.password.history.exeption.IdentityPasswordHistoryException;
+import org.wso2.carbon.identity.policy.password.internal.PasswordPolicyDataHolder;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
+import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
+import org.wso2.carbon.identity.role.v2.mgt.core.model.RoleBasicInfo;
 import org.wso2.carbon.user.api.ClaimManager;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
+import org.wso2.carbon.user.core.common.Group;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+
+import org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRuleAttributeEnum;
+import org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRuleOperatorEnum;
+import org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRule;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -53,6 +65,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.convertWindowsFileTimeToUnixTime;
 import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.isActiveDirectoryUserStore;
 import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.isUserStoreBasedIdentityDataStore;
@@ -157,9 +170,9 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                             tenantDomain);
                     String encodedUrl =
                             (loginPage + ("?" + queryParams
-                            + "&username=" + URLEncoder.encode(fullyQualifiedUsername, StandardCharsets.UTF_8.name())))
-                            + "&authenticators=" + getName() + ":" + PasswordPolicyConstants.AUTHENTICATOR_TYPE
-                            + retryParam;
+                                    + "&username=" + URLEncoder.encode(fullyQualifiedUsername, StandardCharsets.UTF_8.name())))
+                                    + "&authenticators=" + getName() + ":" + PasswordPolicyConstants.AUTHENTICATOR_TYPE
+                                    + retryParam;
 
                     response.sendRedirect(encodedUrl);
                 } catch (IOException e) {
@@ -256,60 +269,47 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             RealmService realmService = IdentityTenantUtil.getRealmService();
             userRealm = realmService.getTenantUserRealm(tenantId);
             userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
-        } catch (UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
-        }
+            String userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(tenantAwareUsername);
 
         String passwordLastChangedTime;
         String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
-        try {
-            passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
-            if (passwordLastChangedTime == null) {
-                ClaimManager claimManager = userRealm.getClaimManager();
-                claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
-                if (claimManager.getClaim(claimURI) != null) {
-                    passwordLastChangedTime =
-                            getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
+            try {
+                passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
+                if (passwordLastChangedTime == null) {
+                    ClaimManager claimManager = userRealm.getClaimManager();
+                    claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
+                    if (claimManager.getClaim(claimURI) != null) {
+                        passwordLastChangedTime =
+                                getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
+                    }
                 }
+            } catch (UserStoreException e) {
+                throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
             }
+
+            // Check if the Identity datastore is set to Active Directory and do the conversion accordingly.
+            if (isUserStoreBasedIdentityDataStore() && isActiveDirectoryUserStore(userStoreManager)) {
+                passwordLastChangedTime = convertWindowsFileTimeToUnixTime(passwordLastChangedTime);
+            }
+    
+            long passwordChangedTime = 0;
+            if (passwordLastChangedTime != null) {
+                passwordChangedTime = Long.parseLong(passwordLastChangedTime);
+            }
+    
+            double daysDifference = 0.0;
+            long currentTimeMillis = System.currentTimeMillis();
+            if (passwordChangedTime > 0) {
+                Calendar currentTime = Calendar.getInstance();
+                currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
+                daysDifference = ((double) (currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
+            }
+
+            return PasswordPolicyUtils.isPasswordExpiredForUser(tenantDomain, daysDifference, passwordLastChangedTime,
+                    userId, userStoreManager);
         } catch (UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
+            throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
         }
-
-        // Check if the Identity datastore is set to Active Directory and do the conversion accordingly.
-        if (isUserStoreBasedIdentityDataStore() && isActiveDirectoryUserStore(userStoreManager)) {
-            passwordLastChangedTime = convertWindowsFileTimeToUnixTime(passwordLastChangedTime);
-        }
-
-        long passwordChangedTime = 0;
-        if (passwordLastChangedTime != null) {
-            passwordChangedTime = Long.parseLong(passwordLastChangedTime);
-        }
-
-        double daysDifference = 0.0;
-        long currentTimeMillis = System.currentTimeMillis();
-        if (passwordChangedTime > 0) {
-            Calendar currentTime = Calendar.getInstance();
-            currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
-            daysDifference = ((double) (currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
-        }
-
-        int passwordExpiryInDays = PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
-
-        // Getting the configured number of days before password expiry in days
-        String passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils
-                .getResidentIdpProperty(tenantDomain, PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-
-        if (StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
-            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
-                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-        }
-
-        if (passwordExpiryInDaysConfiguredValue != null) {
-            passwordExpiryInDays = Integer.parseInt(passwordExpiryInDaysConfiguredValue);
-        }
-
-        return (daysDifference > (double) passwordExpiryInDays || passwordLastChangedTime == null);
     }
 
     /**
@@ -427,4 +427,5 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         }
         return null;
     }
+
 }
