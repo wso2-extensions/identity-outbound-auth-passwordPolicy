@@ -57,6 +57,9 @@ import java.util.Properties;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
+import static org.mockito.Matchers.anyDouble;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -322,11 +325,11 @@ public class PasswordChangeHandlerTest {
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
-
+        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
+                anyString(), anyObject() )).thenReturn(true);
         Map<String, String> claimValueMap = new HashMap<>();
         claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,"1672559229000");
         String[] claimURIs = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-
         when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
         try {
             passwordChangeHandler.handleEvent(event);
@@ -390,6 +393,8 @@ public class PasswordChangeHandlerTest {
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
+                anyString(), anyObject() )).thenReturn(true);
         when(IdentityTenantUtil.getTenantId(TENANT_DOMAIN)).thenReturn(TENANT_ID);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(TENANT_ID)).thenReturn(userRealm);
@@ -428,6 +433,8 @@ public class PasswordChangeHandlerTest {
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
+        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
+                anyString(), anyObject() )).thenReturn(true);
         when(IdentityTenantUtil.getTenantId(TENANT_DOMAIN)).thenReturn(TENANT_ID);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(TENANT_ID)).thenReturn(userRealm);

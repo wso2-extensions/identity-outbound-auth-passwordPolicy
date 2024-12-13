@@ -258,10 +258,9 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             RealmService realmService = IdentityTenantUtil.getRealmService();
             userRealm = realmService.getTenantUserRealm(tenantId);
             userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
-            String userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(tenantAwareUsername);
 
-        String passwordLastChangedTime;
-        String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
+            String passwordLastChangedTime;
+            String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
             try {
                 passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
                 if (passwordLastChangedTime == null) {
@@ -295,7 +294,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             }
 
             return PasswordPolicyUtils.isPasswordExpiredForUser(tenantDomain, daysDifference, passwordLastChangedTime,
-                    userId, userStoreManager);
+                    tenantAwareUsername, userStoreManager);
         } catch (UserStoreException e) {
             throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
         }

@@ -237,9 +237,6 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
             org.wso2.carbon.user.api.UserStoreException, AuthenticationFailedException {
 
         String passwordLastChangedTime = getPasswordLastChangeTime(tenantDomain, tenantAwareUsername, userStoreManager);
-        int passwordExpiryInDays =  getPasswordExpiryInDaysConfig(tenantDomain);
-        String userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(tenantAwareUsername);
-
         long passwordChangedTime = 0;
         if (passwordLastChangedTime != null) {
             passwordChangedTime = Long.parseLong(passwordLastChangedTime);
@@ -256,7 +253,7 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
             log.debug("User: " + tenantAwareUsername + " password is updated before " + daysDifference + " Days");
         }
         return PasswordPolicyUtils.isPasswordExpiredForUser(tenantDomain, daysDifference, passwordLastChangedTime,
-                userId, userStoreManager);
+                tenantAwareUsername, userStoreManager);
     }
 
     /**
@@ -288,39 +285,6 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         }
 
         return passwordLastChangedTime;
-    }
-
-    /**
-     * get password expiry in days configured value.
-     * @param tenantDomain user tenant domain
-     * @return password expiry days as a int
-     */
-    private int getPasswordExpiryInDaysConfig(String tenantDomain) {
-
-        String passwordExpiryInDaysConfiguredValue = null;
-        try {
-            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getResidentIdpProperty(tenantDomain,
-                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-        } catch (AuthenticationFailedException e) {
-            log.warn("Authentication Exception occurred while reading password expiry residentIdp property");
-        }
-
-        if (passwordExpiryInDaysConfiguredValue == null || StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
-            String passwordExpiryInDaysIdentityEventProperty = this.configs.getModuleProperties().getProperty(
-                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-            if (StringUtils.isNotEmpty(passwordExpiryInDaysIdentityEventProperty)) {
-                passwordExpiryInDaysConfiguredValue = passwordExpiryInDaysIdentityEventProperty;
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Password expiry in days configuration can not be fetched or null. Hence using the " +
-                            "default: " + PasswordPolicyConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE + " days");
-                }
-                passwordExpiryInDaysConfiguredValue =
-                        PasswordPolicyConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
-            }
-
-        }
-        return Integer.parseInt(passwordExpiryInDaysConfiguredValue);
     }
 
     /**

@@ -208,9 +208,11 @@ public class PasswordPolicyUtils {
     }
 
     public static boolean isPasswordExpiredForUser(String tenantDomain, double daysDifference,
-                                                   String passwordLastChangedTime, String userId, UserStoreManager
-                                                           userStoreManager) throws AuthenticationFailedException {
+                                                   String passwordLastChangedTime, String tenantAwareUsername, UserStoreManager
+                                                           userStoreManager) throws AuthenticationFailedException,
+            org.wso2.carbon.user.core.UserStoreException {
         try {
+            String userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(tenantAwareUsername);
             List<PasswordExpiryRule> passwordExpiryRules =
                     org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils
                             .getPasswordExpiryRules(tenantDomain);
@@ -296,6 +298,17 @@ public class PasswordPolicyUtils {
         return userAttributeValues.containsAll(rule.getValues());
     }
 
+    /**
+     * Get the user attribute values for the given password expiry rule attribute.
+     *
+     * @param attribute              Password expiry rule attribute.
+     * @param fetchedUserAttributes  Fetched user attributes.
+     * @param tenantDomain           Tenant domain.
+     * @param userId                 User ID.
+     * @param userStoreManager       User store manager.
+     * @return  The user attribute values.
+     * @throws AuthenticationFailedException If an error occurred while getting the user attributes.
+     */
     private static Set<String> getUserAttributes(PasswordExpiryRuleAttributeEnum attribute,
                                                  Map<PasswordExpiryRuleAttributeEnum, Set<String>> fetchedUserAttributes,
                                                  String tenantDomain, String userId,
@@ -396,15 +409,18 @@ public class PasswordPolicyUtils {
      *
      * @param tenantDomain The tenant domain to retrieve the password expiry in days.
      * @return The password expiry in days.
-     * @throws AuthenticationFailedException If an error occurs while retrieving the password expiry configuration.
      */
-    private static int getPasswordExpiryInDays(String tenantDomain) throws AuthenticationFailedException {
+    private static int getPasswordExpiryInDays(String tenantDomain) {
 
         int passwordExpiryInDays = PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
-
-        // Getting the configured number of days before password expiry in days
-        String passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils
-                .getResidentIdpProperty(tenantDomain, PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+        String passwordExpiryInDaysConfiguredValue =  null;
+        try {
+            // Getting the configured number of days before password expiry in days
+            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils
+                    .getResidentIdpProperty(tenantDomain, PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
+        } catch (AuthenticationFailedException e) {
+            log.warn("Authentication Exception occurred while reading password expiry residentIdp property");
+        }
 
         if (StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
             passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,

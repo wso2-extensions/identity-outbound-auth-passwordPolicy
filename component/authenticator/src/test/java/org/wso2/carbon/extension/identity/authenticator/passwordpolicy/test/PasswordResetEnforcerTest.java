@@ -29,6 +29,7 @@ import org.testng.IObjectFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.ObjectFactory;
 import org.testng.annotations.Test;
+import org.wso2.carbon.base.CarbonBaseConstants;
 import org.wso2.carbon.identity.application.authentication.framework.ApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus;
 import org.wso2.carbon.identity.application.authentication.framework.LocalApplicationAuthenticator;
@@ -55,6 +56,7 @@ import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
@@ -68,6 +70,8 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.anyDouble;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -114,6 +118,9 @@ public class PasswordResetEnforcerTest {
     private UserStoreManager userStoreManager;
 
     @Mock
+    private AbstractUserStoreManager abstractUserStoreManager;
+
+    @Mock
     private ClaimManager claimManager;
 
     @Mock
@@ -134,12 +141,24 @@ public class PasswordResetEnforcerTest {
     @Mock
     private RoleManagementService roleManagementService;
 
+    static {
+        // Set the CARBON_HOME system property
+        String carbonHome = Paths.get(System.getProperty("user.dir"), "src", "test", "resources").toString();
+        System.setProperty(CarbonBaseConstants.CARBON_HOME, carbonHome);
+    }
+
     @BeforeMethod
-    public void setUp() {
+    public void setUp() throws Exception{
         passwordResetEnforcer = new PasswordResetEnforcer();
         initMocks(this);
         PasswordPolicyDataHolder.getInstance().setIdentityGovernanceService(identityGovernanceService);
         PasswordPolicyDataHolder.getInstance().setRoleManagementService(roleManagementService);
+
+        // Ensure that the mocks are correctly set up
+        mockStatic(IdentityTenantUtil.class);
+        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
+        when(realmService.getTenantUserRealm(anyInt())).thenReturn(userRealm);
+        when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
     }
 
     @Test
@@ -328,6 +347,8 @@ public class PasswordResetEnforcerTest {
         when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(null);
         when(PasswordPolicyUtils.isUserStoreBasedIdentityDataStore()).thenReturn(false);
         when(PasswordPolicyUtils.isActiveDirectoryUserStore((UserStoreManager) anyObject())).thenReturn(false);
+        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
+                anyString(), anyObject() )).thenReturn(true);
 
         AuthenticatorFlowStatus status = Whitebox.invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
                 httpServletResponse, context, "");
@@ -380,6 +401,8 @@ public class PasswordResetEnforcerTest {
         when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(null);
         when(PasswordPolicyUtils.isUserStoreBasedIdentityDataStore()).thenReturn(false);
         when(PasswordPolicyUtils.isActiveDirectoryUserStore((UserStoreManager) anyObject())).thenReturn(false);
+        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
+                anyString(), anyObject() )).thenReturn(true);
 
         AuthenticatorFlowStatus status = Whitebox
                 .invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
