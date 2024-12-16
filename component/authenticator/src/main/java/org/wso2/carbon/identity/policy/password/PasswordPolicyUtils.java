@@ -314,8 +314,8 @@ public class PasswordPolicyUtils {
                         break;
                 }
             } catch (UserStoreException e) {
-                throw new AuthenticationFailedException("Error occurred while retrieving the password expiry rules for " +
-                        "tenant: " + tenantDomain, e);
+                throw new AuthenticationFailedException("Error occurred while retrieving user groups for the password" +
+                        " expiry rules in tenant : " + tenantDomain, e);
             }
         }
         return fetchedUserAttributes.get(attribute);
@@ -355,8 +355,8 @@ public class PasswordPolicyUtils {
                     .getRoleManagementService();
             return roleManagementService.getRoleListOfUser(userId, tenantDomain);
         } catch (IdentityRoleManagementException e) {
-            throw new AuthenticationFailedException("Error occurred while retrieving the password expiry rules for " +
-                    "tenant: " + tenantDomain, e);
+            throw new AuthenticationFailedException("Error occurred while retrieving user roles for password " +
+                    "expiry rules" + tenantDomain, e);
         }
     }
 
@@ -374,8 +374,8 @@ public class PasswordPolicyUtils {
             return Boolean.parseBoolean(PasswordPolicyUtils.getPasswordExpiryConfig(tenantDomain,
                     CONNECTOR_CONFIG_SKIP_IF_NO_APPLICABLE_RULES));
         } catch (IdentityGovernanceException e) {
-            throw new AuthenticationFailedException("Error occurred while retrieving the password expiry rules for " +
-                    "tenant: " + tenantDomain, e);
+            throw new AuthenticationFailedException("Error occurred while reading the skipIfNoApplicableRules " +
+                    "password expiry configuration for tenant: " + tenantDomain, e);
         }
     }
 
@@ -429,14 +429,13 @@ public class PasswordPolicyUtils {
 
     public static boolean isPasswordExpiredForUser(String tenantDomain, double daysDifference,
                                                    String lastPasswordUpdatedTime, String tenantAwareUsername, UserStoreManager
-                                                           userStoreManager) throws AuthenticationFailedException,
-            org.wso2.carbon.user.core.UserStoreException {
+                                                           userStoreManager) throws AuthenticationFailedException{
 
         try {
             String userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(tenantAwareUsername);
 
             if (userId == null || userId.isEmpty()) {
-                throw new AuthenticationFailedException("User not found in the user store.");
+                throw new AuthenticationFailedException("User is not found in the user store.");
             }
             List<PasswordExpiryRule> passwordExpiryRules = getPasswordExpiryRules(tenantDomain);
             boolean skipIfNoApplicableRules = isSkipIfNoApplicableRulesEnabled(tenantDomain);
@@ -471,8 +470,8 @@ public class PasswordPolicyUtils {
             return isPasswordExpiredUnderDefaultPolicy(tenantDomain, daysDifference, lastPasswordUpdatedTime,
                     skipIfNoApplicableRules);
         } catch (UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while retrieving the password expiry rules for " +
-                    "tenant: " + tenantDomain, e);
+            throw new AuthenticationFailedException("Error occurred while retrieving the user id for " +
+                    "authenticated user in tenant: " + tenantDomain, e);
         }
     }
 }
