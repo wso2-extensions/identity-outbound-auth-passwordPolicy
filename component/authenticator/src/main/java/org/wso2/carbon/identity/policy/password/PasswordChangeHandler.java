@@ -229,6 +229,7 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
      * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
      * @param userStoreManager
      * @return true if password is expired or password last update time is null
+     * @throws org.wso2.carbon.user.api.UserStoreException
      * @throws AuthenticationFailedException
      */
     private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
