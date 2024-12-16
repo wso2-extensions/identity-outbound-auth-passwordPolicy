@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.policy.password.internal;
 
 import org.wso2.carbon.identity.governance.IdentityGovernanceService;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 
 /**
  * The data holder for the password policy.
@@ -27,6 +28,7 @@ public class PasswordPolicyDataHolder {
     private static PasswordPolicyDataHolder instance;
 
     private IdentityGovernanceService identityGovernanceService;
+    private RoleManagementService roleManagementService;
 
     private PasswordPolicyDataHolder() {     // Prevent instantiation
     }
@@ -49,5 +51,15 @@ public class PasswordPolicyDataHolder {
 
     public void setIdentityGovernanceService(IdentityGovernanceService identityGovernanceService) {
         this.identityGovernanceService = identityGovernanceService;
+    }
+
+    public RoleManagementService getRoleManagementService() {
+
+        return roleManagementService;
+    }
+
+    public void setRoleManagementService(RoleManagementService roleManagementService) {
+
+        this.roleManagementService = roleManagementService;
     }
 }
