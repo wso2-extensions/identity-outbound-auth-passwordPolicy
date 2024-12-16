@@ -83,6 +83,10 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
                 } catch (org.wso2.carbon.user.api.UserStoreException e) {
                     throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e)
                             ;
+                } catch (AuthenticationFailedException e) {
+                    throw new IdentityEventException("Authentication Exception occurred while password expiry " +
+                            "validation", e)
+                            ;
                 }
             }
             return;
@@ -225,11 +229,11 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
      * @param tenantAwareUsername The tenant aware username of the user trying to authenticate
      * @param userStoreManager
      * @return true if password is expired or password last update time is null
-     * @throws org.wso2.carbon.user.api.UserStoreException
-     * @throws ParseException
+     * @throws AuthenticationFailedException
      */
     private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
-                                      UserStoreManager userStoreManager) throws AuthenticationFailedException {
+                                      UserStoreManager userStoreManager) throws AuthenticationFailedException,
+            org.wso2.carbon.user.api.UserStoreException {
 
 
         String passwordLastChangedTime = getPasswordLastChangeTime(tenantDomain, tenantAwareUsername, userStoreManager);
@@ -265,26 +269,21 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
      */
     private String getPasswordLastChangeTime(String tenantDomain, String tenantAwareUsername,
                                              UserStoreManager userStoreManager) throws
-            AuthenticationFailedException {
+            org.wso2.carbon.user.api.UserStoreException {
 
         String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
-        try {
-            String passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
-
-            if (passwordLastChangedTime == null) {
-                int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-                RealmService realmService = IdentityTenantUtil.getRealmService();
-                UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
-                ClaimManager claimManager = userRealm.getClaimManager();
-                claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
-                if (claimManager.getClaim(claimURI) != null) {
-                    passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
-                }
+        String passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
+        if (passwordLastChangedTime == null) {
+            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+            RealmService realmService = IdentityTenantUtil.getRealmService();
+            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+            ClaimManager claimManager = userRealm.getClaimManager();
+            claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
+            if (claimManager.getClaim(claimURI) != null) {
+                passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
             }
-            return passwordLastChangedTime;
-        } catch (org.wso2.carbon.user.api.UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
         }
+        return passwordLastChangedTime;
     }
 
     /**
