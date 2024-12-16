@@ -229,11 +229,10 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
      * @throws ParseException
      */
     private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
-                                      UserStoreManager userStoreManager) throws
-            org.wso2.carbon.user.api.UserStoreException {
+                                      UserStoreManager userStoreManager) throws AuthenticationFailedException {
+
 
         String passwordLastChangedTime = getPasswordLastChangeTime(tenantDomain, tenantAwareUsername, userStoreManager);
-        int passwordExpiryInDays =  getPasswordExpiryInDaysConfig(tenantDomain);
 
         long passwordChangedTime = 0;
         if (passwordLastChangedTime != null) {
@@ -250,7 +249,8 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         if (log.isDebugEnabled()) {
             log.debug("User: " + tenantAwareUsername + " password is updated before " + daysDifference + " Days");
         }
-        return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
+        return PasswordPolicyUtils.isPasswordExpiredForUser(tenantDomain, daysDifference, passwordLastChangedTime,
+                tenantAwareUsername, userStoreManager);
     }
 
     /**
@@ -265,56 +265,26 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
      */
     private String getPasswordLastChangeTime(String tenantDomain, String tenantAwareUsername,
                                              UserStoreManager userStoreManager) throws
-            org.wso2.carbon.user.api.UserStoreException {
+            AuthenticationFailedException {
 
         String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
-        String passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
-
-        if (passwordLastChangedTime == null) {
-            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-            RealmService realmService = IdentityTenantUtil.getRealmService();
-            UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
-            ClaimManager claimManager = userRealm.getClaimManager();
-            claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
-            if (claimManager.getClaim(claimURI) != null) {
-                passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
-            }
-        }
-
-        return passwordLastChangedTime;
-    }
-
-    /**
-     * get password expiry in days configured value.
-     * @param tenantDomain user tenant domain
-     * @return password expiry days as a int
-     */
-    private int getPasswordExpiryInDaysConfig(String tenantDomain) {
-
-        String passwordExpiryInDaysConfiguredValue = null;
         try {
-            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getResidentIdpProperty(tenantDomain,
-                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-        } catch (AuthenticationFailedException e) {
-            log.warn("Authentication Exception occurred while reading password expiry residentIdp property");
-        }
+            String passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
 
-        if (passwordExpiryInDaysConfiguredValue == null || StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
-            String passwordExpiryInDaysIdentityEventProperty = this.configs.getModuleProperties().getProperty(
-                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-            if (StringUtils.isNotEmpty(passwordExpiryInDaysIdentityEventProperty)) {
-                passwordExpiryInDaysConfiguredValue = passwordExpiryInDaysIdentityEventProperty;
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Password expiry in days configuration can not be fetched or null. Hence using the " +
-                            "default: " + PasswordPolicyConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE + " days");
+            if (passwordLastChangedTime == null) {
+                int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+                RealmService realmService = IdentityTenantUtil.getRealmService();
+                UserRealm userRealm = realmService.getTenantUserRealm(tenantId);
+                ClaimManager claimManager = userRealm.getClaimManager();
+                claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
+                if (claimManager.getClaim(claimURI) != null) {
+                    passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
                 }
-                passwordExpiryInDaysConfiguredValue =
-                        PasswordPolicyConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
             }
-
+            return passwordLastChangedTime;
+        } catch (org.wso2.carbon.user.api.UserStoreException e) {
+            throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
         }
-        return Integer.parseInt(passwordExpiryInDaysConfiguredValue);
     }
 
     /**
