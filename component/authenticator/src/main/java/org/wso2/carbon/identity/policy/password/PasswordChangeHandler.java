@@ -273,6 +273,7 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
 
         String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
         String passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
+
         if (passwordLastChangedTime == null) {
             int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
             RealmService realmService = IdentityTenantUtil.getRealmService();
@@ -283,6 +284,7 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
                 passwordLastChangedTime = getClaimValue(userStoreManager, claimURI, tenantAwareUsername);
             }
         }
+
         return passwordLastChangedTime;
     }
 
