@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
-import org.wso2.carbon.identity.application.authentication.framework.exception.PostAuthenticationFailedException;
 import org.wso2.carbon.identity.application.common.model.IdentityProvider;
 import org.wso2.carbon.identity.application.common.model.IdentityProviderProperty;
 import org.wso2.carbon.identity.application.common.model.Property;
@@ -50,7 +49,11 @@ import org.wso2.carbon.idp.mgt.IdentityProviderManager;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.common.Group;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -240,11 +243,8 @@ public class PasswordPolicyUtils {
                     } catch (Exception e) {
                         // Log and skip the rule if an error occurred while parsing the rule, without failing the
                         // authentication flow.
-                        if (log.isDebugEnabled()) {
-                            log.debug(String.format("Error parsing password expiry rule: %s. Rule will be skipped.",
-                                    property.getValue()));
-                        }
-                        log.error("Error parsing password expiry rule.", e);
+                        log.warn(String.format("Error parsing password expiry rule: %s. Rule will be skipped.",
+                                property.getValue()));
                     }
                 }
             }
