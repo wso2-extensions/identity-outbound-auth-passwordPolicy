@@ -60,12 +60,16 @@ public class PasswordPolicyConstants {
                     "This requires an IS Analytics instance.";
     public static final boolean CONNECTOR_CONFIG_ENABLE_EMAIL_NOTIFICATIONS_DEFAULT_VALUE = false;
 
+    public static final String CONNECTOR_CONFIG_NAME = "passwordExpiry";
     public static final String CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS = "passwordExpiry.priorReminderTimeInDays";
     public static final String CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DISPLAYED_NAME =
             "Prior Reminder Time In Days";
     public static final String CONNECTOR_CONFIG_PRIOR_REMINDER_TIME_IN_DAYS_DESCRIPTION =
             "Number of days before the password expiry that the users should be reminded of password expiry";
     public static final int CONNECTOR_CONFIG_PRIOR_NOTICE_TIME_IN_DAYS_DEFAULT_VALUE = 0;
+    public static final String PASSWORD_EXPIRY_RULES_PREFIX = "passwordExpiry.rule";
+    public static final String CONNECTOR_CONFIG_SKIP_IF_NO_APPLICABLE_RULES =
+            "passwordExpiry.skipIfNoApplicableRules";
 
     public static final String LOGIN_STANDARD_PAGE = "login.do";
     public static final String PASSWORD_RESET_ENFORCER_PAGE = "pwd-reset.jsp";

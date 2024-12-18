@@ -218,8 +218,8 @@
                 <version>2.3.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>
@@ -317,8 +317,8 @@
     </distributionManagement>
 
     <properties>
-        <carbon.identity.framework.version>5.11.109</carbon.identity.framework.version>
-        <carbon.identity.governance.version>1.1.7</carbon.identity.governance.version>
+        <carbon.identity.framework.version>7.0.78</carbon.identity.framework.version>
+        <carbon.identity.governance.version>1.9.6</carbon.identity.governance.version>
         <commons-logging.version>4.4.23</commons-logging.version>
         <carbon.kernel.version>4.9.0</carbon.kernel.version>
         <testng.version>6.9.10</testng.version>
@@ -330,7 +330,7 @@
         <carbon.analytics-common.version>5.1.31</carbon.analytics-common.version>
         <maven.scr.plugin.version>1.24.0</maven.scr.plugin.version>
         <org.apache.felix.scr.ds.annotations.version>1.2.8</org.apache.felix.scr.ds.annotations.version>
-        <carbon.identity.package.import.version.range>[5.0.0, 6.0.0)</carbon.identity.package.import.version.range>
+        <carbon.identity.package.import.version.range>[5.0.0, 8.0.0)</carbon.identity.package.import.version.range>
         <org.apache.commons.logging.version>1.0.4</org.apache.commons.logging.version>
     </properties>
 </project>

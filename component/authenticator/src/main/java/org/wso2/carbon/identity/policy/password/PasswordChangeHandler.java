@@ -83,6 +83,10 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
                 } catch (org.wso2.carbon.user.api.UserStoreException e) {
                     throw new IdentityEventException("UserStore Exception occurred while password expiry validation", e)
                             ;
+                } catch (AuthenticationFailedException e) {
+                    throw new IdentityEventException("Authentication Exception occurred while password expiry " +
+                            "validation", e)
+                            ;
                 }
             }
             return;
@@ -226,14 +230,14 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
      * @param userStoreManager
      * @return true if password is expired or password last update time is null
      * @throws org.wso2.carbon.user.api.UserStoreException
-     * @throws ParseException
+     * @throws AuthenticationFailedException
      */
     private boolean isPasswordExpired(String tenantDomain, String tenantAwareUsername,
-                                      UserStoreManager userStoreManager) throws
+                                      UserStoreManager userStoreManager) throws AuthenticationFailedException,
             org.wso2.carbon.user.api.UserStoreException {
 
+
         String passwordLastChangedTime = getPasswordLastChangeTime(tenantDomain, tenantAwareUsername, userStoreManager);
-        int passwordExpiryInDays =  getPasswordExpiryInDaysConfig(tenantDomain);
 
         long passwordChangedTime = 0;
         if (passwordLastChangedTime != null) {
@@ -250,7 +254,8 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         if (log.isDebugEnabled()) {
             log.debug("User: " + tenantAwareUsername + " password is updated before " + daysDifference + " Days");
         }
-        return (daysDifference > passwordExpiryInDays || passwordLastChangedTime == null);
+        return PasswordPolicyUtils.isPasswordExpiredForUser(tenantDomain, daysDifference, passwordLastChangedTime,
+                tenantAwareUsername, userStoreManager);
     }
 
     /**
@@ -282,39 +287,6 @@ public class PasswordChangeHandler extends AbstractEventHandler implements Ident
         }
 
         return passwordLastChangedTime;
-    }
-
-    /**
-     * get password expiry in days configured value.
-     * @param tenantDomain user tenant domain
-     * @return password expiry days as a int
-     */
-    private int getPasswordExpiryInDaysConfig(String tenantDomain) {
-
-        String passwordExpiryInDaysConfiguredValue = null;
-        try {
-            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getResidentIdpProperty(tenantDomain,
-                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-        } catch (AuthenticationFailedException e) {
-            log.warn("Authentication Exception occurred while reading password expiry residentIdp property");
-        }
-
-        if (passwordExpiryInDaysConfiguredValue == null || StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
-            String passwordExpiryInDaysIdentityEventProperty = this.configs.getModuleProperties().getProperty(
-                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-            if (StringUtils.isNotEmpty(passwordExpiryInDaysIdentityEventProperty)) {
-                passwordExpiryInDaysConfiguredValue = passwordExpiryInDaysIdentityEventProperty;
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Password expiry in days configuration can not be fetched or null. Hence using the " +
-                            "default: " + PasswordPolicyConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE + " days");
-                }
-                passwordExpiryInDaysConfiguredValue =
-                        PasswordPolicyConstants.PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
-            }
-
-        }
-        return Integer.parseInt(passwordExpiryInDaysConfiguredValue);
     }
 
     /**

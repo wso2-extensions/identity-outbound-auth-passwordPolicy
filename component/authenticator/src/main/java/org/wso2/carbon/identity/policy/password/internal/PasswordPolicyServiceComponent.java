@@ -35,6 +35,7 @@ import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 import org.wso2.carbon.identity.governance.common.IdentityConnectorConfig;
 import org.wso2.carbon.identity.policy.password.PasswordChangeHandler;
 import org.wso2.carbon.identity.policy.password.PasswordResetEnforcer;
+import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 
 @Component(
         name = "org.wso2.carbon.identity.policy.password.component",
@@ -88,5 +89,22 @@ public class PasswordPolicyServiceComponent {
 
     protected void unsetIdentityGovernanceService(IdentityGovernanceService idpManager) {
         PasswordPolicyDataHolder.getInstance().setIdentityGovernanceService(null);
+    }
+
+    @Reference(
+            name = "role.management.service",
+            service = RoleManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRoleManagementService"
+    )
+    protected void setRoleManagementService(RoleManagementService roleManagementService) {
+
+        PasswordPolicyDataHolder.getInstance().setRoleManagementService(roleManagementService);
+    }
+
+    protected void unsetRoleManagementService(RoleManagementService roleManagementService) {
+
+        PasswordPolicyDataHolder.getInstance().setRoleManagementService(null);
     }
 }

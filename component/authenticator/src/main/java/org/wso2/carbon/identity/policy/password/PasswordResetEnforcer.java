@@ -249,6 +249,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
      */
     private boolean hadPasswordExpired(String tenantDomain, String tenantAwareUsername)
             throws AuthenticationFailedException {
+
         UserStoreManager userStoreManager;
         UserRealm userRealm;
         try {
@@ -294,22 +295,8 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             daysDifference = ((double) (currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
         }
 
-        int passwordExpiryInDays = PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS_DEFAULT_VALUE;
-
-        // Getting the configured number of days before password expiry in days
-        String passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils
-                .getResidentIdpProperty(tenantDomain, PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-
-        if (StringUtils.isEmpty(passwordExpiryInDaysConfiguredValue)) {
-            passwordExpiryInDaysConfiguredValue = PasswordPolicyUtils.getIdentityEventProperty(tenantDomain,
-                    PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS);
-        }
-
-        if (passwordExpiryInDaysConfiguredValue != null) {
-            passwordExpiryInDays = Integer.parseInt(passwordExpiryInDaysConfiguredValue);
-        }
-
-        return (daysDifference > (double) passwordExpiryInDays || passwordLastChangedTime == null);
+        return PasswordPolicyUtils.isPasswordExpiredForUser(tenantDomain, daysDifference, passwordLastChangedTime,
+                    tenantAwareUsername, userStoreManager);
     }
 
     /**
