@@ -21,12 +21,12 @@
     <parent>
         <groupId>org.wso2.carbon.extension.identity.authenticator</groupId>
         <artifactId>org.wso2.carbon.extension.identity.authenticator.passwordpolicy</artifactId>
-        <version>3.0.3-SNAPSHOT</version>
+        <version>3.0.3</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector</artifactId>
-    <version>3.0.3-SNAPSHOT</version>
+    <version>3.0.3</version>
     <packaging>bundle</packaging>
     <name>WSO2 Carbon Extension - Password Policy - Authenticator</name>
     <url>http://wso2.org</url>
