@@ -40,7 +40,6 @@
     Map<String, String> idpAuthenticatorMapping = null;
     if (request.getAttribute(Constants.IDP_AUTHENTICATOR_MAP) != null) {
         idpAuthenticatorMapping = (Map<String, String>) request.getAttribute(Constants.IDP_AUTHENTICATOR_MAP);
-        System.out.println("idpAuthenticatorMapping: " + idpAuthenticatorMapping.toString());
     }
 
     // Get validation configuration.
@@ -53,7 +52,6 @@
     */
 
     Boolean isPasswordInputValidationEnabled = Boolean.parseBoolean(getServletContext().getInitParameter("isPasswordInputValidationEnabled"));
-    System.out.println(isPasswordInputValidationEnabled);
     try {
         if (isPasswordInputValidationEnabled){
             passwordConfig = validationConfigurationRetrievalClient.getPasswordConfiguration(tenantDomain);
@@ -201,7 +199,7 @@
                                 <i id="password-validation-cross-match" style="display: none;" class="red times circle icon"></i>
                                 <i id="password-validation-check-match" style="display: none;" class="green check circle icon"></i>
                                 <p class="pl-4">
-                                    <%=IdentityManagementEndpointUtil.i18n(resourceBundle, "passwords.should.match")%>
+                                    Both passwords should match
                                 </p>
                             </div>
                         </div>
@@ -622,8 +620,7 @@
             if (!isPasswordInputValidationEnabled){
                 const errorMsg = $("#error-msg");
                 if (!passwordField.val() && passwordField.val().length === 0) {
-                    errorMsg.text("<%=IdentityManagementEndpointUtil.i18n(resourceBundle,
-                    "Password.cannot.be.empty")%>");
+                    errorMsg.text("Password cannot be empty.");
                     errorMsg.show();
                     $("html, body").animate({scrollTop: errorMsg.offset().top}, 'slow');
                     return false;
