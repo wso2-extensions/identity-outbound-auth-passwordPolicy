@@ -40,7 +40,6 @@
     Map<String, String> idpAuthenticatorMapping = null;
     if (request.getAttribute(Constants.IDP_AUTHENTICATOR_MAP) != null) {
         idpAuthenticatorMapping = (Map<String, String>) request.getAttribute(Constants.IDP_AUTHENTICATOR_MAP);
-        System.out.println("idpAuthenticatorMapping: " + idpAuthenticatorMapping.toString());
     }
 
     // Get validation configuration.
@@ -53,7 +52,6 @@
     */
 
     Boolean isPasswordInputValidationEnabled = Boolean.parseBoolean(getServletContext().getInitParameter("isPasswordInputValidationEnabled"));
-    System.out.println(isPasswordInputValidationEnabled);
     try {
         if (isPasswordInputValidationEnabled){
             passwordConfig = validationConfigurationRetrievalClient.getPasswordConfiguration(tenantDomain);
