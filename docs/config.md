@@ -12,7 +12,7 @@
 
 2. Download the latest wum updated IS pack from [here](https://wso2.com/identity-and-access-management/).
 
-2. Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file
+3. Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file
 
    ```
    [[event_handler]]
@@ -23,11 +23,18 @@
    enableDataPublishing= false
    priorReminderTimeInDays= "0"
    ```
-3. Copy the authentication page (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/pwd-reset.jsp`) to the `<IS_HOME>/repository/deployment/server/webapps/authenticationendpoint/` directory.
+4. **(For WSO2 IS v7.0)** Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file. This configuration is to enable the password reset authenticator in the application step configurations.
+
+   ```
+   [authentication.authenticator.password-reset-enforcer]
+   name = "password-reset-enforcer"
+   enable = true
+   ```
+5. Copy the authentication page (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/pwd-reset.jsp`) to the `<IS_HOME>/repository/deployment/server/webapps/authenticationendpoint/` directory.
    
    > This directory is created after the first time you run Identity Server. If this is your first time, start the server once first.
 
-4. Copy the connector (`org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-<version>.jar`) to the `<IS_HOME>/repository/components/dropins/` directory.
+6. Copy the connector (`org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-<version>.jar`) to the `<IS_HOME>/repository/components/dropins/` directory.
 
 > Please note that the Identity Server needs to be restarted after doing the above steps for the changes to take effect.
 
