@@ -12,7 +12,7 @@
 
 2. Download the latest wum updated IS pack from [here](https://wso2.com/identity-and-access-management/).
 
-2. Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file
+3. Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file
 
    ```
    [[event_handler]]
@@ -23,17 +23,36 @@
    enableDataPublishing= false
    priorReminderTimeInDays= "0"
    ```
-3. Copy the authentication page (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/pwd-reset.jsp`) to the `<IS_HOME>/repository/deployment/server/webapps/authenticationendpoint/` directory.
+4. **(For WSO2 IS v7.0)** Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file. This configuration is to enable the password reset authenticator in the application step configurations.
+
+   ```
+   [authentication.authenticator.password-reset-enforcer]
+   name = "password-reset-enforcer"
+   enable = true
+   ```
+5. Copy the authentication page (`<PASSWORD_RESET_ENFORCER_ARTIFACTS>/is/pwd-reset.jsp`) to the `<IS_HOME>/repository/deployment/server/webapps/authenticationendpoint/` directory.
    
    > This directory is created after the first time you run Identity Server. If this is your first time, start the server once first.
 
-4. Copy the connector (`org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-<version>.jar`) to the `<IS_HOME>/repository/components/dropins/` directory.
+6. Copy the connector (`org.wso2.carbon.extension.identity.authenticator.passwordpolicy.connector-<version>.jar`) to the `<IS_HOME>/repository/components/dropins/` directory.
 
 > Please note that the Identity Server needs to be restarted after doing the above steps for the changes to take effect.
 
 ### Configuring the Expiration Policy
 
 Follow the steps given below to configure the number of days after which the password should expire.
+
+**For WSO2 IS v7.0 and above**
+
+1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
+2. Go to `Password Validation` section under `Login & Registration`.
+3. Enable the `Password Expiration` and Change `Password Expiry In Days` according to your requirements.
+   > By default, the Password Reset Enforcer will expire passwords in 30 days.
+4. Click on`Update` button.
+
+![Configuring the Expiration Policy](img/password-expiry-policy-config-is7.png "Configuring the Expiration Policy")
+
+**For WSO2 IS below v7.0**
 
 1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
 2. In the `Identity` section under the `Main` tab, click `Resident` under `Identity Providers`.
@@ -55,16 +74,38 @@ Once this is done the next step is to configure the service provider.
 
 #### Configuring the Service Provider for the Sample App
 
+- Add the following line to the `/etc/hosts` file.
+   ```
+   127.0.0.1       wso2is.local
+   ```
+   > Some browsers do not allow you to create cookies for a naked hostname, such as localhost. Cookies are required when working with SSO. Therefore, to ensure that the SSO capabilities work as expected in this tutorial, you need to configure the etc/host file as explained in this step.
+
+**For WSO2 IS v7.0 and above**
+
+1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
+2. In the `Applications` section, Click on `New Application` button.
+3. Select `Traditional Web Application` template.
+4. Select `SAML`, Provide the below details to and Click on `Create` button.
+   * Name: `travelocity.com`
+   * Issuer: `travelocity.com`
+   * Assertion Consumer URL: `http://wso2is.local:8080/travelocity.com/home.jsp`
+5. Enable the following options under protocol section of the created application.
+   * Response Signing
+   * Single Logout
+   * Attribute Profile
+   * Include Attributes in the Response Always
+   > The above options should be enabled or disabled according to your service provider. For travelocity, the relevant properties file (`travelocity.properties`) can be found inside the webapp `travelocy.com/WEB-INF/classes/`.
+
+   ![Configuring SAML SSO](img/create-application-is7.png "Configuring SAML SSO")
+
+   
+**For WSO2 IS below v7.0**
+
 1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
 2. In the `Identity` section under the `Main` tab, click `Add` under `Service Providers`.
 3. Enter `travelocity.com` in the `Service Provider Name` text box and click `Register`.
    ![Adding Service Provider](img/add-service-provider.png "Adding Service Provider")
 4. In the `Inbound Authentication Configuration` section, click `Configure` under the `SAML2 Web SSO Configuration` section.
-5. Add the following line to the `/etc/hosts` file.
-   ```
-   127.0.0.1       wso2is.local
-   ```
-   > Some browsers do not allow you to create cookies for a naked hostname, such as localhost. Cookies are required when working with SSO. Therefore, to ensure that the SSO capabilities work as expected in this tutorial, you need to configure the etc/host file as explained in this step.
 5. Configure the sample application (travelocity) as the service provider.
    * Issuer: `travelocity.com`
    * Assertion Consumer URL: `http://wso2is.local:8080/travelocity.com/home.jsp`
@@ -80,6 +121,18 @@ Once this is done the next step is to configure the service provider.
 
 
 Follow the next few steps to add the password policy to the sample app
+
+**For WSO2 IS v7.0 and above**
+
+1. Go to the `Applications` section and select the created application.
+2. Go to the `Login Flow` tab of the application.
+3. Click on the `+` button to add a new step to the login flow.
+4. Select the `Password Reset Enforcer` authenticator and click `Add` button.
+5. Click on the `Update` button to save the changes.
+
+   ![Authentication Configuration](img/authentication-configuration-is7.png "Authentication Configuration")
+
+**For WSO2 IS below v7.0**
 
 1. Go to `Local and Outbound Authentication Configuration` section in the Service Providers page.
 2. Select the `Advanced Configuration` radio button option.
