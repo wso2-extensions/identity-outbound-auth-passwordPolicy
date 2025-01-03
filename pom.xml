@@ -74,6 +74,11 @@
                 <version>${carbon.identity.governance.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon.identity.governance</groupId>
+                <artifactId>org.wso2.carbon.identity.password.expiry</artifactId>
+                <version>${carbon.identity.governance.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.carbon.identity.framework</groupId>
                 <artifactId>org.wso2.carbon.identity.application.authentication.framework</artifactId>
                 <version>${carbon.identity.framework.version}</version>
@@ -317,8 +322,8 @@
     </distributionManagement>
 
     <properties>
-        <carbon.identity.framework.version>7.0.78</carbon.identity.framework.version>
-        <carbon.identity.governance.version>1.9.6</carbon.identity.governance.version>
+        <carbon.identity.framework.version>7.7.63</carbon.identity.framework.version>
+        <carbon.identity.governance.version>1.11.25</carbon.identity.governance.version>
         <commons-logging.version>4.4.23</commons-logging.version>
         <carbon.kernel.version>4.9.0</carbon.kernel.version>
         <testng.version>6.9.10</testng.version>

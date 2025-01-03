@@ -339,8 +339,6 @@ public class PasswordResetEnforcerTest {
         when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(null);
         when(PasswordPolicyUtils.isUserStoreBasedIdentityDataStore()).thenReturn(false);
         when(PasswordPolicyUtils.isActiveDirectoryUserStore((UserStoreManager) anyObject())).thenReturn(false);
-        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
-                anyString(), anyObject() )).thenReturn(true);
 
         AuthenticatorFlowStatus status = Whitebox.invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
                 httpServletResponse, context, "");
@@ -393,8 +391,6 @@ public class PasswordResetEnforcerTest {
         when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(null);
         when(PasswordPolicyUtils.isUserStoreBasedIdentityDataStore()).thenReturn(false);
         when(PasswordPolicyUtils.isActiveDirectoryUserStore((UserStoreManager) anyObject())).thenReturn(false);
-        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
-                anyString(), anyObject() )).thenReturn(true);
 
         AuthenticatorFlowStatus status = Whitebox
                 .invokeMethod(passwordResetEnforcer, "initiateAuthRequest",

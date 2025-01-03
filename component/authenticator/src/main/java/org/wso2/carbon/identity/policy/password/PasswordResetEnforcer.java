@@ -28,11 +28,13 @@ import org.wso2.carbon.identity.application.authentication.framework.config.Conf
 import org.wso2.carbon.identity.application.authentication.framework.config.model.StepConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
+import org.wso2.carbon.identity.application.authentication.framework.exception.PostAuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.mgt.policy.PolicyViolationException;
+import org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils;
 import org.wso2.carbon.identity.password.history.exeption.IdentityPasswordHistoryException;
 import org.wso2.carbon.user.api.ClaimManager;
 import org.wso2.carbon.user.api.UserRealm;
@@ -53,9 +55,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.convertWindowsFileTimeToUnixTime;
-import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.isActiveDirectoryUserStore;
-import static org.wso2.carbon.identity.policy.password.PasswordPolicyUtils.isUserStoreBasedIdentityDataStore;
 
 /**
  * this connector must only be present in an authentication step, where the user
@@ -250,53 +249,12 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
     private boolean hadPasswordExpired(String tenantDomain, String tenantAwareUsername)
             throws AuthenticationFailedException {
 
-        UserStoreManager userStoreManager;
-        UserRealm userRealm;
         try {
-            int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-            RealmService realmService = IdentityTenantUtil.getRealmService();
-            userRealm = realmService.getTenantUserRealm(tenantId);
-            userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
-        } catch (UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading user manager from user realm", e);
+            return PasswordPolicyUtils.isPasswordExpired(tenantDomain, tenantAwareUsername);
+        } catch (PostAuthenticationFailedException e) {
+            throw new AuthenticationFailedException("Error occurred while checking if the password had expired", e);
         }
 
-        String passwordLastChangedTime;
-        String claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM;
-        try {
-            passwordLastChangedTime = getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
-            if (passwordLastChangedTime == null) {
-                ClaimManager claimManager = userRealm.getClaimManager();
-                claimURI = PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY;
-                if (claimManager.getClaim(claimURI) != null) {
-                    passwordLastChangedTime =
-                            getLastPasswordUpdateTime(userStoreManager, claimURI, tenantAwareUsername);
-                }
-            }
-        } catch (UserStoreException e) {
-            throw new AuthenticationFailedException("Error occurred while loading user claim - " + claimURI, e);
-        }
-
-        // Check if the Identity datastore is set to Active Directory and do the conversion accordingly.
-        if (isUserStoreBasedIdentityDataStore() && isActiveDirectoryUserStore(userStoreManager)) {
-            passwordLastChangedTime = convertWindowsFileTimeToUnixTime(passwordLastChangedTime);
-        }
-
-        long passwordChangedTime = 0;
-        if (passwordLastChangedTime != null) {
-            passwordChangedTime = Long.parseLong(passwordLastChangedTime);
-        }
-
-        double daysDifference = 0.0;
-        long currentTimeMillis = System.currentTimeMillis();
-        if (passwordChangedTime > 0) {
-            Calendar currentTime = Calendar.getInstance();
-            currentTime.add(Calendar.DATE, (int) currentTime.getTimeInMillis());
-            daysDifference = ((double) (currentTimeMillis - passwordChangedTime) / (1000 * 60 * 60 * 24));
-        }
-
-        return PasswordPolicyUtils.isPasswordExpiredForUser(tenantDomain, daysDifference, passwordLastChangedTime,
-                    tenantAwareUsername, userStoreManager);
     }
 
     /**
