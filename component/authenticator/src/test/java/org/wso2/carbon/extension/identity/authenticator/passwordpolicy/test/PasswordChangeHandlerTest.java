@@ -52,12 +52,9 @@ import org.wso2.carbon.user.core.claim.ClaimManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.mockito.Matchers.anyDouble;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
