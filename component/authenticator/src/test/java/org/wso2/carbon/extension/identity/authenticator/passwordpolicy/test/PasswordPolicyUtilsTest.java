@@ -18,21 +18,14 @@
 
 package org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test;
 
-import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.wso2.carbon.identity.application.common.model.Property;
-import org.wso2.carbon.identity.governance.IdentityGovernanceException;
-import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 import org.wso2.carbon.identity.policy.password.PasswordPolicyConstants;
 import org.wso2.carbon.identity.policy.password.PasswordPolicyUtils;
-import org.wso2.carbon.identity.policy.password.internal.PasswordPolicyDataHolder;
 import org.wso2.carbon.utils.CarbonUtils;
 
-import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Tests for password change utils
