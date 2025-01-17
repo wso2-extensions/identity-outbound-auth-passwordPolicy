@@ -90,4 +90,21 @@ public class PasswordPolicyServiceComponent {
     protected void unsetIdentityGovernanceService(IdentityGovernanceService idpManager) {
         PasswordPolicyDataHolder.getInstance().setIdentityGovernanceService(null);
     }
+
+    @Reference(
+            name = "role.management.service",
+            service = RoleManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRoleManagementService"
+    )
+    protected void setRoleManagementService(RoleManagementService roleManagementService) {
+
+        PasswordPolicyDataHolder.getInstance().setRoleManagementService(roleManagementService);
+    }
+
+    protected void unsetRoleManagementService(RoleManagementService roleManagementService) {
+
+        PasswordPolicyDataHolder.getInstance().setRoleManagementService(null);
+    }
 }
