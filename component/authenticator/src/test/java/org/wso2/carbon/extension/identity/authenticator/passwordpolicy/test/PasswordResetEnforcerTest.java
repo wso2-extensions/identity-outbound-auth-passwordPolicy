@@ -56,6 +56,7 @@ import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
@@ -69,16 +70,17 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.anyDouble;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @PrepareForTest({IdentityTenantUtil.class, ConfigurationFacade.class, FrameworkUtils.class, CarbonUtils.class,
-        IdentityProviderManager.class, PasswordPolicyUtils.class})
+        IdentityProviderManager.class, PasswordPolicyUtils.class, MultitenantUtils.class, UserCoreUtil.class,
+        org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class})
 public class PasswordResetEnforcerTest {
     private PasswordResetEnforcer passwordResetEnforcer;
 
@@ -189,15 +191,15 @@ public class PasswordResetEnforcerTest {
     @Test
     public void testUpdateAuthenticatedUserInStepConfig() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        AuthenticatedUser authenticatedUser = mock(AuthenticatedUser.class);
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         Whitebox.invokeMethod(passwordResetEnforcer, "updateAuthenticatedUserInStepConfig",
-                context, user);
+                context, authenticatedUser);
     }
 
     @Test
@@ -211,6 +213,11 @@ public class PasswordResetEnforcerTest {
     @Test
     public void testProcessWithLogoutFailure() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
@@ -224,11 +231,10 @@ public class PasswordResetEnforcerTest {
         when(userRealm.getUserStoreManager()).thenReturn(userStoreManager);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
         when(Whitebox.invokeMethod(passwordResetEnforcer, "getUser", context)).
-                thenReturn(user);
+                thenReturn(authenticatedUser);
 
         AuthenticatorFlowStatus status = passwordResetEnforcer.process(httpServletRequest,
                 httpServletResponse, context);
@@ -257,19 +263,21 @@ public class PasswordResetEnforcerTest {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordPolicyUtils.class);
 
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
+
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
         when(PasswordPolicyUtils.isUserStoreBasedIdentityDataStore()).thenReturn(false);
         when(PasswordPolicyUtils.isActiveDirectoryUserStore((UserStoreManager) anyObject())).thenReturn(false);
         when(Whitebox.invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
                 httpServletResponse, context, ""))
-                .thenReturn(user);
+                .thenReturn(authenticatedUser);
 
         AuthenticatorFlowStatus status = Whitebox
                 .invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
@@ -281,16 +289,21 @@ public class PasswordResetEnforcerTest {
     public void testInitiateAuthRequestForFederatedUser() throws Exception {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordPolicyUtils.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("fooUser");
+        authenticatedUser.setFederatedUser(true);
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createFederateAuthenticatedUserFromSubjectIdentifier("fooUser");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(applicationAuthenticator);
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(PasswordPolicyUtils.isUserStoreBasedIdentityDataStore()).thenReturn(false);
         when(PasswordPolicyUtils.isActiveDirectoryUserStore((UserStoreManager) anyObject())).thenReturn(false);
 
@@ -308,6 +321,12 @@ public class PasswordResetEnforcerTest {
         mockStatic(CarbonUtils.class);
         mockStatic(IdentityProviderManager.class);
         mockStatic(PasswordPolicyUtils.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+        mockStatic(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
@@ -316,10 +335,9 @@ public class PasswordResetEnforcerTest {
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
         String path = Paths.get(System.getProperty("user.dir"), "src", "test", "resources").toString();
         when(CarbonUtils.getCarbonConfigDirPath()).thenReturn(path);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(localApplicationAuthenticator);
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -339,8 +357,11 @@ public class PasswordResetEnforcerTest {
         when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(null);
         when(PasswordPolicyUtils.isUserStoreBasedIdentityDataStore()).thenReturn(false);
         when(PasswordPolicyUtils.isActiveDirectoryUserStore((UserStoreManager) anyObject())).thenReturn(false);
-        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
-                anyString(), anyObject() )).thenReturn(true);
+        when(MultitenantUtils.getTenantAwareUsername(anyString())).thenReturn("admin");
+        when(UserCoreUtil.extractDomainFromName(anyString())).thenReturn("PRIMARY");
+        when(UserCoreUtil.addTenantDomainToEntry(anyString(), anyString())).thenReturn("admin@carbon.super");
+        when(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.isPasswordExpired(
+                anyString(), anyString())).thenReturn(true);
 
         AuthenticatorFlowStatus status = Whitebox.invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
                 httpServletResponse, context, "");
@@ -357,6 +378,12 @@ public class PasswordResetEnforcerTest {
         mockStatic(CarbonUtils.class);
         mockStatic(IdentityProviderManager.class);
         mockStatic(PasswordPolicyUtils.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+        mockStatic(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
@@ -365,10 +392,9 @@ public class PasswordResetEnforcerTest {
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
         String path = Paths.get(System.getProperty("user.dir"), "src", "test", "resources").toString();
         when(CarbonUtils.getCarbonConfigDirPath()).thenReturn(path);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
         when(stepConfig.getAuthenticatedAutenticator()).thenReturn(authenticatorConfig);
         when(authenticatorConfig.getApplicationAuthenticator()).thenReturn(localApplicationAuthenticator);
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -393,8 +419,11 @@ public class PasswordResetEnforcerTest {
         when(identityProviderManager.getResidentIdP("carbon.super")).thenReturn(null);
         when(PasswordPolicyUtils.isUserStoreBasedIdentityDataStore()).thenReturn(false);
         when(PasswordPolicyUtils.isActiveDirectoryUserStore((UserStoreManager) anyObject())).thenReturn(false);
-        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
-                anyString(), anyObject() )).thenReturn(true);
+        when(MultitenantUtils.getTenantAwareUsername(anyString())).thenReturn("admin");
+        when(UserCoreUtil.extractDomainFromName(anyString())).thenReturn("PRIMARY");
+        when(UserCoreUtil.addTenantDomainToEntry(anyString(), anyString())).thenReturn("admin@carbon.super");
+        when(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.isPasswordExpired(
+                anyString(), anyString())).thenReturn(true);
 
         AuthenticatorFlowStatus status = Whitebox
                 .invokeMethod(passwordResetEnforcer, "initiateAuthRequest",
@@ -407,14 +436,18 @@ public class PasswordResetEnforcerTest {
     @Test
     public void testProcessAuthenticationResponse() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -432,14 +465,18 @@ public class PasswordResetEnforcerTest {
     @Test(expectedExceptions = {AuthenticationFailedException.class})
     public void testProcessAuthenticationResponseWithException() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -455,14 +492,18 @@ public class PasswordResetEnforcerTest {
     @Test(expectedExceptions = {AuthenticationFailedException.class})
     public void testProcessResponseWithSamePassword() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -470,6 +511,8 @@ public class PasswordResetEnforcerTest {
         when(httpServletRequest.getParameter(PasswordPolicyConstants.CURRENT_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION)).thenReturn("12345");
+        when(MultitenantUtils.getTenantAwareUsername(anyString())).thenReturn("admin");
+        when(UserCoreUtil.extractDomainFromName(anyString())).thenReturn("PRIMARY");
 
         Whitebox.invokeMethod(passwordResetEnforcer, "processAuthenticationResponse",
                 httpServletRequest, httpServletResponse, context);
@@ -478,14 +521,18 @@ public class PasswordResetEnforcerTest {
     @Test(expectedExceptions = {AuthenticationFailedException.class})
     public void testProcessResponseWithMismatchPassword() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -493,6 +540,8 @@ public class PasswordResetEnforcerTest {
         when(httpServletRequest.getParameter(PasswordPolicyConstants.CURRENT_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD)).thenReturn("456789");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION)).thenReturn("12345");
+        when(MultitenantUtils.getTenantAwareUsername(anyString())).thenReturn("admin");
+        when(UserCoreUtil.extractDomainFromName(anyString())).thenReturn("PRIMARY");
 
         Whitebox.invokeMethod(passwordResetEnforcer, "processAuthenticationResponse",
                 httpServletRequest, httpServletResponse, context);
@@ -501,14 +550,18 @@ public class PasswordResetEnforcerTest {
     @Test(expectedExceptions = {AuthenticationFailedException.class})
     public void testProcessResponseWithEmptyPassword() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -518,6 +571,8 @@ public class PasswordResetEnforcerTest {
         when(httpServletRequest.getParameter(PasswordPolicyConstants.CURRENT_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD)).thenReturn("");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION)).thenReturn("");
+        when(MultitenantUtils.getTenantAwareUsername(anyString())).thenReturn("admin");
+        when(UserCoreUtil.extractDomainFromName(anyString())).thenReturn("PRIMARY");
 
         Whitebox.invokeMethod(passwordResetEnforcer, "processAuthenticationResponse",
                 httpServletRequest, httpServletResponse, context);
@@ -526,14 +581,18 @@ public class PasswordResetEnforcerTest {
     @Test(expectedExceptions = {AuthenticationFailedException.class})
     public void testProcessResponseWithInvalidPasswordFormat() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -543,6 +602,8 @@ public class PasswordResetEnforcerTest {
         when(httpServletRequest.getParameter(PasswordPolicyConstants.CURRENT_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD)).thenReturn("123");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION)).thenReturn("123");
+        when(MultitenantUtils.getTenantAwareUsername(anyString())).thenReturn("admin");
+        when(UserCoreUtil.extractDomainFromName(anyString())).thenReturn("PRIMARY");
 
         Whitebox.invokeMethod(passwordResetEnforcer, "processAuthenticationResponse",
                 httpServletRequest, httpServletResponse, context);
@@ -551,14 +612,18 @@ public class PasswordResetEnforcerTest {
     @Test(expectedExceptions = {AuthenticationFailedException.class})
     public void testProcessResponseWithInvalidOperation() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -568,6 +633,8 @@ public class PasswordResetEnforcerTest {
         when(httpServletRequest.getParameter(PasswordPolicyConstants.CURRENT_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD)).thenReturn("123456");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION)).thenReturn("123456");
+        when(MultitenantUtils.getTenantAwareUsername(anyString())).thenReturn("admin");
+        when(UserCoreUtil.extractDomainFromName(anyString())).thenReturn("PRIMARY");
 
         doThrow(new UserStoreException("InvalidOperation dummy exception"))
                 .when(userStoreManager).updateCredential("admin", "123456", "12345");
@@ -579,14 +646,18 @@ public class PasswordResetEnforcerTest {
     @Test(expectedExceptions = {AuthenticationFailedException.class})
     public void testProcessResponseWithInvalidCurrentPassword() throws Exception {
         mockStatic(IdentityTenantUtil.class);
+        mockStatic(MultitenantUtils.class);
+        mockStatic(UserCoreUtil.class);
+
+        AuthenticatedUser authenticatedUser = new AuthenticatedUser();
+        authenticatedUser.setUserName("admin");
 
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getBootstrapRealmConfiguration()).thenReturn(realmConfiguration);
         when(context.getSequenceConfig()).thenReturn(sequenceConfig);
         when(sequenceConfig.getStepMap()).thenReturn(mockedMap);
         when(mockedMap.get(anyObject())).thenReturn(stepConfig);
-        AuthenticatedUser user = AuthenticatedUser.createLocalAuthenticatedUserFromSubjectIdentifier("admin");
-        when(stepConfig.getAuthenticatedUser()).thenReturn(user);
+        when(stepConfig.getAuthenticatedUser()).thenReturn(authenticatedUser);
         when(IdentityTenantUtil.getTenantId("carbon.super")).thenReturn(-1234);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(-1234)).thenReturn(userRealm);
@@ -596,6 +667,8 @@ public class PasswordResetEnforcerTest {
         when(httpServletRequest.getParameter(PasswordPolicyConstants.CURRENT_PWD)).thenReturn("12345");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD)).thenReturn("123456");
         when(httpServletRequest.getParameter(PasswordPolicyConstants.NEW_PWD_CONFIRMATION)).thenReturn("123456");
+        when(MultitenantUtils.getTenantAwareUsername(anyString())).thenReturn("admin");
+        when(UserCoreUtil.extractDomainFromName(anyString())).thenReturn("PRIMARY");
 
         doThrow(new UserStoreException("PasswordInvalid dummy exception"))
                 .when(userStoreManager).updateCredential("admin", "123456", "12345");

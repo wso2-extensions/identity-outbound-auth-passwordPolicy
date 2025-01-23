@@ -31,16 +31,16 @@ import org.wso2.carbon.identity.application.common.util.IdentityApplicationManag
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConfigBuilder;
 import org.wso2.carbon.identity.event.IdentityEventException;
-import org.wso2.carbon.identity.governance.bean.ConnectorConfig;
+import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
 import org.wso2.carbon.identity.governance.IdentityGovernanceException;
 import org.wso2.carbon.identity.governance.IdentityGovernanceService;
-import org.wso2.carbon.identity.event.bean.ModuleConfiguration;
+import org.wso2.carbon.identity.governance.bean.ConnectorConfig;
 import org.wso2.carbon.identity.governance.listener.IdentityStoreEventListener;
 import org.wso2.carbon.identity.governance.store.UserStoreBasedIdentityDataStore;
-import org.wso2.carbon.identity.policy.password.models.PasswordExpiryRuleOperatorEnum;
 import org.wso2.carbon.identity.policy.password.internal.PasswordPolicyDataHolder;
 import org.wso2.carbon.identity.policy.password.models.PasswordExpiryRule;
 import org.wso2.carbon.identity.policy.password.models.PasswordExpiryRuleAttributeEnum;
+import org.wso2.carbon.identity.policy.password.models.PasswordExpiryRuleOperatorEnum;
 import org.wso2.carbon.identity.role.v2.mgt.core.exception.IdentityRoleManagementException;
 import org.wso2.carbon.identity.role.v2.mgt.core.RoleManagementService;
 import org.wso2.carbon.identity.role.v2.mgt.core.model.RoleBasicInfo;
@@ -210,12 +210,15 @@ public class PasswordPolicyUtils {
     }
 
     /**
+     * @deprecated Use {@link
+     * org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils#getPasswordExpiryRules(String)} instead.
      * Get password expiry rules.
      *
      * @param tenantDomain Tenant domain.
      * @return List of password expiry rules.
      * @throws AuthenticationFailedException If an error occurred while getting the password expiry rules.
      */
+    @Deprecated
     @SuppressFBWarnings("CRLF_INJECTION_LOGS")
     public static List<PasswordExpiryRule> getPasswordExpiryRules(String tenantDomain)
             throws AuthenticationFailedException {
@@ -340,6 +343,8 @@ public class PasswordPolicyUtils {
     }
 
     /**
+     * @deprecated Use {@link
+     * org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils#getUserRoles(String, String)} instead.
      * Get the roles of a given user.
      *
      * @param tenantDomain The tenant domain.
@@ -347,6 +352,7 @@ public class PasswordPolicyUtils {
      * @return The roles of the user.
      * @throws AuthenticationFailedException If an error occurs while getting the user roles.
      */
+    @Deprecated
     public static List<RoleBasicInfo> getUserRoles(String tenantDomain, String userId)
             throws AuthenticationFailedException {
 
@@ -361,12 +367,16 @@ public class PasswordPolicyUtils {
     }
 
     /**
+     * @deprecated Use {@link
+     * org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils#isSkipIfNoApplicableRulesEnabled(String)}
+     * instead.
      * This method checks if the "skip if no applicable rules" option is enabled for a given tenant domain.
      *
      * @param tenantDomain The tenant domain to check for the configuration.
      * @return true if "skip if no applicable rules" is enabled, false otherwise.
      * @throws AuthenticationFailedException If an error occurs while reading system configurations.
      */
+    @Deprecated
     public static boolean isSkipIfNoApplicableRulesEnabled(String tenantDomain)
             throws AuthenticationFailedException {
 
@@ -380,6 +390,9 @@ public class PasswordPolicyUtils {
     }
 
     /**
+     * @deprecated Use {@link
+     * org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils#getPasswordExpiryConfig(String, String)}
+     * instead.
      * Get password expiry config related to the given key.
      *
      * @param tenantDomain Tenant domain.
@@ -427,9 +440,24 @@ public class PasswordPolicyUtils {
         return passwordExpiryInDays;
     }
 
+    /**
+     * @deprecated Use {@link
+     * org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils#isPasswordExpired(String, String)} instead.
+     * Check that the password is expired for the user.
+     *
+     * @param tenantDomain              The tenant domain.
+     * @param daysDifference            The number of days since the password was last updated.
+     * @param lastPasswordUpdatedTime   The last password updated time.
+     * @param tenantAwareUsername       The tenant aware username.
+     * @param userStoreManager          The user store manager.
+     * @return true when the password is expired for user
+     * @throws AuthenticationFailedException If an error occurred while getting the value.
+     */
+    @Deprecated
     public static boolean isPasswordExpiredForUser(String tenantDomain, double daysDifference,
-                                                   String lastPasswordUpdatedTime, String tenantAwareUsername, UserStoreManager
-                                                           userStoreManager) throws AuthenticationFailedException{
+                                                   String lastPasswordUpdatedTime, String tenantAwareUsername,
+                                                   UserStoreManager userStoreManager)
+            throws AuthenticationFailedException {
 
         try {
             String userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(tenantAwareUsername);

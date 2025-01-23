@@ -20,7 +20,12 @@ package org.wso2.carbon.identity.policy.password.models;
 
 /**
  * Enum for the password expiry operator types.
+ * @deprecated
+ * {@link org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRuleOperatorEnum} should be used instead.
+ * This class is deprecated and org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRuleOperatorEnum
+ * has been introduced as alternative.
  */
+@Deprecated
 public enum PasswordExpiryRuleOperatorEnum {
 
     EQ("eq"),

@@ -31,6 +31,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.ObjectFactory;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
+import org.wso2.carbon.identity.application.authentication.framework.exception.PostAuthenticationFailedException;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
@@ -51,12 +52,9 @@ import org.wso2.carbon.user.core.claim.ClaimManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.mockito.Matchers.anyDouble;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
@@ -68,7 +66,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@PrepareForTest({IdentityTenantUtil.class, MultitenantUtils.class, IdentityUtil.class, PasswordPolicyUtils.class, UserStoreManager.class})
+@PrepareForTest({IdentityTenantUtil.class, MultitenantUtils.class, IdentityUtil.class, PasswordPolicyUtils.class,
+        UserStoreManager.class, org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class})
 public class PasswordChangeHandlerTest {
     private static final String TENANT_DOMAIN = "carbon.super";
     private static final int TENANT_ID = -1234;
@@ -284,11 +283,12 @@ public class PasswordChangeHandlerTest {
     //Test cases for password grant - password expiry validation
     @Test
     public void testHandleEventForPasswordNonExpiredUserWithLastPasswordClaim()
-            throws UserStoreException, AuthenticationFailedException {
+            throws UserStoreException, AuthenticationFailedException, PostAuthenticationFailedException {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordPolicyUtils.class);
         mockStatic(UserStoreManager.class);
         mockStatic(MultitenantUtils.class);
+        mockStatic(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class);
         Event event = new Event(PasswordPolicyConstants.PASSWORD_GRANT_POST_AUTHENTICATION_EVENT);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
@@ -297,12 +297,8 @@ public class PasswordChangeHandlerTest {
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
-        Map<String, String> claimValueMap = new HashMap<>();
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,timestamp);
-        String[] claimURIs = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-
-        when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
+        when(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.isPasswordExpired(
+                anyString(), anyString())).thenReturn(false);
         try {
             passwordChangeHandler.handleEvent(event);
         } catch (IdentityEventException e) {
@@ -312,11 +308,12 @@ public class PasswordChangeHandlerTest {
 
     @Test
     public void testHandleEventForPasswordExpiredUserWithLastPasswordClaim()
-            throws UserStoreException, AuthenticationFailedException {
+            throws UserStoreException, AuthenticationFailedException, PostAuthenticationFailedException {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordPolicyUtils.class);
         mockStatic(UserStoreManager.class);
         mockStatic(MultitenantUtils.class);
+        mockStatic(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class);
         Event event = new Event(PasswordPolicyConstants.PASSWORD_GRANT_POST_AUTHENTICATION_EVENT);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
@@ -325,14 +322,8 @@ public class PasswordChangeHandlerTest {
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
-        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
-                anyString(), anyObject() )).thenReturn(true);
-
-        Map<String, String> claimValueMap = new HashMap<>();
-        claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,"1672559229000");
-        String[] claimURIs = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-
-        when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
+        when(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.isPasswordExpired(
+                anyString(), anyString())).thenReturn(true);
         try {
             passwordChangeHandler.handleEvent(event);
             Assert.fail("This should throw identity event exception");
@@ -343,11 +334,12 @@ public class PasswordChangeHandlerTest {
 
     @Test
     public void testHandleEventForPasswordNonExpiredUserWithNonIdentityClaim()
-            throws UserStoreException, AuthenticationFailedException {
+            throws UserStoreException, AuthenticationFailedException, PostAuthenticationFailedException {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordPolicyUtils.class);
         mockStatic(UserStoreManager.class);
         mockStatic(MultitenantUtils.class);
+        mockStatic(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class);
         Event event = new Event(PasswordPolicyConstants.PASSWORD_GRANT_POST_AUTHENTICATION_EVENT);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
@@ -362,17 +354,9 @@ public class PasswordChangeHandlerTest {
         when(realmService.getTenantUserRealm(TENANT_ID)).thenReturn(userRealm);
         when(userRealm.getClaimManager()).thenReturn(claimManager);
         when(claimManager.getClaim(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY)).thenReturn(claim);
+        when(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.isPasswordExpired(
+                anyString(), anyString())).thenReturn(false);
 
-        String time = String.valueOf(System.currentTimeMillis());
-        Map<String, String> claimValueMap = new HashMap<>();
-
-        claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,null);
-        claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY, time);
-
-        String[] claimURIs = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-        String[] claimURIs1 = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY};
-        when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
-        when(userStoreManager.getUserClaimValues(USERNAME, claimURIs1, null)).thenReturn(claimValueMap);
         try {
             passwordChangeHandler.handleEvent(event);
         } catch (IdentityEventException e) {
@@ -381,51 +365,13 @@ public class PasswordChangeHandlerTest {
     }
 
     @Test
-    public void testHandleEventForUserClaimsNull() throws UserStoreException, AuthenticationFailedException {
-        mockStatic(IdentityTenantUtil.class);
-        mockStatic(PasswordPolicyUtils.class);
-        mockStatic(UserStoreManager.class);
-        mockStatic(MultitenantUtils.class);
-        Event event = new Event(PasswordPolicyConstants.PASSWORD_GRANT_POST_AUTHENTICATION_EVENT);
-        event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
-        event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
-        event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
-        event.getEventProperties().put(PasswordPolicyConstants.AUTHENTICATION_STATUS,true);
-
-        when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
-        when(PasswordPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
-                PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
-        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
-                anyString(), anyObject() )).thenReturn(true);
-        when(IdentityTenantUtil.getTenantId(TENANT_DOMAIN)).thenReturn(TENANT_ID);
-        when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
-        when(realmService.getTenantUserRealm(TENANT_ID)).thenReturn(userRealm);
-        when(userRealm.getClaimManager()).thenReturn(claimManager);
-        when(claimManager.getClaim(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY)).thenReturn(claim);
-
-        Map<String, String> claimValueMap = new HashMap<>();
-        claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,null);
-        claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY,null);
-        String[] claimURIs = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-        String[] claimURIs1 = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY};
-
-        when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
-        when(userStoreManager.getUserClaimValues(USERNAME, claimURIs1, null)).thenReturn(claimValueMap);
-        try {
-            passwordChangeHandler.handleEvent(event);
-            Assert.fail("This should throw identity event exception");
-        } catch (IdentityEventException e) {
-            Assert.assertEquals(PasswordPolicyConstants.PASSWORD_EXPIRED_ERROR_MESSAGE, e.getMessage());
-        }
-    }
-
-    @Test
     public void testHandleEventForPasswordExpiredUserWithNonIdentityClaim()
-            throws UserStoreException, AuthenticationFailedException {
+            throws UserStoreException, AuthenticationFailedException, PostAuthenticationFailedException {
         mockStatic(IdentityTenantUtil.class);
         mockStatic(PasswordPolicyUtils.class);
         mockStatic(UserStoreManager.class);
         mockStatic(MultitenantUtils.class);
+        mockStatic(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class);
         Event event = new Event(PasswordPolicyConstants.PASSWORD_GRANT_POST_AUTHENTICATION_EVENT);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_NAME, USERNAME);
         event.getEventProperties().put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
@@ -435,23 +381,14 @@ public class PasswordChangeHandlerTest {
         when(MultitenantUtils.getTenantAwareUsername(USERNAME)).thenReturn(USERNAME);
         when(PasswordPolicyUtils.getResidentIdpProperty(TENANT_DOMAIN,
                 PasswordPolicyConstants.CONNECTOR_CONFIG_PASSWORD_EXPIRY_IN_DAYS)).thenReturn("20");
-        when(PasswordPolicyUtils.isPasswordExpiredForUser(anyString(), anyDouble(), anyString(),
-                anyString(), anyObject() )).thenReturn(true);
         when(IdentityTenantUtil.getTenantId(TENANT_DOMAIN)).thenReturn(TENANT_ID);
         when(IdentityTenantUtil.getRealmService()).thenReturn(realmService);
         when(realmService.getTenantUserRealm(TENANT_ID)).thenReturn(userRealm);
         when(userRealm.getClaimManager()).thenReturn(claimManager);
         when(claimManager.getClaim(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY)).thenReturn(claim);
+        when(org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.isPasswordExpired(
+                anyString(), anyString())).thenReturn(true);
 
-        Map<String, String> claimValueMap = new HashMap<>();
-
-        String time = "1672559229000";
-        claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM,null);
-        claimValueMap.put(PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY,time);
-        String[] claimURIs = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM};
-        String[] claimURIs1 = new String[]{PasswordPolicyConstants.LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM_NON_IDENTITY};
-        when(userStoreManager.getUserClaimValues(USERNAME, claimURIs, null)).thenReturn(claimValueMap);
-        when(userStoreManager.getUserClaimValues(USERNAME, claimURIs1, null)).thenReturn(claimValueMap);
         try {
             passwordChangeHandler.handleEvent(event);
             Assert.fail("This should throw identity event exception");

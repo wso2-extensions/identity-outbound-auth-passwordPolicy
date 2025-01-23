@@ -25,7 +25,13 @@ import java.util.List;
 
 /**
  * Class to represent a password expiry rule.
+ *
+ * @deprecated
+ * {@link org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRule} should be used instead.
+ * This class is deprecated and org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRule
+ * has been introduced as alternative.
  */
+@Deprecated
 public class PasswordExpiryRule {
 
     private int priority;
@@ -57,7 +63,7 @@ public class PasswordExpiryRule {
             for (int i = 4; i < ruleSections.length; i++) {
                 String value = ruleSections[i].trim();
                 if ((StringUtils.startsWith(value, "'") && StringUtils.endsWith(value, "'")) ||
-                (StringUtils.startsWith(value, "\"") && StringUtils.endsWith(value, "\""))) {
+                    (StringUtils.startsWith(value, "\"") && StringUtils.endsWith(value, "\""))) {
                     value = value.substring(1, value.length() - 1).trim();
                 }
                 this.values.add(value);
@@ -121,3 +127,4 @@ public class PasswordExpiryRule {
         this.values = values;
     }
 }
+

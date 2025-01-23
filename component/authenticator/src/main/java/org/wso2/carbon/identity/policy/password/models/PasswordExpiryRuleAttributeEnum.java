@@ -20,7 +20,12 @@ package org.wso2.carbon.identity.policy.password.models;
 
 /**
  * Enum for the password expiry attribute types.
+ * @deprecated
+ * {@link org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRuleAttributeEnum} should be used instead.
+ * his class is deprecated and org.wso2.carbon.identity.password.expiry.models.PasswordExpiryRuleAttributeEnum
+ * has been introduced as alternative.
  */
+@Deprecated
 public enum PasswordExpiryRuleAttributeEnum {
 
     ROLES("roles"),
