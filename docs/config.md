@@ -8,7 +8,7 @@
 
 ### Deploying Artifacts
 
-1. Download the Password Reset Enforcer and its artifacts from [WSO2 Store](https://store.wso2.com/store/assets/isconnector/details/502efeb1-cc59-4b62-a197-8c612797933c).
+1. Download the Password Reset Enforcer and its artifacts from [WSO2 Store](https://store.wso2.com/connector/identity-outbound-auth-passwordPolicy).
 
 2. Download the latest wum updated IS pack from [here](https://wso2.com/identity-and-access-management/).
 
@@ -44,7 +44,7 @@ Follow the steps given below to configure the number of days after which the pas
 
 **For WSO2 IS v7.0 and above**
 
-1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
+1. [Start](https://is.docs.wso2.com/en/latest/deploy/get-started/run-the-product/) the Identity Server and log in. (If you have not already done so)
 2. Go to `Password Validation` section under `Login & Registration`.
 3. Enable the `Password Expiration` and Change `Password Expiry In Days` according to your requirements.
    > By default, the Password Reset Enforcer will expire passwords in 30 days.
@@ -54,7 +54,7 @@ Follow the steps given below to configure the number of days after which the pas
 
 **For WSO2 IS below v7.0**
 
-1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
+1. [Start](https://is.docs.wso2.com/en/6.1.0/deploy/get-started/run-the-product/) the Identity Server and log in. (If you have not already done so)
 2. In the `Identity` section under the `Main` tab, click `Resident` under `Identity Providers`.
 3. Go to `Password Expiry` under `Password Policies`.
 4. Change `Password Expiry In Days` according to your requirements.
@@ -69,7 +69,7 @@ Follow the steps given below to configure the number of days after which the pas
 ### Deploying the Sample App
 
 This section explains how to use the Password Reset Enforcer using a sample app.
-Deploy the sample web app [travelocity](https://docs.wso2.com/display/ISCONNECTORS/Deploying+the+Sample+App).
+Deploy the sample web app [travelocity](https://is.docs.wso2.com/en/latest/guides/authentication/saml/saml-federated-idp-initiated-sso/#deploy-the-application).
 Once this is done the next step is to configure the service provider.
 
 #### Configuring the Service Provider for the Sample App
@@ -82,7 +82,7 @@ Once this is done the next step is to configure the service provider.
 
 **For WSO2 IS v7.0 and above**
 
-1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
+1. [Start](https://is.docs.wso2.com/en/latest/deploy/get-started/run-the-product/) the Identity Server and log in. (If you have not already done so)
 2. In the `Applications` section, Click on `New Application` button.
 3. Select `Traditional Web Application` template.
 4. Select `SAML`, Provide the below details to and Click on `Create` button.
@@ -101,7 +101,7 @@ Once this is done the next step is to configure the service provider.
    
 **For WSO2 IS below v7.0**
 
-1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
+1. [Start](https://is.docs.wso2.com/en/6.1.0/deploy/get-started/run-the-product/) the Identity Server and log in. (If you have not already done so)
 2. In the `Identity` section under the `Main` tab, click `Add` under `Service Providers`.
 3. Enter `travelocity.com` in the `Service Provider Name` text box and click `Register`.
    ![Adding Service Provider](img/add-service-provider.png "Adding Service Provider")
@@ -166,7 +166,7 @@ Follow the steps given below to test the Password Reset Enforcer.
 
 You can use the password history feature available on the Identity Server along with the password policy.
 This will force the users to not use a previously used password again for a number of times into the future.
-Please follow the instructions given in the [Password History Validation Policy](https://docs.wso2.com/display/IS540/Password+History+Validation) to enable this feature.
+Please follow the instructions given in the [Password History Validation Policy](https://is.docs.wso2.com/en/latest/guides/account-configurations/login-security/password-validation/#password-history-count) to enable this feature.
 
 ## Enabling Email Notifications
 
