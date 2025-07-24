@@ -20,6 +20,12 @@
             ]
         },
         {
+            "tagName": "v2.0.11",
+            "products": [
+                "IS 6.1.0"
+            ]
+        },
+        {
             "tagName": "v2.0.4",
             "products": [
                 "IS 6.1.0"
