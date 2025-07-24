@@ -25,9 +25,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="org.wso2.carbon.identity.application.authentication.endpoint.util.TenantDataManager" %>
 <%@ page import="java.io.File" %>
+<%@ taglib prefix="layout" uri="org.wso2.identity.apps.taglibs.layout.controller" %>
 
 <%@ include file="includes/localize.jsp" %>
 <jsp:directive.include file="includes/init-url.jsp"/>
+<jsp:directive.include file="includes/layout-resolver.jsp"/>
 
 <%
     request.getSession().invalidate();
@@ -53,6 +55,11 @@
     }
 %>
 
+<%-- Data for the layout from the page --%>
+<%
+    layoutData.put("containerSize", "medium");
+%>
+
 <html>
 <head>
     <!-- header -->
@@ -62,23 +69,24 @@
     %>
         <jsp:include page="extensions/header.jsp"/>
     <% } else { %>
-        <jsp:directive.include file="includes/header.jsp"/>
+        <jsp:include page="includes/header.jsp"/>
     <% } %>
 </head>
 
-<body>
-    <main class="center-segment">
-        <div class="ui container medium center aligned middle aligned">
-            <!-- product-title -->
+<body class="login-portal layout authentication-portal-layout">
+    <layout:main layoutName="<%= layout %>" layoutFileRelativePath="<%= layoutFileRelativePath %>" data="<%= layoutData %>" >
+        <layout:component componentName="ProductHeader" >
+            <%-- product-title --%>
             <%
                 File productTitleFile = new File(getServletContext().getRealPath("extensions/product-title.jsp"));
                 if (productTitleFile.exists()) {
             %>
                 <jsp:include page="extensions/product-title.jsp"/>
             <% } else { %>
-                <jsp:directive.include file="includes/product-title.jsp"/>
+                <jsp:include page="includes/product-title.jsp"/>
             <% } %>
-
+        </layout:component>
+        <layout:component componentName="MainSection" >
             <div class="ui segment">
                 <!-- content -->
                 <h3 class="ui header">
@@ -137,23 +145,28 @@
     </main>
     <!-- /content/body -->
     <!-- product-footer -->
-    <%
-        File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
-        if (productFooterFile.exists()) {
-    %>
-        <jsp:include page="extensions/product-footer.jsp"/>
-    <% } else { %>
-        <jsp:directive.include file="includes/product-footer.jsp"/>
-    <% } %>
+    </layout:component>
+        <layout:component componentName="ProductFooter" >
+            <%-- product-footer --%>
+            <%
+                File productFooterFile = new File(getServletContext().getRealPath("extensions/product-footer.jsp"));
+                if (productFooterFile.exists()) {
+            %>
+                <jsp:include page="extensions/product-footer.jsp"/>
+            <% } else { %>
+                <jsp:include page="includes/product-footer.jsp"/>
+            <% } %>
+        </layout:component>
+    </layout:main>
 
-    <!-- footer -->
+    <%-- footer --%>
     <%
         File footerFile = new File(getServletContext().getRealPath("extensions/footer.jsp"));
         if (footerFile.exists()) {
     %>
         <jsp:include page="extensions/footer.jsp"/>
     <% } else { %>
-        <jsp:directive.include file="includes/footer.jsp"/>
+        <jsp:include page="includes/footer.jsp"/>
     <% } %>
 </body>
 </html>
