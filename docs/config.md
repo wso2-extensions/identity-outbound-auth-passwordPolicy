@@ -35,7 +35,7 @@
 
 Follow the steps given below to configure the number of days after which the password should expire.
 
-1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
+1. Start the Identity Server and log in. (If you have not already done so)
 2. In the `Identity` section under the `Main` tab, click `Resident` under `Identity Providers`.
 3. Go to `Password Expiry` under `Password Policies`.
 4. Change `Password Expiry In Days` according to your requirements.
@@ -55,7 +55,7 @@ Once this is done the next step is to configure the service provider.
 
 #### Configuring the Service Provider for the Sample App
 
-1. [Start](https://docs.wso2.com/display/IS540/Running+the+Product) the Identity Server and log in. (If you have not already done so)
+1. Start the Identity Server and log in. (If you have not already done so)
 2. In the `Identity` section under the `Main` tab, click `Add` under `Service Providers`.
 3. Enter `travelocity.com` in the `Service Provider Name` text box and click `Register`.
    ![Adding Service Provider](img/add-service-provider.png "Adding Service Provider")
