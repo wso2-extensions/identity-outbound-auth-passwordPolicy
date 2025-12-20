@@ -26,7 +26,7 @@
 
     <groupId>org.wso2.carbon.extension.identity.authenticator</groupId>
     <artifactId>org.wso2.carbon.extension.identity.authenticator.passwordpolicy</artifactId>
-    <version>2.0.13</version>
+    <version>2.0.14-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Extension - Password Policy</name>
     <url>http://wso2.org</url>
@@ -176,7 +176,7 @@
         <developerConnection>
             scm:git:https://github.com/wso2-extensions/identity-outbound-auth-passwordpolicy
         </developerConnection>
-        <tag>v2.0.13</tag>
+        <tag>v2.0.9</tag>
     </scm>
 
     <build>
