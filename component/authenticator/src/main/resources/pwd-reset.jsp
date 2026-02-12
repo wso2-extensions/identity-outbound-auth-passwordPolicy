@@ -1,5 +1,5 @@
 <%--
-  ~ Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~ Copyright (c) 2016-2026, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
   ~
   ~ WSO2 Inc. licenses this file to you under the Apache License,
   ~ Version 2.0 (the "License"); you may not use this file except
@@ -122,7 +122,7 @@
                 <div class="ui divider hidden"></div>
 
                 <div class="segment-form">
-                    <form id="pin_form" class="ui large form" name="pin_form" action="../../commonauth"  method="POST">
+                    <form id="pin_form" class="ui large form" name="pin_form" action="<%=commonauthURL%>"  method="POST">
 
                         <input type="hidden" name="sessionDataKey" value='<%=Encode.forHtmlAttribute(request.getParameter("sessionDataKey"))%>'/>
 
@@ -131,7 +131,7 @@
                             <label for="currentPassword">
                                 Current Password
                             </label>
-                            <input id="currentPassword" name="CURRENT_PWD" type="password" tabindex="0" placeholder="Current Password" autocomplete="off">
+                            <input id="currentPassword" name="currentPassword" type="password" tabindex="0" placeholder="Current Password" autocomplete="off">
                         </div>
 
                         <div class="field" id="reset-password-container">
@@ -139,7 +139,7 @@
                                 New Password
                             </label>
                             <div class="ui right icon input addon-wrapper">
-                                <input id="newPassword" name="NEW_PWD" type="password" placeholder="New Password" autocomplete="off">
+                                <input id="newPassword" name="newPassword" type="password" placeholder="New Password" autocomplete="off">
                                 <i id="passwordShowHide" class="eye link icon slash"
                                         onclick="passwordShowToggle()"></i>
                             </div>
@@ -188,7 +188,7 @@
                                 Repeat Password
                             </label>
                             <div class="ui right icon input addon-wrapper">
-                                <input id="repeatPassword" name="NEW_PWD_CONFIRMATION" type="password" class="form-control" placeholder="Repeat Password" autocomplete="off">
+                                <input id="repeatPassword" name="newPasswordConfirmation" type="password" class="form-control" placeholder="Repeat Password" autocomplete="off">
                                 <i id="confirmPasswordShowHide" class="eye link icon slash"
                                         onclick="confirmPasswordShowToggle()"></i>
                             </div>
