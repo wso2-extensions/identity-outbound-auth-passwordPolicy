@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2018-2026, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -36,7 +36,6 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.mgt.policy.PolicyViolationException;
 import org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils;
 import org.wso2.carbon.identity.password.history.exeption.IdentityPasswordHistoryException;
-import org.wso2.carbon.user.api.ClaimManager;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserCoreConstants;
@@ -44,11 +43,18 @@ import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorData;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorMessage;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorParamMetadata;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Calendar;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -109,6 +115,105 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         } else {
             return initiateAuthRequest(response, context, null);
         }
+    }
+
+    /**
+     * This method is responsible for obtaining authenticator-specific data needed to
+     * initialize the authentication process within the provided authentication context.
+     *
+     * @param context The authentication context containing information about the current authentication attempt.
+     * @return An {@code Optional} containing an {@code AuthenticatorData} object representing the initiation data.
+     * If the initiation data is available, it is encapsulated within the {@code Optional}; otherwise,
+     * an empty {@code Optional} is returned.
+     */
+    @Override
+    public Optional<AuthenticatorData> getAuthInitiationData(AuthenticationContext context) {
+
+        String idpName = null;
+        if (context != null && context.getExternalIdP() != null) {
+            idpName = context.getExternalIdP().getIdPName();
+        }
+
+        AuthenticatorData authenticatorData = new AuthenticatorData();
+        authenticatorData.setName(getName());
+        authenticatorData.setI18nKey(getI18nKey());
+        authenticatorData.setDisplayName(getFriendlyName());
+        authenticatorData.setPromptType(FrameworkConstants.AuthenticatorPromptType.USER_PROMPT);
+        authenticatorData.setIdp(idpName);
+
+        List<AuthenticatorParamMetadata> authenticatorParamMetadataList = getAuthenticatorParamMetadata();
+        authenticatorData.setAuthParams(authenticatorParamMetadataList);
+
+        List<String> requiredParams = new ArrayList<>();
+        requiredParams.add(PasswordPolicyConstants.CURRENT_PWD);
+        requiredParams.add(PasswordPolicyConstants.NEW_PWD);
+        requiredParams.add(PasswordPolicyConstants.NEW_PWD_CONFIRMATION);
+        authenticatorData.setRequiredParams(requiredParams);
+
+        FrameworkConstants.AuthenticatorMessageType messageType = FrameworkConstants.AuthenticatorMessageType.INFO;
+        String messageKey = PasswordPolicyConstants.PASSWORD_EXPIRED_MESSAGE_KEY;
+        String message = PasswordPolicyConstants.PASSWORD_EXPIRED_MESSAGE;
+
+        if (context != null && context.isRetrying()) {
+            String errorMessage = (String) context.getProperty(PasswordPolicyConstants.PASSWORD_RESET_ERROR_MESSAGE);
+            if (StringUtils.isNotEmpty(errorMessage)) {
+                messageType = FrameworkConstants.AuthenticatorMessageType.ERROR;
+                messageKey = PasswordPolicyConstants.PASSWORD_RESET_ERROR_KEY;
+                message = errorMessage;
+            }
+        }
+
+        AuthenticatorMessage authenticatorMessage = new AuthenticatorMessage(
+                messageType, messageKey, message, null);
+        authenticatorData.setMessage(authenticatorMessage);
+        return Optional.of(authenticatorData);
+    }
+
+    /**
+     * This method is responsible for constructing a list of {@code AuthenticatorParamMetadata} objects
+     * that define the parameters required for the password reset process.
+     *
+     * @return A list of {@code AuthenticatorParamMetadata} objects representing the parameters needed for password reset.
+     */
+    private List<AuthenticatorParamMetadata> getAuthenticatorParamMetadata() {
+
+        List<AuthenticatorParamMetadata> authenticatorParamMetadataList = new ArrayList<>();
+        AuthenticatorParamMetadata currentPasswordMetadata = new AuthenticatorParamMetadata(
+                PasswordPolicyConstants.CURRENT_PWD,
+                PasswordPolicyConstants.CURRENT_PWD_DISPLAY_NAME,
+                FrameworkConstants.AuthenticatorParamType.STRING,
+                0,
+                Boolean.TRUE,
+                PasswordPolicyConstants.CURRENT_PWD_KEY);
+        authenticatorParamMetadataList.add(currentPasswordMetadata);
+        AuthenticatorParamMetadata newPasswordMetadata = new AuthenticatorParamMetadata(
+                PasswordPolicyConstants.NEW_PWD,
+                PasswordPolicyConstants.NEW_PWD_DISPLAY_NAME,
+                FrameworkConstants.AuthenticatorParamType.STRING,
+                1,
+                Boolean.TRUE,
+                PasswordPolicyConstants.NEW_PWD_KEY);
+        authenticatorParamMetadataList.add(newPasswordMetadata);
+        AuthenticatorParamMetadata confirmPasswordMetadata = new AuthenticatorParamMetadata(
+                PasswordPolicyConstants.NEW_PWD_CONFIRMATION,
+                PasswordPolicyConstants.NEW_PWD_CONFIRMATION_DISPLAY_NAME,
+                FrameworkConstants.AuthenticatorParamType.STRING,
+                2,
+                Boolean.TRUE,
+                PasswordPolicyConstants.NEW_PWD_CONFIRMATION_KEY);
+        authenticatorParamMetadataList.add(confirmPasswordMetadata);
+        return authenticatorParamMetadataList;
+    }
+
+    /**
+     * This method is responsible for validating whether the authenticator is supported for API Based Authentication.
+     *
+     * @return true if the authenticator is supported for API Based Authentication.
+     */
+    @Override
+    public boolean isAPIBasedAuthenticationSupported() {
+
+        return true;
     }
 
     /**
@@ -223,6 +328,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                 if (log.isDebugEnabled()) {
                     log.debug("Updated user credentials of " + tenantAwareUsername);
                 }
+                context.setProperty(PasswordPolicyConstants.PASSWORD_RESET_COMPLETE, "true");
             } catch (UserStoreException e) {
                 String errorMessage = getAuthenticationErrorMessage(e);
                 if (log.isDebugEnabled()) {

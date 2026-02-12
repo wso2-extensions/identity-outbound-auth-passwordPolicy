@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2018-2026, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -16,12 +16,14 @@
  *  under the License.
  *
  */
+
 package org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.testng.PowerMockObjectFactory;
 import org.powermock.reflect.Whitebox;
@@ -66,6 +68,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+@PowerMockIgnore({"jdk.internal.*", "javax.*", "sun.*", "org.w3c.*", "org.xml.*"})
 @PrepareForTest({IdentityTenantUtil.class, MultitenantUtils.class, IdentityUtil.class, PasswordPolicyUtils.class,
         UserStoreManager.class, org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class})
 public class PasswordChangeHandlerTest {

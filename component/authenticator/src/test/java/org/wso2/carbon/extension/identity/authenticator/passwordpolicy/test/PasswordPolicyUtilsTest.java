@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2018-2026, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * WSO2 Inc. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test;
 
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -30,6 +31,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 /**
  * Tests for password change utils
  */
+@PowerMockIgnore({"jdk.internal.*", "javax.*", "sun.*", "org.mockito.*", "org.w3c.*", "org.xml.*"})
 @PrepareForTest({CarbonUtils.class})
 public class PasswordPolicyUtilsTest {
     private static final String TENANT_DOMAIN = "carbon.super";
