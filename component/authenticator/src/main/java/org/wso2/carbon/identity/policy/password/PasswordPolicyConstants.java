@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2018-2026, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -28,9 +28,20 @@ public class PasswordPolicyConstants {
     public static final String AUTHENTICATOR_TYPE = "LOCAL";
     public static final String STATE = "state";
 
-    public static final String CURRENT_PWD = "CURRENT_PWD";
-    public static final String NEW_PWD = "NEW_PWD";
-    public static final String NEW_PWD_CONFIRMATION = "NEW_PWD_CONFIRMATION";
+    public static final String CURRENT_PWD = "currentPassword";
+    public static final String CURRENT_PWD_KEY = "currentPassword.param";
+    public static final String NEW_PWD = "newPassword";
+    public static final String NEW_PWD_KEY = "newPassword.param";
+    public static final String NEW_PWD_CONFIRMATION = "newPasswordConfirmation";
+    public static final String NEW_PWD_CONFIRMATION_KEY = "newPasswordConfirmation.param";
+    public static final String CURRENT_PWD_DISPLAY_NAME = "Current Password";
+    public static final String NEW_PWD_DISPLAY_NAME = "New Password";
+    public static final String NEW_PWD_CONFIRMATION_DISPLAY_NAME = "Confirm New Password";
+    public static final String PASSWORD_EXPIRED_MESSAGE_KEY = "password.expired";
+    public static final String PASSWORD_EXPIRED_MESSAGE = "Your password has expired. Please reset your password.";
+    public static final String PASSWORD_RESET_ERROR_MESSAGE = "passwordResetErrorMessage";
+    public static final String PASSWORD_RESET_ERROR_KEY = "password.reset.error";
+    public static final String PASSWORD_RESET_COMPLETE = "passwordResetComplete";
 
     public static final String LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM =
             "http://wso2.org/claims/identity/lastPasswordUpdateTime";
