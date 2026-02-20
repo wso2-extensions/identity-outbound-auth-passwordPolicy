@@ -30,6 +30,10 @@ import org.wso2.carbon.identity.application.authentication.framework.context.Aut
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.exception.PostAuthenticationFailedException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorData;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorMessage;
+import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorParamMetadata;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -43,10 +47,6 @@ import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
-import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorData;
-import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorMessage;
-import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatorParamMetadata;
-import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,6 +109,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             } catch (Exception e) {
                 context.setRetrying(true);
                 context.setCurrentAuthenticator(getName());
+                context.setProperty(PasswordPolicyConstants.PASSWORD_RESET_ERROR_MESSAGE, e.getMessage());
                 return initiateAuthRequest(response, context, e.getMessage());
             }
             return AuthenticatorFlowStatus.SUCCESS_COMPLETED;
