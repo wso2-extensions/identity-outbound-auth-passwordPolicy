@@ -329,7 +329,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                 if (log.isDebugEnabled()) {
                     log.debug("Updated user credentials of " + tenantAwareUsername);
                 }
-                context.setProperty(PasswordPolicyConstants.PASSWORD_RESET_COMPLETE, "true");
+                context.setPasswordResetComplete(true);
             } catch (UserStoreException e) {
                 String errorMessage = getAuthenticationErrorMessage(e);
                 if (log.isDebugEnabled()) {
@@ -466,17 +466,5 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
             stepConfigMap.get(i).setAuthenticatedUser(authenticatedUser);
         }
         context.setSubject(authenticatedUser);
-    }
-
-    private String getLastPasswordUpdateTime(UserStoreManager userStoreManager, String claimURI,
-                                             String tenantAwareUsername) throws UserStoreException {
-
-        String[] claimURIs = new String[]{claimURI};
-        Map<String, String> claimValueMap =
-                userStoreManager.getUserClaimValues(tenantAwareUsername, claimURIs, null);
-        if (claimValueMap != null && claimValueMap.get(claimURI) != null) {
-            return claimValueMap.get(claimURI);
-        }
-        return null;
     }
 }
