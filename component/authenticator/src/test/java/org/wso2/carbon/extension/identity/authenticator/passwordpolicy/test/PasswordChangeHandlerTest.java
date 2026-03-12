@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2018-2026, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -16,12 +16,14 @@
  *  under the License.
  *
  */
+
 package org.wso2.carbon.extension.identity.authenticator.passwordpolicy.test;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.testng.PowerMockObjectFactory;
 import org.powermock.reflect.Whitebox;
@@ -55,9 +57,9 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -66,6 +68,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+@PowerMockIgnore({"jdk.internal.*", "javax.*", "sun.*", "org.mockito.*", "org.w3c.*", "org.xml.*",
+        "org.powermock.api.mockito.mockmaker.*"})
 @PrepareForTest({IdentityTenantUtil.class, MultitenantUtils.class, IdentityUtil.class, PasswordPolicyUtils.class,
         UserStoreManager.class, org.wso2.carbon.identity.password.expiry.util.PasswordPolicyUtils.class})
 public class PasswordChangeHandlerTest {
@@ -268,7 +272,7 @@ public class PasswordChangeHandlerTest {
         event.getEventProperties().put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, TENANT_DOMAIN);
 
         doThrow(new org.wso2.carbon.user.core.UserStoreException()).when(userStoreManager)
-                .setUserClaimValues(eq(USERNAME), Matchers.<Map<String, String>>any(), isNull(String.class));
+                .setUserClaimValues(eq(USERNAME), ArgumentMatchers.<Map<String, String>>any(), isNull());
 
         passwordChangeHandler.handleEvent(event);
 
