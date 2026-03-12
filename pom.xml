@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- ~ Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ ~ Copyright (c) 2016-2026, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  ~
  ~ WSO2 Inc. licenses this file to you under the Apache License,
  ~ Version 2.0 (the "License"); you may not use this file except
@@ -322,7 +322,7 @@
     </distributionManagement>
 
     <properties>
-        <carbon.identity.framework.version>7.7.63</carbon.identity.framework.version>
+        <carbon.identity.framework.version>7.10.76</carbon.identity.framework.version>
         <carbon.identity.governance.version>1.11.31</carbon.identity.governance.version>
         <commons-logging.version>4.4.23</commons-logging.version>
         <carbon.kernel.version>4.9.0</carbon.kernel.version>
