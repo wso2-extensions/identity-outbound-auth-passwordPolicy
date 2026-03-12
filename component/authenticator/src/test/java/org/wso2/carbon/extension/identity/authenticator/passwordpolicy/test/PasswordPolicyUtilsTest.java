@@ -31,7 +31,8 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 /**
  * Tests for password change utils
  */
-@PowerMockIgnore({"jdk.internal.*", "javax.*", "sun.*", "org.mockito.*", "org.w3c.*", "org.xml.*"})
+@PowerMockIgnore({"jdk.internal.*", "javax.*", "sun.*", "org.mockito.*", "org.w3c.*", "org.xml.*",
+        "org.powermock.api.mockito.mockmaker.*"})
 @PrepareForTest({CarbonUtils.class})
 public class PasswordPolicyUtilsTest {
     private static final String TENANT_DOMAIN = "carbon.super";

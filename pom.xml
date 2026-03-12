@@ -156,13 +156,13 @@
             </dependency>
             <dependency>
                 <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito</artifactId>
+                <artifactId>powermock-api-mockito2</artifactId>
                 <version>${powermock.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
+                <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -329,8 +329,8 @@
         <testng.version>6.9.10</testng.version>
         <jacoco.version>0.8.12</jacoco.version>
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
-        <mockito.version>1.10.19</mockito.version>
-        <powermock.version>1.6.5</powermock.version>
+        <mockito.version>3.3.3</mockito.version>
+        <powermock.version>2.0.9</powermock.version>
         <maven.bundle.plugin.version>2.4.0</maven.bundle.plugin.version>
         <carbon.analytics-common.version>5.1.31</carbon.analytics-common.version>
         <maven.scr.plugin.version>1.24.0</maven.scr.plugin.version>
