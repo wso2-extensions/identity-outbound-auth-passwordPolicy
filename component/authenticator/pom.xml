@@ -166,8 +166,8 @@
                             org.apache.commons.logging.*; version="1.0.4",
                             org.osgi.framework,
                             org.wso2.carbon.identity.application.authentication.framework.*; version="${carbon.identity.package.import.version.range}",
-                            javax.servlet,
-                            javax.servlet.http,
+                            javax.servlet; version="[2.4,5.0.0)",
+                            javax.servlet.http; version="[2.4,5.0.0)",
                             org.wso2.carbon.databridge.commons; version="${carbon.analytics-common.version}",
                             *;resolution:=optional
                         </Import-Package>
