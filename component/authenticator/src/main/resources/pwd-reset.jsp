@@ -113,7 +113,7 @@
                     if ("true".equals(authenticationFailed)) {
                 %>
                 <div class="ui visible negative message" id="server-error-msg">
-                    <%=errorMessage%>
+                    <%=Encode.forHtml(errorMessage)%>
                 </div>
                 <% } %>
 
