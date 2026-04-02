@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.wso2.carbon.extension.identity.authenticator.passwordpolicy.feature</artifactId>
-    <version>1.0.29</version>
+    <version>1.0.30-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 Carbon Extension - Password Policy - Server Feature</name>
     <url>http://wso2.org</url>
