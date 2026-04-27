@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2018-2026, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -353,28 +353,45 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         if (e.getMessage().contains("PasswordInvalid")) {
             errorMessage = "Invalid credentials. Cannot proceed with the password change.";
         }
-        if (isPasswordPolicyViolationError(e)) {
-            errorMessage = e.getMessage();
+        String policyViolationMessage = getPasswordPolicyViolationMessage(e);
+        if (policyViolationMessage != null) {
+            errorMessage = policyViolationMessage;
         }
         return errorMessage;
     }
 
-    private boolean isPasswordPolicyViolationError(Throwable e) {
+    private String getPasswordPolicyViolationMessage(Throwable e) {
 
         while (e != null) {
-            if (e.getCause() instanceof PolicyViolationException) {
-                return true;
-            } else if (e.getCause() instanceof IdentityPasswordHistoryException) {
-                return true;
-            } else if (e.getCause() instanceof IdentityEventException &&
-                    PasswordPolicyConstants.PASSWORD_HISTORY_VIOLATION_ERROR_CODE.equals
-                            (((IdentityEventException) e.getCause()).getErrorCode())) {
-                return true;
+            Throwable cause = e.getCause();
+            if (cause instanceof PolicyViolationException) {
+                return cause.getMessage();
+            } else if (cause instanceof IdentityPasswordHistoryException) {
+                return cause.getMessage();
+            } else if (cause instanceof IdentityEventException) {
+                return unwrapQuotedMessage(cause.getMessage());
             }
-            e = e.getCause();
+            e = cause;
         }
 
-        return false;
+        return null;
+    }
+
+    /**
+     * Unwrap a message that is enclosed in single quotes by the identity governance framework.
+     * In IS 7.x, the governance framework wraps policy violation messages in single quotes
+     * when creating IdentityEventException instances.
+     *
+     * @param message The potentially quoted message
+     * @return The unwrapped message
+     */
+    private String unwrapQuotedMessage(String message) {
+
+        if (message != null && message.length() > 2
+                && message.charAt(0) == '\'' && message.charAt(message.length() - 1) == '\'') {
+            return message.substring(1, message.length() - 1);
+        }
+        return message;
     }
 
     /**
