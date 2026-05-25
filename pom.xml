@@ -322,7 +322,7 @@
     </distributionManagement>
 
     <properties>
-        <carbon.identity.framework.version>7.10.76</carbon.identity.framework.version>
+        <carbon.identity.framework.version>7.11.89</carbon.identity.framework.version>
         <carbon.identity.governance.version>1.11.31</carbon.identity.governance.version>
         <commons-logging.version>4.4.23</commons-logging.version>
         <carbon.kernel.version>4.9.0</carbon.kernel.version>

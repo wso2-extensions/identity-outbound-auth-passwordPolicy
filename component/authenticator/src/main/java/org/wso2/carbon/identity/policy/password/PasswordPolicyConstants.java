@@ -42,6 +42,7 @@ public class PasswordPolicyConstants {
     public static final String PASSWORD_RESET_ERROR_MESSAGE = "passwordResetErrorMessage";
     public static final String PASSWORD_RESET_ERROR_KEY = "password.reset.error";
     public static final String PASSWORD_RESET_COMPLETE = "passwordResetComplete";
+    public static final String PASSWORD_EXPIRED_ERROR_KEY_PARAM = "&errorKey=Password.Expired";
 
     public static final String LAST_CREDENTIAL_UPDATE_TIMESTAMP_CLAIM =
             "http://wso2.org/claims/identity/lastPasswordUpdateTime";
@@ -86,6 +87,7 @@ public class PasswordPolicyConstants {
     public static final String PASSWORD_RESET_ENFORCER_PAGE = "pwd-reset.jsp";
     public static final String PASSWORD_HISTORY_VIOLATION_ERROR_CODE = "22001";
     public static final String LAST_FAILED_AUTHENTICATOR = "LastFailedAuthenticator";
+    public static final String RECOVERY_PORTAL_ERROR_PAGE = "/error.jsp";
 
     //password grant flow - password expiry validation constants
     public static final String PASSWORD_GRANT_POST_AUTHENTICATION_EVENT = "PASSWORD_GRANT_POST_AUTHENTICATION";

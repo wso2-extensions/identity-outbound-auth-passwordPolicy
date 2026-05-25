@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.policy.password;
 
+import net.shibboleth.utilities.java.support.net.URLBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -247,26 +248,37 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                 }
                 // The password has expired or the password changed time is not set
                 try {
-                    // Creating the URL to which the user will be redirected
-                    String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
-                            .replace(PasswordPolicyConstants.LOGIN_STANDARD_PAGE,
-                                    PasswordPolicyConstants.PASSWORD_RESET_ENFORCER_PAGE);
-                    String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
-                            context.getCallerSessionKey(), context.getContextIdentifier());
-                    String retryParam = "";
-                    if (context.isRetrying()) {
-                        retryParam = "&authFailure=true" +
-                                "&authFailureMsg=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8.name());
-                    }
-                    String fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername,
-                            tenantDomain);
-                    String encodedUrl =
-                            (loginPage + ("?" + queryParams
-                            + "&username=" + URLEncoder.encode(fullyQualifiedUsername, StandardCharsets.UTF_8.name())))
-                            + "&authenticators=" + getName() + ":" + PasswordPolicyConstants.AUTHENTICATOR_TYPE
-                            + retryParam;
+                    if (FrameworkUtils.getSharedUserIdentifiedInSequence(context).isPresent()) {
+                        // If the password expired user is a shared user, don't redirect to the password reset page.
+                        String errorUrl = ConfigurationFacade.getInstance().getAccountRecoveryEndpointPath() +
+                                PasswordPolicyConstants.RECOVERY_PORTAL_ERROR_PAGE;
+                        response.sendRedirect(FrameworkUtils.appendQueryParamsStringToUrl(errorUrl,
+                                PasswordPolicyConstants.PASSWORD_EXPIRED_ERROR_KEY_PARAM));
+                    } else {
+                        // Creating the URL to which the user will be redirected
+                        String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
+                                .replace(PasswordPolicyConstants.LOGIN_STANDARD_PAGE,
+                                        PasswordPolicyConstants.PASSWORD_RESET_ENFORCER_PAGE);
+                        String queryParams =
+                                FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
+                                        context.getCallerSessionKey(), context.getContextIdentifier());
+                        String retryParam = "";
+                        if (context.isRetrying()) {
+                            retryParam = "&authFailure=true" +
+                                    "&authFailureMsg=" + URLEncoder.encode(errorMessage, StandardCharsets.UTF_8.name());
+                        }
+                        String fullyQualifiedUsername = UserCoreUtil.addTenantDomainToEntry(tenantAwareUsername,
+                                tenantDomain);
+                        String encodedUrl =
+                                (loginPage + ("?" + queryParams
+                                        + "&username=" +
+                                        URLEncoder.encode(fullyQualifiedUsername, StandardCharsets.UTF_8.name())))
+                                        + "&authenticators=" + getName() + ":" +
+                                        PasswordPolicyConstants.AUTHENTICATOR_TYPE
+                                        + retryParam;
 
-                    response.sendRedirect(encodedUrl);
+                        response.sendRedirect(encodedUrl);
+                    }
                 } catch (IOException e) {
                     throw new AuthenticationFailedException(e.getMessage(), e);
                 }
