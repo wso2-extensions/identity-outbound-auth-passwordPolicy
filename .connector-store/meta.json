@@ -14,6 +14,12 @@
             ]
         },
         {
+            "tagName": "v4.0.11",
+            "products": [
+                "IS 7.2.0"
+            ]
+        },
+        {
             "tagName": "v3.0.6",
             "products": [
                 "IS 7.0.0"
