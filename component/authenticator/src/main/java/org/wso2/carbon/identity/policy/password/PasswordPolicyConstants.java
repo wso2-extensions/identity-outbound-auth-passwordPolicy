@@ -84,6 +84,8 @@ public class PasswordPolicyConstants {
 
     public static final String LOGIN_STANDARD_PAGE = "login.do";
     public static final String PASSWORD_RESET_ENFORCER_PAGE = "pwd-reset.jsp";
+    // Optional authenticator config parameter to point at a custom/externalized password reset page.
+    public static final String PASSWORD_RESET_ENDPOINT_URL_CONFIG = "PasswordResetEndpointURL";
     public static final String PASSWORD_HISTORY_VIOLATION_ERROR_CODE = "22001";
     public static final String LAST_FAILED_AUTHENTICATOR = "LastFailedAuthenticator";
 
