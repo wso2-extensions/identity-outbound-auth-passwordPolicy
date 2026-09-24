@@ -281,9 +281,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
     }
 
     /**
-     * Resolve the password reset page URL. Returns the {@code PasswordResetEndpointURL} authenticator config
-     * parameter if set; otherwise falls back to the authentication endpoint URL with {@code login.do}
-     * replaced by {@code pwd-reset.jsp}.
+     * Resolve the password reset page URL.
      *
      * @return the password reset page URL.
      */
