@@ -25,6 +25,8 @@ import org.wso2.carbon.identity.application.authentication.framework.AbstractApp
 import org.wso2.carbon.identity.application.authentication.framework.AuthenticatorFlowStatus;
 import org.wso2.carbon.identity.application.authentication.framework.LocalApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.config.ConfigurationFacade;
+import org.wso2.carbon.identity.application.authentication.framework.config.builder.FileBasedConfigurationBuilder;
+import org.wso2.carbon.identity.application.authentication.framework.config.model.AuthenticatorConfig;
 import org.wso2.carbon.identity.application.authentication.framework.config.model.StepConfig;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
@@ -248,9 +250,7 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
                 // The password has expired or the password changed time is not set
                 try {
                     // Creating the URL to which the user will be redirected
-                    String loginPage = ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
-                            .replace(PasswordPolicyConstants.LOGIN_STANDARD_PAGE,
-                                    PasswordPolicyConstants.PASSWORD_RESET_ENFORCER_PAGE);
+                    String loginPage = getPasswordResetPageURL();
                     String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                             context.getCallerSessionKey(), context.getContextIdentifier());
                     String retryParam = "";
@@ -278,6 +278,28 @@ public class PasswordResetEnforcer extends AbstractApplicationAuthenticator
         // Authentication is now completed in this step. Update the authenticated user information.
         updateAuthenticatedUserInStepConfig(context, authenticatedUser);
         return AuthenticatorFlowStatus.SUCCESS_COMPLETED;
+    }
+
+    /**
+     * Resolve the password reset page URL.
+     *
+     * @return the password reset page URL.
+     */
+    private String getPasswordResetPageURL() {
+
+        AuthenticatorConfig authenticatorConfig = FileBasedConfigurationBuilder.getInstance()
+                .getAuthenticatorBean(PasswordPolicyConstants.AUTHENTICATOR_NAME);
+        if (authenticatorConfig != null && authenticatorConfig.getParameterMap() != null) {
+            String configuredResetPage = authenticatorConfig.getParameterMap()
+                    .get(PasswordPolicyConstants.PASSWORD_RESET_ENDPOINT_URL_CONFIG);
+            if (StringUtils.isNotBlank(configuredResetPage)) {
+                return configuredResetPage;
+            }
+        }
+
+        return ConfigurationFacade.getInstance().getAuthenticationEndpointURL()
+                .replace(PasswordPolicyConstants.LOGIN_STANDARD_PAGE,
+                        PasswordPolicyConstants.PASSWORD_RESET_ENFORCER_PAGE);
     }
 
     /**
