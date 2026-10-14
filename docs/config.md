@@ -10,7 +10,7 @@
 
 1. Download the Password Reset Enforcer and its artifacts from [WSO2 Store](https://store.wso2.com/connector/identity-outbound-auth-passwordPolicy).
 
-2. Download the latest wum updated IS pack from [here](https://wso2.com/identity-and-access-management/).
+2. Download the latest U2 updated IS pack from [here](https://wso2.com/identity-and-access-management/).
 
 3. Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file
 
@@ -23,7 +23,7 @@
    enableDataPublishing= false
    priorReminderTimeInDays= "0"
    ```
-4. **(For WSO2 IS v7.0)** Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file. This configuration is to enable the password reset authenticator in the application step configurations.
+4. **(For WSO2 IS v7.0 and abov)** Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file. This configuration is to enable the password reset authenticator in the application step configurations.
 
    ```
    [authentication.authenticator.password-reset-enforcer]
