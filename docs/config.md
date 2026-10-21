@@ -10,7 +10,7 @@
 
 1. Download the Password Reset Enforcer and its artifacts from [WSO2 Store](https://store.wso2.com/connector/identity-outbound-auth-passwordPolicy).
 
-2. Download the latest wum updated IS pack from [here](https://wso2.com/identity-and-access-management/).
+2. Download the latest U2 updated IS pack from [here](https://wso2.com/identity-and-access-management/).
 
 3. Add the following lines to `<IS_HOME>/repository/conf/deployment.toml` file
 
